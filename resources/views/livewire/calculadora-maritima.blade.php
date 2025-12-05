@@ -192,7 +192,7 @@
                 <!-- Card: Dimensiones -->
                 <div
                     class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl transition-all duration-300 hover:border-yellow-500/30">
-                    <h3 class="text-yellow-500 font-bold mb-4 text-xs uppercase tracking-widest">Calculadora de Volumen
+                    <h3 class="text-yellow-500 font-bold mb-4 text-xs uppercase tracking-widest">Dimensiones del producto
                     </h3>
                     <div class="grid grid-cols-3 gap-3 sm:gap-4">
                         <div class="space-y-2">

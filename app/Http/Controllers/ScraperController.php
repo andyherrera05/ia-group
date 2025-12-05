@@ -91,7 +91,7 @@ class ScraperController extends Controller
         }
     }
 
-    private function procesarDatos($data, $url)
+    private function procesarDatos($data)
     {
         $pesoKg = 0.5;
         if (isset($data['packageWeight'])) {
@@ -118,25 +118,17 @@ class ScraperController extends Controller
     }
     public function stream($runId)
     {
-        // ==================== TRUCO MÁGICO PARA DONWEB ====================
-        // 1. Apache no corta si envías headers de buffering desactivado
         header('X-Accel-Buffering: no');
 
-        // 2. Forzar que PHP no haga buffering (crucial)
         if (function_exists('apache_setenv')) {
             @apache_setenv('no-gzip', '1');
         }
         ini_set('zlib.output_compression', '0');
         ini_set('implicit_flush', 1);
 
-        // 3. Desactivar cualquier output buffering
         while (ob_get_level() > 0) {
             ob_end_flush();
         }
-
-        // 4. Enviar datos basura cada 5 segundos si no hay nada (keep-alive)
-        // (lo hacemos más abajo en el loop)
-        // =================================================================
 
         return response()->stream(function () use ($runId) {
             $runInfo = Cache::get('apify_run_' . $runId);
@@ -166,7 +158,7 @@ class ScraperController extends Controller
                             ->sortByDesc(fn($i) => isset($i['packageSize']) ? 1 : 0)
                             ->first() ?? $items[0];
 
-                        $finalResult = $this->procesarDatos($bestItem, $runInfo['url']);
+                        $finalResult = $this->procesarDatos($bestItem);
 
                         $cacheKey = 'apify_product_' . md5(strtolower($runInfo['url']));
                         Cache::put($cacheKey, $finalResult, now()->addDays(7));
@@ -181,16 +173,14 @@ class ScraperController extends Controller
                     Log::error('Apify SSE error: ' . $e->getMessage());
                 }
 
-                $waited += 4;
+                $waited += 5;
 
-                // HEARTBEAT cada 4 segundos (crucial para que no corte)
                 echo "event: heartbeat\ndata: " . json_encode(['waiting' => $waited]) . "\n\n";
-                echo "data: .\n\n"; // línea extra para forzar flush en algunos servidores
+                echo "data: .\n\n";
 
                 @ob_flush();
                 flush();
 
-                // Si no hay output en 10 segundos, Apache corta → por eso enviamos cada 4 seg
                 sleep(4);
             }
 
@@ -203,7 +193,7 @@ class ScraperController extends Controller
             'Content-Type' => 'text/event-stream',
             'Cache-Control' => 'no-cache',
             'Connection' => 'keep-alive',
-            'X-Accel-Buffering' => 'no', // repetido por si acaso
+            'X-Accel-Buffering' => 'no', 
         ]);
     }
 }
