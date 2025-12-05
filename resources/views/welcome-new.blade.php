@@ -69,6 +69,50 @@
             }
         }
     </style>
+    <style>
+        .boat-container {
+            width: 100%;
+            height: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .boat-svg {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            bottom: 20px;
+            animation: navigate 8s infinite ease-in-out;
+        }
+
+        .wave-motion {
+            animation: wave 1.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes navigate {
+            0% {
+                left: -60px;
+            }
+
+            50% {
+                left: calc(100% - 60px);
+            }
+
+            100% {
+                left: -60px;
+            }
+        }
+
+        @keyframes wave {
+            0% {
+                transform: translateY(0px);
+            }
+
+            100% {
+                transform: translateY(-5px);
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-black min-h-screen text-white overflow-x-hidden" data-theme="dark">
@@ -244,7 +288,7 @@
 
                             <div class="flex-1">
                                 <input id="productUrl" type="text"
-                                    placeholder="https://www.alibaba.com/product-detail/Teddy-Bear-I-Love-You-Valentines_1600505498261.html"
+                                    placeholder="https://www.alibaba.com/product-detail/Teddy-Bear-I-Love-You-Valentines.html"
                                     class="w-full bg-black/50 border border-yellow-500/30 text-white px-4 py-3 sm:py-4 rounded-lg focus:outline-none focus:border-yellow-500 transition-all text-sm sm:text-base placeholder-gray-500">
                             </div>
                             {{-- <button id="searchBtn"
@@ -335,20 +379,26 @@
                                             <p class="text-xs text-gray-500 mb-1">Precio Unitario</p>
                                             <p id="scraped-price" class="text-lg font-bold text-cyan-400">--</p>
                                         </div>
-
                                         <div class="bg-black/40 border border-yellow-500/20 rounded-lg p-3">
-                                            <p class="text-xs text-gray-500 mb-1">MOQ Mínimo</p>
-                                            <p id="scraped-moq" class="text-lg font-bold text-purple-400">--</p>
+                                            <label for="moqInput" class="text-xs text-gray-500 mb-1 block">Cantidad (MOQ)</label>
+                                            <input 
+                                                type="number" 
+                                                id="scraped-moq"
+                                                min="1" 
+                                                value="1" 
+                                                class="w-full bg-black/60 border border-purple-500/40 rounded px-2 py-1 text-lg font-bold text-purple-400 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                                placeholder="1"
+                                            >
                                         </div>
 
                                         <div class="bg-black/40 border border-yellow-500/20 rounded-lg p-3">
-                                            <p class="text-xs text-gray-500 mb-1">Dimensiones</p>
+                                            <p class="text-xs text-gray-500 mb-1">CBM(m³)</p>
                                             <p id="scraped-package-size" class="text-sm font-bold text-yellow-400">--
                                             </p>
                                         </div>
 
                                         <div class="bg-black/40 border border-yellow-500/20 rounded-lg p-3">
-                                            <p class="text-xs text-gray-500 mb-1">Peso</p>
+                                            <p class="text-xs text-gray-500 mb-1">CBM(Kg)</p>
                                             <p id="scraped-package-weight" class="text-sm font-bold text-green-400">--
                                             </p>
                                         </div>
@@ -375,19 +425,14 @@
                                 <!-- TODO: Backend - Conectar con cálculos dinámicos -->
                                 <div class="space-y-3">
                                     <div class="flex justify-between items-center pb-3 border-b border-yellow-500/20">
-                                        <span class="text-sm text-gray-400">Costo del Producto</span>
-                                        <span class="text-lg font-bold text-white" id="precio-producto">$--</span>
+                                        <span class="text-sm text-gray-400">Costo de envio de Paquete</span>
+                                        <span class="text-lg font-bold text-white" id="costPackage">$--</span>
                                     </div>
-
-                                    <div class="flex justify-between items-center pb-3 border-b border-yellow-500/20">
-                                        <span class="text-sm text-cyan-400">Costo de Envío</span>
-                                        <span class="text-base font-semibold text-cyan-400">$--</span>
-                                    </div>
-
                                     <div class="flex justify-between items-center pt-2">
                                         <span class="text-lg font-black text-green-400">Total Estimado</span>
                                         <span
-                                            class="text-3xl font-black bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">$--</span>
+                                            class="text-3xl font-black bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent"
+                                            id="estimatedTotal">$--</span>
                                     </div>
                                 </div>
                             </div>
@@ -516,35 +561,6 @@
                                             <p class="text-xs text-gray-400">Accede a nuestra calculadora interactiva y
                                                 obtén precios en tiempo real según el tipo de envío seleccionado.</p>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Additional Options Card -->
-                            <div
-                                class="bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 border border-yellow-500/30 rounded-xl p-6">
-                                <h4 class="text-lg font-bold text-yellow-500 mb-4 flex items-center">
-                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    Información Adicional
-                                </h4>
-
-                                <!-- TODO: Backend - Datos extras del scraper -->
-                                <div class="space-y-3 text-sm">
-                                    <div class="flex justify-between items-center py-2 border-b border-yellow-500/20">
-                                        <span class="text-gray-400">Tiempo de Producción</span>
-                                        <span class="text-white font-semibold">--</span>
-                                    </div>
-                                    <div class="flex justify-between items-center py-2 border-b border-yellow-500/20">
-                                        <span class="text-gray-400">Puerto de Origen</span>
-                                        <span class="text-white font-semibold">--</span>
-                                    </div>
-                                    <div class="flex justify-between items-center py-2">
-                                        <span class="text-gray-400">Certificaciones</span>
-                                        <span class="text-white font-semibold">--</span>
                                     </div>
                                 </div>
                             </div>
@@ -1219,7 +1235,7 @@
     <div class="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-5">
 
         <!-- WhatsApp - Verdadero color con animación hover -->
-        <a href="https://wa.me/59164700457" target="_blank"
+        <a href="https://wa.me/59164700293" target="_blank"
             class="group w-16 h-16 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl overflow-hidden transition-all duration-300 hover:scale-110 hover:rotate-6">
             <!-- Color real de WhatsApp solo visible en hover -->
             <div
@@ -1288,6 +1304,16 @@
         let eventSource = null;
 
         function calcularCostoMaritimoLCL(pesoKg, cbmReal) {
+            if (typeof pesoKg !== 'number' || typeof cbmReal !== 'number') {
+                console.error("Error: pesoKg o cbmReal deben ser números.");
+                return {
+                    costo: "0.00",
+                    tipo: "Error",
+                    valorUsado: "0.000",
+                    unidad: ""
+                };
+            }
+
             // TARIFA POR PESO (cuando CBM < 0.01)
             const TARIFA_POR_KG = {
                 1: 10,
@@ -1326,23 +1352,28 @@
             let valorUsado = 0;
 
             // REGLA DE ORO: Si CBM < 0.01 → se cobra por peso (W/M)
-            if (cbmReal < 0.01 || !cbmReal) {
+            if (cbmReal < 0.01) {
                 tipoCobro = 'Peso (W/M)';
-                valorUsado = Math.ceil(pesoKg); // redondea hacia arriba
+                valorUsado = Math.ceil(pesoKg); // Redondea el peso hacia arriba (siempre un número)
 
-                // Buscar tarifa por kg (máximo 16 kg)
-                costoFinal = valorUsado <= 16 ?
-                    TARIFA_POR_KG[valorUsado] || 2.5 :
-                    2.5; // después de 16kg → $2.5/kg
+                // SOLUCIÓN 2: Lógica de la Tarifa de Peso (más clara y segura)
+                let tarifaPorUnidad;
+                if (valorUsado > 16) {
+                    // Después de 16kg, la tarifa es fija ($2.5/kg)
+                    tarifaPorUnidad = 2.5;
+                } else {
+                    // Busca la tarifa en la tabla, si no existe (ej: 0kg), usa 2.5 como fallback
+                    tarifaPorUnidad = TARIFA_POR_KG[valorUsado] || 2.5;
+                }
 
-                costoFinal = costoFinal * valorUsado;
+                costoFinal = tarifaPorUnidad * valorUsado;
 
             } else {
                 // COBRO POR CBM REAL
                 tipoCobro = 'CBM Real';
                 valorUsado = cbmReal;
 
-                // Buscar en la tabla de CBM
+                // Buscar en la tabla de CBM (de mayor a menor)
                 const claves = Object.keys(TARIFA_POR_CBM).map(Number).sort((a, b) => b - a);
                 for (let limite of claves) {
                     if (cbmReal >= limite) {
@@ -1350,14 +1381,18 @@
                         break;
                     }
                 }
-                // Si es menor a 0.25 → se cobra como 0.25
+                // Si es menor a 0.25 → se cobra como 0.25 ($60)
                 if (costoFinal === 0) costoFinal = 60;
             }
+
+            // Aseguramos que las variables sean números antes de aplicar .toFixed()
+            costoFinal = Number(costoFinal);
+            valorUsado = Number(valorUsado);
 
             return {
                 costo: costoFinal.toFixed(2),
                 tipo: tipoCobro,
-                valorUsado: valorUsado.toFixed(3),
+                valorUsado: valorUsado.toFixed(3), // ¡Ahora valorUsado es garantizado como Number!
                 unidad: tipoCobro.includes('Peso') ? 'kg' : 'm³'
             };
         }
@@ -1378,8 +1413,9 @@
             }
 
             // Insertar datos
-            document.getElementById('scraped-price').textContent =
-                data.price || '--';
+            const priceTextData = data.price
+            let price = priceTextData.split('-').pop().replace(/[^0-9]/g, '').trim();
+            document.getElementById('scraped-price').textContent = `$ ${price}` || '--';
 
             document.getElementById('scraped-moq').textContent =
                 data.moq || '--';
@@ -1391,17 +1427,32 @@
 
             const packageWeightTexto = data.packageWeight
             let packageWeight = (packageWeightTexto.replace(/[^0-9]/g, '') / 5000).toFixed(2);
-            document.getElementById('scraped-package-weight').textContent = `${packageWeight Kg}` || '--';
+            document.getElementById('scraped-package-weight').textContent = `${packageWeight} Kg` || '--';
 
-            const costPackage = calcularCostoMaritimoLCL(packageWeight, packageSize).costo
+            const costPackage = calcularCostoMaritimoLCL(Number(packageWeight), Number(packageSize) ).costo
             const moq = parseInt(data.moq) || 1;
-            const totalProducto = precioUnitario * moq;
-            document.getElementById('precio-producto').textContent = totalProducto.toFixed(2);
+            const totalProducto = costPackage * moq;
+            document.getElementById('costPackage').textContent = `$ ${totalProducto.toFixed(2)}`;
 
+            const priceProductElement = document.getElementById('scraped-price');
+            const costPackageElement = document.getElementById('costPackage');
 
+            const priceText = priceProductElement.textContent;
+            const costText = costPackageElement.textContent;
 
+            const cleanPriceText = priceText.replace(/[^0-9.]/g, '');
+            const cleanCostText = costText.replace(/[^0-9.]/g, '');
 
+            const priceProduct = parseFloat(cleanPriceText);
+            const costPackageProduct = parseFloat(cleanCostText);
 
+            const estimatedTotal = priceProduct + costPackageProduct;
+
+            if (!isNaN(estimatedTotal)) {
+                document.getElementById('estimatedTotal').textContent = `$ ${estimatedTotal.toFixed(2)}`;
+            } else {
+                document.getElementById('estimatedTotal').textContent = '--';
+            }
             // Mostrar dashboard con animación
             const quoteDashboard = document.getElementById('quoteDashboard');
             quoteDashboard.classList.remove('hidden');
@@ -1424,6 +1475,23 @@
         }
 
 
+        function mostrarLoadingNavegacion() {
+            const imageUrl = '/images/ship.svg';
+            Swal.fire({
+                title: 'Buscando datos...',
+                html: `
+            <div class="boat-container">
+                <img src="${imageUrl}" class="boat-svg" style="animation: navigate 8s infinite ease-in-out;" alt="Barco navegando">
+            </div>
+            <p id="sse-timer" style="margin-top: 10px; font-weight: bold;">Iniciara dentro de poco</p>
+        `,
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {}
+            });
+        }
+
+
         async function scrapeProduct() {
             const url = document.getElementById('productUrl').value.trim();
             if (!url) return Swal.fire('Error', 'Pega un link', 'warning');
@@ -1431,12 +1499,7 @@
             document.getElementById('search-button-normal').style.display = 'none';
             document.getElementById('search-button-loading').style.display = 'inline-flex';
 
-            Swal.fire({
-                title: 'Buscando datos reales...',
-                html: '<p id="sse-timer">0 segundos</p>',
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
-            });
+            mostrarLoadingNavegacion();
 
             try {
                 const res = await fetch('/scrape-product', {
@@ -1466,7 +1529,7 @@
 
                 eventSource.addEventListener('heartbeat', (e) => {
                     const data = JSON.parse(e.data);
-                    document.getElementById('sse-timer').textContent = `${data.waiting} segundos`;
+                    document.getElementById('sse-timer').textContent = `Ya pasaron ${data.waiting} segundos`;
                 });
 
                 eventSource.addEventListener('ready', (e) => {

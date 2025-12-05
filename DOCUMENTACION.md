@@ -278,7 +278,7 @@ public function responder($respuesta)
 **URL Format:**
 
 ```
-https://wa.me/59164700457?text=Hola,%20me%20interesa%20el%20precio%20de%20$[MONTO]%20para%20transporte%20[TIPO]
+https://wa.me/59164700293?text=Hola,%20me%20interesa%20el%20precio%20de%20$[MONTO]%20para%20transporte%20[TIPO]
 ```
 
 **Parámetros dinámicos:**
