@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\CotizacionPDFController;
 use App\Http\Controllers\ScraperController;
+use App\Http\Controllers\TransportController;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\CalculadoraMaritima;
 use App\Livewire\CalculadoraAerea;
@@ -12,8 +14,10 @@ use App\Livewire\CalculadoraImpuestos;
  */
 
 Route::any('/scrape-product', [ScraperController::class, 'scrape'])->name('scrape_product');
-Route::get('/scrape-status/{runId}', [ScraperController::class, 'status'])->name('scrape.status');
 Route::get('/scrape-stream/{runId}', [ScraperController::class, 'stream'])->name('scrape.stream');
+
+Route::post('/api/scrape', [TransportController::class, 'scrape'])->name('api.scrape');
+Route::get('/apify-stream/{runId}', [TransportController::class, 'stream'])->name('apify.stream');
 
 // Landing Page principal
 Route::get('/', function () {
@@ -44,6 +48,8 @@ Route::get('/impuestos', CalculadoraImpuestos::class)->name('calculadora.impuest
 Route::get('/importaciones-exportaciones', function () {
     return view('importaciones-exportaciones');
 })->name('importaciones.exportaciones');
+
+Route::get('/cotizacion/pdf', [CotizacionPDFController::class, 'generarPDF'])->name('cotizacion.pdf');
 
 Route::get('/capacitaciones', function () {
     return view('capacitaciones');

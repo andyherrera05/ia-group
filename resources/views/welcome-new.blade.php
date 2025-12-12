@@ -380,15 +380,11 @@
                                             <p id="scraped-price" class="text-lg font-bold text-cyan-400">--</p>
                                         </div>
                                         <div class="bg-black/40 border border-yellow-500/20 rounded-lg p-3">
-                                            <label for="moqInput" class="text-xs text-gray-500 mb-1 block">Cantidad (MOQ)</label>
-                                            <input 
-                                                type="number" 
-                                                id="scraped-moq"
-                                                min="1" 
-                                                value="1" 
+                                            <label for="moqInput" class="text-xs text-gray-500 mb-1 block">Cantidad
+                                                (MOQ)</label>
+                                            <input type="number" id="scraped-moq" min="1" value="1"
                                                 class="w-full bg-black/60 border border-purple-500/40 rounded px-2 py-1 text-lg font-bold text-purple-400 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                                                placeholder="1"
-                                            >
+                                                placeholder="1">
                                         </div>
 
                                         <div class="bg-black/40 border border-yellow-500/20 rounded-lg p-3">
@@ -1304,17 +1300,6 @@
         let eventSource = null;
 
         function calcularCostoMaritimoLCL(pesoKg, cbmReal) {
-            if (typeof pesoKg !== 'number' || typeof cbmReal !== 'number') {
-                console.error("Error: pesoKg o cbmReal deben ser números.");
-                return {
-                    costo: "0.00",
-                    tipo: "Error",
-                    valorUsado: "0.000",
-                    unidad: ""
-                };
-            }
-
-            // TARIFA POR PESO (cuando CBM < 0.01)
             const TARIFA_POR_KG = {
                 1: 10,
                 2: 9.5,
@@ -1331,10 +1316,10 @@
                 13: 4,
                 14: 3.5,
                 15: 3,
-                16: 2.5
+                16: 2.5,
+                BASE_PESO_MAYOR: 2
             };
 
-            // TARIFA POR M³ (cuando CBM ≥ 0.01)
             const TARIFA_POR_CBM = {
                 20: 129,
                 15: 138,
@@ -1347,59 +1332,58 @@
                 0.25: 60
             };
 
+            const PESO_VOLUMETRICO = cbmReal * 1000;
+            const PESO_FACTURABLE = Math.max(pesoKg, PESO_VOLUMETRICO);
+
             let costoFinal = 0;
             let tipoCobro = '';
             let valorUsado = 0;
 
-            // REGLA DE ORO: Si CBM < 0.01 → se cobra por peso (W/M)
-            if (cbmReal < 0.01) {
-                tipoCobro = 'Peso (W/M)';
-                valorUsado = Math.ceil(pesoKg); // Redondea el peso hacia arriba (siempre un número)
+            if (cbmReal < 0.10) {
+                tipoCobro = 'Peso Mínimo (W/M)';
+                valorUsado = Math.ceil(pesoKg);
 
-                // SOLUCIÓN 2: Lógica de la Tarifa de Peso (más clara y segura)
-                let tarifaPorUnidad;
-                if (valorUsado > 16) {
-                    // Después de 16kg, la tarifa es fija ($2.5/kg)
-                    tarifaPorUnidad = 2.5;
+                if (valorUsado <= 16) {
+                    costoFinal = TARIFA_POR_KG[valorUsado] * valorUsado;
                 } else {
-                    // Busca la tarifa en la tabla, si no existe (ej: 0kg), usa 2.5 como fallback
-                    tarifaPorUnidad = TARIFA_POR_KG[valorUsado] || 2.5;
+                    costoFinal = TARIFA_POR_KG.BASE_PESO_MAYOR * valorUsado;
                 }
 
-                costoFinal = tarifaPorUnidad * valorUsado;
-
             } else {
-                // COBRO POR CBM REAL
-                tipoCobro = 'CBM Real';
-                valorUsado = cbmReal;
+                if (pesoKg > PESO_VOLUMETRICO) {
+                    tipoCobro = 'Peso Facturable (W)';
+                } else {
+                    tipoCobro = 'Volumen Facturable (M)';
+                }
 
-                // Buscar en la tabla de CBM (de mayor a menor)
+                valorUsado = cbmReal;
                 const claves = Object.keys(TARIFA_POR_CBM).map(Number).sort((a, b) => b - a);
+
+                let tarifaEncontrada = 0;
                 for (let limite of claves) {
                     if (cbmReal >= limite) {
-                        costoFinal = TARIFA_POR_CBM[limite];
+                        tarifaEncontrada = TARIFA_POR_CBM[limite];
                         break;
                     }
                 }
-                // Si es menor a 0.25 → se cobra como 0.25 ($60)
-                if (costoFinal === 0) costoFinal = 60;
-            }
+                if (tarifaEncontrada === 0) {
+                    tarifaEncontrada = TARIFA_POR_CBM[0.25];
+                }
 
-            // Aseguramos que las variables sean números antes de aplicar .toFixed()
-            costoFinal = Number(costoFinal);
-            valorUsado = Number(valorUsado);
+                costoFinal = tarifaEncontrada;
+            }
 
             return {
                 costo: costoFinal.toFixed(2),
                 tipo: tipoCobro,
-                valorUsado: valorUsado.toFixed(3), // ¡Ahora valorUsado es garantizado como Number!
+                pesoFacturable: PESO_FACTURABLE.toFixed(2) + ' kg',
+                valorFacturado: valorUsado.toFixed(3),
                 unidad: tipoCobro.includes('Peso') ? 'kg' : 'm³'
             };
         }
 
         function mostrarResultado(data) {
 
-            // Mostrar imagen
             const img = document.getElementById('scraped-image');
             const placeholder = document.getElementById('placeholder-image');
 
@@ -1429,7 +1413,7 @@
             let packageWeight = (packageWeightTexto.replace(/[^0-9]/g, '') / 5000).toFixed(2);
             document.getElementById('scraped-package-weight').textContent = `${packageWeight} Kg` || '--';
 
-            const costPackage = calcularCostoMaritimoLCL(Number(packageWeight), Number(packageSize) ).costo
+            const costPackage = calcularCostoMaritimoLCL(Number(packageWeight), Number(packageSize)).costo
             const moq = parseInt(data.moq) || 1;
             const totalProducto = costPackage * moq;
             document.getElementById('costPackage').textContent = `$ ${totalProducto.toFixed(2)}`;

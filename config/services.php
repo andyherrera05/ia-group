@@ -37,6 +37,8 @@ return [
     'apify' => [
         'token' => env('APIFY_TOKEN'),
         'product_actor_id' => env('PRODUCT_ACTOR_ID'),
+        'transport_token' => env('TRANSPORT_APIFY_TOKEN'),
+        'transport_actor_id' =>env('TRANSPORT_ACTOR_ID')
     ],
 
 ];

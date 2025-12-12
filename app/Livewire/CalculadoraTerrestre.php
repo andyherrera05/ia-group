@@ -3,7 +3,9 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 
+#[Layout('layouts.app')]
 class CalculadoraTerrestre extends Component
 {
     // Tipo de carga
@@ -173,10 +175,10 @@ class CalculadoraTerrestre extends Component
         $this->reset(['peso', 'volumen', 'largo', 'ancho', 'alto', 'origen', 'destino', 'distancia', 'valorMercancia', 'resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario']);
         session()->flash('info', 'Formulario limpiado.');
     }
-
+    
     public function render()
     {
-        return view('livewire.calculadora-terrestre')
-            ->layout('layouts.app', ['title' => 'Calculadora Terrestre']);
+        return view('livewire.calculadora-terrestre');
     }
+      
 }

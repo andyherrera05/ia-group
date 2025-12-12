@@ -83,7 +83,6 @@ class ScraperController extends Controller
                 'message' => 'Buscando datos reales... (60–90 segundos)',
                 'runId' => $run['id'],
                 'datasetId' => $datasetId,
-                'check_status' => route('scrape.status', $run['id'])
             ]);
         } catch (\Exception $e) {
             Log::error('Apify error: ' . $e->getMessage());

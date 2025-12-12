@@ -108,7 +108,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div class="space-y-2">
                             <label class="block text-yellow-500 font-bold text-xs uppercase tracking-widest">Peso (kg) *</label>
-                            <input type="number" wire:model="peso" step="0.01" placeholder="100"
+                            <input type="number" wire:model="peso" step="1" placeholder="100"
                                 class="w-full bg-black/30 border-2 border-white/10 text-white px-4 py-3.5 rounded-xl focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all">
                         </div>
                         <div class="space-y-2">
@@ -143,7 +143,7 @@
 
                 <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl transition-all duration-300 hover:border-yellow-500/30">
                     <label class="block text-yellow-500 font-bold mb-2 text-xs uppercase tracking-widest">Valor Mercancía (USD)</label>
-                    <input type="number" wire:model="valorMercancia" step="0.01" placeholder="2000"
+                    <input type="number" wire:model="valorMercancia" step="1" placeholder="2000"
                         class="w-full bg-black/30 border-2 border-white/10 text-white px-4 py-3.5 rounded-xl focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all">
                 </div>
 
@@ -241,7 +241,7 @@
                                         <p class="text-gray-300 text-sm mb-6">Hablemos de tu necesidad específica</p>
                                     @endif
                                     
-                                    <a href="https://wa.me/5491123456789?text=Hola !%20Vi%20el%20precio%20del%20envío%20aéreo%20de%20${{ $resultado }}%20y%20me%20gustaría%20más%20información." 
+                                    <a href="https://wa.me/59164700293?text=Hola !%20Vi%20el%20precio%20del%20envío%20aéreo%20de%20${{ $resultado }}%20y%20me%20gustaría%20más%20información." 
                                        target="_blank"
                                        class="inline-flex items-center space-x-3 bg-green-600 hover:bg-green-500 text-white font-black py-3 px-6 rounded-lg transition-all transform hover:scale-105 shadow-xl shadow-green-600/40">
                                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
