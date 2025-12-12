@@ -183,7 +183,7 @@
                                     </div>
                                 </div>
                             </label>
-                            <div class="px-4 pb-4 pt-2 border-t border-yellow-500/20">
+                            <div class="p-4 pt-2 border-t border-yellow-500/20">
                                 <label for="departamentoDestino" class="block text-xs font-medium text-gray-400 mb-2">
                                     Seleccionar Departamento:
                                 </label>
