@@ -293,27 +293,24 @@ class CalculadoraMaritima extends Component
 
         $volumetricWeight = 0;
         if (empty($largo) && empty($ancho) && empty($alto)) {
-           $volumetricWeight = $volumen;
+            $volumetricWeight = $volumen;
         } else {
             $volumetricWeight = (($largo * $ancho * $alto) / 5000);
         }
-        Log::info($volumetricWeight);
-        
 
+        if (empty($largo) && empty($ancho) && empty($alto)) {
+            $CBM = $this->volumen;
+        } else {
+            $CBM = (($largo * $ancho * $alto) / 1000000);
+        }
 
-        
-
-        $CBM = (($largo * $ancho * $alto) / 1000000);
         $shippingPackage = 0;
 
         if (empty($this->peso) || $this->peso <= 0) {
-            Log::info("peso");
             $shippingPackage =  $this->calculateShippingPackagePerDimensions($CBM);
         } elseif (empty($this->alto) || empty($this->largo) || empty($this->ancho)) {
-            Log::info("volumen");
             $shippingPackage = $this->calculateShippingPackage($volumetricWeight, $volumen);
         } else {
-            Log::info("cbm");
             $shippingPackage = $this->calculateShippingPackage($volumetricWeight, $CBM);
         }
 
@@ -377,7 +374,6 @@ class CalculadoraMaritima extends Component
             } else {
                 $costoFinal = 2.5;
             }
-            
         } else {
             // COBRO POR CBM REAL
             $tipoCobro  = 'CBM';
@@ -409,11 +405,11 @@ class CalculadoraMaritima extends Component
         $valorFacturado = 0;
         $unidad = str_contains($tipoCobro, 'Peso') ? 'kg' : 'm³';
         if ($unidad == 'kg') {
-            $valorFacturado = $costoFinal ;
+            $valorFacturado = $costoFinal;
         } else {
             $valorFacturado = $costoFinal * $this->cantidad;
         }
-        
+
 
 
 
