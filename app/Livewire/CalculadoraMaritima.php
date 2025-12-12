@@ -409,10 +409,7 @@ class CalculadoraMaritima extends Component
         } else {
             $valorFacturado = $costoFinal * $this->cantidad;
         }
-
-
-
-
+        
         $total_costs_import = $this->costs_import();
         $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
         $total = $this->valorMercancia + $valorFacturado + $total_costs_import + $total_tiered_charge + $costoRecojo + $costoDestino;

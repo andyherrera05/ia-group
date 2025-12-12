@@ -22,8 +22,7 @@
 
     <!-- Card: Formulario Principal -->
     <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl">
-        <h3 class="text-yellow-500 font-bold mb-6 text-lg uppercase tracking-widest flex items-center">Cotizador LCL
-            ...</h3>
+        <h3 class="text-yellow-500 font-bold mb-6 text-lg uppercase tracking-widest flex items-center">Cotizador LCL</h3>
         <p class="text-gray-400 text-sm mb-6">Complete los datos de su envío para obtener una cotización instantánea.
         </p>
 
