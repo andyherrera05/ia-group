@@ -13,8 +13,3 @@
     @livewireScripts
 </body>
 </html>
-
-
-    @livewireScripts
-</body>
-</html>
