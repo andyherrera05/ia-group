@@ -86,11 +86,11 @@
 
                 <!-- Navegación de pestañas (más limpia con bucle) -->
                 <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-2 shadow-xl">
-                    <div class="grid grid-cols-3 gap-2">
+                    <div class="grid grid-cols-2 gap-2">
                         @foreach ([
                                 'lcl' => ['title' => 'LCL', 'subtitle' => 'Carga Suelta'],
                                 'fcl' => ['title' => 'FCL', 'subtitle' => 'Contenedor'],
-                                'uld' => ['title' => 'ULD', 'subtitle' => 'Aéreo'],
+                                // 'uld' => ['title' => 'ULD', 'subtitle' => 'Aéreo'],
                             ] as $key => $tab)
                             <button wire:click="$set('tipoCarga', '{{ $key }}')"
                                 wire:key="tab-{{ $key }}"

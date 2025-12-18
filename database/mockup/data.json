@@ -1,0 +1,154 @@
+{
+    "success": true,
+    "data": {
+        "metadata": {
+            "applicable-device": "pc",
+            "keywords": "瓦尔帕莱索海运费查询,瓦尔帕莱索海运费多少钱,深圳到瓦尔帕莱索海运费查询,深圳到瓦尔帕莱索海运价格查询,深圳到瓦尔帕莱索海运订舱,shenzhen到valparaiso海运费,智利海运,海运整箱,物流巴巴,5688",
+            "qc:admins": "2440012725656006375636",
+            "description": "海运整箱_物流巴巴网提供智利海运,深圳到智利,瓦尔帕莱索海运费查询,深圳到智利,瓦尔帕莱索海运价格查询,shenzhen到valparaiso海运费,深圳到瓦尔帕莱索海运订舱服务,深圳到智利,瓦尔帕莱索海运费多少钱一个柜?深圳海运到瓦尔帕莱索航程时间多少天多久?深圳到瓦尔帕莱索海运航线图,海运费查询就上物流巴巴",
+            "title": "【瓦尔帕莱索海运费】深圳到瓦尔帕莱索海运费查询多少钱_智利海运整柜_物流巴巴",
+            "location": "province=广东;city=深圳",
+            "viewport": "width=1200,initial-scale=1",
+            "scrapeId": "019b31d3-79f5-75a0-bfe8-f7d55896e7f1",
+            "sourceURL": "https://www.5688.com.cn/fcl/cnszn-clval",
+            "url": "https://www.5688.com.cn/fcl/cnszn-clval",
+            "statusCode": 200,
+            "contentType": "text/html; charset=UTF-8",
+            "proxyUsed": "basic",
+            "cacheState": "hit",
+            "cachedAt": "2025-12-16T19:46:33.558Z",
+            "creditsUsed": 5,
+            "concurrencyLimited": false
+        },
+        "json": {
+            "rates": [
+                {
+                    "shipping_line": "ONE",
+                    "gp20": 2200,
+                    "gp40": 2500,
+                    "hq40": 2500,
+                    "transit_time": "2",
+                    "valid_until": "2025-12-31",
+                    "closing": 46
+                },
+                {
+                    "shipping_line": "COSCO",
+                    "gp20": 1265,
+                    "gp40": 1580,
+                    "hq40": 1580,
+                    "transit_time": "1",
+                    "valid_until": "2025-12-31",
+                    "closing": 41
+                },
+                {
+                    "shipping_line": "MSC",
+                    "gp20": 1465,
+                    "gp40": 1980,
+                    "hq40": 1980,
+                    "transit_time": "4",
+                    "valid_until": "2025-12-31",
+                    "closing": 42
+                },
+                {
+                    "shipping_line": "EMC",
+                    "gp20": 1565,
+                    "gp40": 1880,
+                    "hq40": 1880,
+                    "transit_time": "1",
+                    "valid_until": "2025-12-31",
+                    "closing": 40
+                },
+                {
+                    "shipping_line": "PIL",
+                    "gp20": 1700,
+                    "gp40": 2000,
+                    "hq40": 2000,
+                    "transit_time": "6",
+                    "valid_until": "2025-12-31",
+                    "closing": 40
+                },
+                {
+                    "shipping_line": "HPL",
+                    "gp20": 1905,
+                    "gp40": 2065,
+                    "hq40": 2065,
+                    "transit_time": "2",
+                    "valid_until": "2025-12-31",
+                    "closing": 56
+                },
+                {
+                    "shipping_line": "PIL",
+                    "gp20": 2140,
+                    "gp40": 2590,
+                    "hq40": 2590,
+                    "transit_time": "3",
+                    "valid_until": "2025-12-31",
+                    "closing": 45
+                },
+                {
+                    "shipping_line": "HMM",
+                    "gp20": 2330,
+                    "gp40": 3020,
+                    "hq40": 3020,
+                    "transit_time": "2",
+                    "valid_until": "2025-12-31",
+                    "closing": 40
+                },
+                {
+                    "shipping_line": "COSCO",
+                    "gp20": 2340,
+                    "gp40": 2740,
+                    "hq40": 2740,
+                    "transit_time": "6",
+                    "valid_until": "2025-12-31",
+                    "closing": 34
+                },
+                {
+                    "shipping_line": "OOCL",
+                    "gp20": 2390,
+                    "gp40": 2890,
+                    "hq40": 2890,
+                    "transit_time": "3",
+                    "valid_until": "2025-12-31",
+                    "closing": 47
+                },
+                {
+                    "shipping_line": "MSC",
+                    "gp20": 2480,
+                    "gp40": 3320,
+                    "hq40": 3320,
+                    "transit_time": "7",
+                    "valid_until": "2025-12-31",
+                    "closing": 56
+                },
+                {
+                    "shipping_line": "HPL",
+                    "gp20": 2580,
+                    "gp40": 3070,
+                    "hq40": 3070,
+                    "transit_time": "7",
+                    "valid_until": "2025-12-31",
+                    "closing": 45
+                },
+                {
+                    "shipping_line": "YML",
+                    "gp20": 2630,
+                    "gp40": 4820,
+                    "hq40": 4820,
+                    "transit_time": "1",
+                    "valid_until": "2025-12-31",
+                    "closing": 45
+                },
+                {
+                    "shipping_line": "MSC",
+                    "gp20": 3090,
+                    "gp40": 4090,
+                    "hq40": 4090,
+                    "transit_time": "2",
+                    "valid_until": "2025-12-31",
+                    "closing": 46
+                }
+            ]
+        }
+    }
+}

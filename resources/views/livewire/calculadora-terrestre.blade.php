@@ -78,14 +78,14 @@
                                 <span class="block text-xs font-normal mt-1 text-gray-400">Camión completo</span>
                             </span>
                         </button>
-                        <button wire:click="$set('tipoCarga', 'uld')"
+                        {{-- <button wire:click="$set('tipoCarga', 'uld')"
                             class="group relative overflow-hidden px-4 py-4 border-2 rounded-xl font-bold transition-all transform hover:scale-105 {{ $tipoCarga === 'uld' ? 'border-yellow-500 bg-gradient-to-br from-yellow-500/20 to-amber-500/20 text-yellow-400 shadow-lg shadow-yellow-500/20' : 'border-white/10 text-gray-300 hover:border-yellow-500/50 hover:text-yellow-400' }}">
                             <span class="absolute inset-0 bg-gradient-to-r from-yellow-500 to-amber-500 opacity-0 group-hover:opacity-10 transition-opacity"></span>
                             <span class="relative block text-center">
                                 <span class="text-lg">PALLETS</span>
                                 <span class="block text-xs font-normal mt-1 text-gray-400">Paletizado</span>
                             </span>
-                        </button>
+                        </button> --}}
                     </div>
                 </div>
 

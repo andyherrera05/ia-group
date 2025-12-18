@@ -7,7 +7,7 @@
                             'gp40' => "40' Standard",
                             'hq40' => "40' High Cube",
                         } }}
-                        - {{ $selectedRate['shippingLine'] }}
+                        - {{ $selectedRate['shipping_line'] }}
                     </p>
                 </div>
             @endif

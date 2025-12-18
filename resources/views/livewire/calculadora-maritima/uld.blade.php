@@ -9,7 +9,7 @@
         </h3>
         <p class="text-gray-400 text-sm mb-6">Para envíos aéreos con unidades de carga (Unit Load Device)</p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {{-- <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <!-- Aeropuerto Origen -->
             <div>
                 <label class="block text-sm font-medium text-gray-300 mb-2">Aeropuerto Origen</label>
@@ -39,7 +39,7 @@
                     class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                 <p class="text-xs text-gray-500 mt-1">Volumen total del envío</p>
             </div>
-        </div>
+        </div> --}}
     </div>
 
     <!-- Card: Tipo de ULD -->

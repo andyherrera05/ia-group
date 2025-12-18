@@ -2,11 +2,6 @@
 
 namespace App\Livewire;
 
-use App\Models\Rate;
-use App\Models\Search;
-use App\Models\ShippingLine;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
@@ -25,7 +20,7 @@ class CalculadoraMaritima extends Component
 
     // Calculador de volumen LCL
     public $volumenCalculado = null;
-    public $metodoVolumen = 'dimensiones';
+    public $metodoVolumen = 'cbm_directo';
 
     // Resultado global
     public $resultado = null;
@@ -70,8 +65,6 @@ class CalculadoraMaritima extends Component
     public $destinoFinal = 'tarija'; // 'tarija' o 'otros'
     public $departamentoDestino = '';
 
-    public $selectedRateIndex = null;
-
     public $departamentosAgrupados = [
         'amazonica' => [
             'label' => 'Zona Amazónica',
@@ -105,19 +98,32 @@ class CalculadoraMaritima extends Component
         ],
     ];
 
+
+    public function seleccionarPrecio($tipo)
+    {
+        $this->selectedContainer = $tipo;
+        $this->mostrarModal = true;
+    }
+
+    public function cerrarModal()
+    {
+        $this->mostrarModal = false;
+        $this->selectedContainer = null;
+    }
+
+
     protected $listeners = [
         'fcl-rates-ready' => 'handleRatesReady',
         'fcl-heartbeat'   => 'handleHeartbeat',
         'fcl-error'       => 'handleError',
 
     ];
-    public function selectRate($index, $container)
+    public function selectRate($data)
     {
-        // Obtener la tarifa seleccionada desde la colección
-        $rate = $this->fclRates[$index]; // $rate es un array plano
-
         $this->mostrarPregunta = false;
         $this->respuestaUsuario = null;
+        $rate = $data['rate'];
+        $container = $data['container']; // 'gp20', 'gp40' o 'hq40'
 
         $this->selectedRate = $rate;
         $this->selectedContainer = $container;
@@ -127,44 +133,30 @@ class CalculadoraMaritima extends Component
             'gp20' => "20' Standard",
             'gp40' => "40' Standard",
             'hq40' => "40' High Cube",
-            default => "Contenedor",
         };
 
-        // Precio base directamente del array plano
-        $precioBase = $rate[$container] ?? 0;
+        // Precio base según el contenedor elegido
+        $precioBase = $rate['price'][$container];
 
-        if ($precioBase <= 0) {
-            session()->flash('error', 'Precio no disponible para este contenedor.');
-            return;
-        }
-
-        // Naviera
-        $shippingLine = $rate['shipping_line'] ?? 'Desconocida';
-
-        // Construir desglose
+        // Construyes el desglose
         $this->desglose = [
-            "Flete Marítimo ({$shippingLine} - {$containerName})" => $precioBase,
-            'Manipulación en Terminal' => 159.00,
-            'Gastos de Documentación' => 72.00,
-            'DocumentaciónGastos Portuarios Varios' => 102.00,
-            'Control de Equipo (EIR)' => 22.00,
-            'Sello de Seguridad' => 10.00,
-            'Despacho de Aduana' => 40.00,
-            'Gasto por Liberación Digital' => 65.00
+            "Flete Marítimo ({$rate['shippingLine']} - {$containerName})" => $precioBase,
+            'Gastos en Origen' => 300.00,     // ajusta según tu lógica
+            'Gastos en Destino' => 400.00,
+            'Documentación' => 150.00,
+            'Seguro (0.3%)' => round($precioBase * 0.003, 2),
         ];
 
-        // Información adicional (no numérica)
-        $this->desglose['Tiempo de Tránsito'] = ($rate['transit_time'] ?? 'N/A') . ' días';
-        $this->desglose['Válido hasta'] = $rate['valid_until'] ?? 'No especificado';
-        $this->desglose['Cierre (cutoff)'] = ($rate['closing'] ?? 'N/A') . ' días';
+        // Añades info adicional no numérica
+        $this->desglose['Tiempo de Tránsito'] = $rate['transitTime'] . ' días';
+        $this->desglose['Válido hasta'] = $rate['validUntil'];
 
-        // Calcular total solo con valores numéricos
+        // Calculas el total (solo valores numéricos)
         $this->resultado = array_sum(array_filter($this->desglose, 'is_numeric'));
 
         $this->mostrarPregunta = true;
         $this->respuestaUsuario = null;
-
-        session()->flash('success', 'Cotización generada correctamente.');
+        session()->flash('success', 'Cálculo completado exitosamente.');
     }
     public function costs_import()
     {
@@ -299,26 +291,30 @@ class CalculadoraMaritima extends Component
         $alto = floatval($this->alto);
         $volumen = floatval($this->volumen);
 
-        // Calculamos el peso volumétrico y el CBM solo si tenemos dimensiones completas
-        $volumetricWeight = $CBM = 0;
-
-        if (!empty($largo) && !empty($ancho) && !empty($alto)) {
-            $volumetricWeight = ($largo * $ancho * $alto) / 5000;
-            $CBM = ($largo * $ancho * $alto) / 1000000;
+        $volumetricWeight = 0;
+        if (empty($largo) && empty($ancho) && empty($alto)) {
+            $volumetricWeight = $volumen;
         } else {
-            $volumetricWeight = $volumen ?? 0;
-            $CBM = $this->volumen ?? 0;
+            $volumetricWeight = (($largo * $ancho * $alto) / 5000);
         }
 
-        if (empty($this->peso) || $this->peso <= 0) {
-            Log::info("Calculo por CBM (sin peso real)");
-            $shippingPackage = $this->calculateShippingPackagePerDimensions($CBM);
-        } elseif (empty($largo) || empty($ancho) || empty($alto)) {
-            Log::info("Calculo por peso real vs peso volumétrico predefinido");
-            $shippingPackage = $this->calculateShippingPackage($this->peso, $volumetricWeight);
+        if (empty($largo) && empty($ancho) && empty($alto)) {
+            $CBM = $this->volumen;
         } else {
-            Log::info("Calculo por peso real vs CBM (dimensiones completas)");
-            $shippingPackage = $this->calculateShippingPackage($this->peso, $CBM);
+            $CBM = (($largo * $ancho * $alto) / 1000000);
+        }
+
+        $shippingPackage = 0;
+
+        if (empty($this->peso) || $this->peso <= 0) {
+            $shippingPackage =  $this->calculateShippingPackagePerDimensions($CBM);
+            Log::info("Calculo Peso");
+        } elseif (empty($this->alto) || empty($this->largo) || empty($this->ancho)) {
+            Log::info("Calculo Peso Volumetrico");
+            $shippingPackage = $this->calculateShippingPackage($peso, $volumetricWeight);
+        } else {
+            Log::info("Calculo CBM");
+            $shippingPackage = $this->calculateShippingPackage($peso, $CBM);
         }
 
         $this->resultado = (float) $shippingPackage['costo'];
@@ -417,7 +413,7 @@ class CalculadoraMaritima extends Component
         } else {
             $valorFacturado = $costoFinal * $this->cantidad;
         }
-
+        
         $total_costs_import = $this->costs_import();
         $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
         $total = $this->valorMercancia + $valorFacturado + $total_costs_import + $total_tiered_charge + $costoRecojo + $costoDestino;
@@ -640,9 +636,66 @@ class CalculadoraMaritima extends Component
         $this->js('$wire.$refresh()');
     }
 
-    private function searchPortsPOD($query)
+        private function searchPortsPOD($query)
     {
         $ports = [
+            ['code' => 'CLIQQ', 'name' => 'Iquique', 'country' => 'Chile', 'region' => 'América Central y del Sur'],
+            ['code' => 'CLVAL', 'name' => 'Valparaiso', 'country' => 'Chile', 'region' => 'América Central y del Sur'],
+            ['code' => 'CLSAN', 'name' => 'San Antonio', 'country' => 'Chile', 'region' => 'América Central y del Sur'],
+        ];
+
+        $query = strtolower($query);
+        return array_values(array_filter($ports, function ($port) use ($query) {
+            return str_contains(strtolower($port['name']), $query) ||
+                str_contains(strtolower($port['code']), $query) ||
+                str_contains(strtolower($port['country']), $query) ||
+                str_contains(strtolower($port['region']), $query);
+        }));
+    }
+
+    private function searchPortsPOL($query)
+    {
+        $ports = [
+            ['code' => 'CNSZN', 'name' => 'Shen Zhen', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNGUA', 'name' => 'Guang Zhou', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNSHA', 'name' => 'Shang Hai', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'HKHKG', 'name' => 'Hong Kong', 'country' => 'Hong Kong', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNXMN', 'name' => 'Xia Men', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNNBO', 'name' => 'Ning Bo', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNQIN', 'name' => 'Qing Dao', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNTJN', 'name' => 'Tian Jin', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNXIA', 'name' => 'Xia Men', 'country' => 'China', 'region' => 'Sudeste asiático'],
+        ];
+
+        $query = strtolower($query);
+        return array_values(array_filter($ports, function ($port) use ($query) {
+            return str_contains(strtolower($port['name']), $query) ||
+                str_contains(strtolower($port['code']), $query) ||
+                str_contains(strtolower($port['country']), $query) ||
+                str_contains(strtolower($port['region']), $query);
+        }));
+    }
+
+
+    /**
+     * Búsqueda de puertos (lista hardcoded común)
+     * TODO: Reemplazar con API real o base de datos
+     */
+    private function searchPorts_1($query)
+    {
+        $ports = [
+            // Sudeste asiático (China, Singapur, etc.)
+            ['code' => 'CNSZN', 'name' => 'Shen Zhen', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNGUA', 'name' => 'Guang Zhou', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNSHA', 'name' => 'Shang Hai', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'HKHKG', 'name' => 'Hong Kong', 'country' => 'Hong Kong', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNXMN', 'name' => 'Xia Men', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNNBO', 'name' => 'Ning Bo', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNQIN', 'name' => 'Qing Dao', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNTJN', 'name' => 'Tian Jin', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'CNXIA', 'name' => 'Xia Men', 'country' => 'China', 'region' => 'Sudeste asiático'],
+            ['code' => 'SGSGP', 'name' => 'Singapore', 'country' => 'Singapore', 'region' => 'Sudeste asiático'],
+
             // Japón, Corea del Sur y Taiwán
             ['code' => 'JPTOK', 'name' => 'Tokyo', 'country' => 'Japón', 'region' => 'Japón, Corea del Sur y Taiwán'],
             ['code' => 'JPOSK', 'name' => 'Osaka', 'country' => 'Japón', 'region' => 'Japón, Corea del Sur y Taiwán'],
@@ -768,28 +821,6 @@ class CalculadoraMaritima extends Component
         }));
     }
 
-    private function searchPortsPOL($query)
-    {
-        $ports = [
-            ['code' => 'CNSZN', 'name' => 'Shen Zhen', 'country' => 'China', 'region' => 'Sudeste asiático'],
-            ['code' => 'CNGUA', 'name' => 'Guang Zhou', 'country' => 'China', 'region' => 'Sudeste asiático'],
-            ['code' => 'CNSHA', 'name' => 'Shang Hai', 'country' => 'China', 'region' => 'Sudeste asiático'],
-            ['code' => 'HKHKG', 'name' => 'Hong Kong', 'country' => 'Hong Kong', 'region' => 'Sudeste asiático'],
-            ['code' => 'CNXMN', 'name' => 'Xia Men', 'country' => 'China', 'region' => 'Sudeste asiático'],
-            ['code' => 'CNNBO', 'name' => 'Ning Bo', 'country' => 'China', 'region' => 'Sudeste asiático'],
-            ['code' => 'CNQIN', 'name' => 'Qing Dao', 'country' => 'China', 'region' => 'Sudeste asiático'],
-            ['code' => 'CNTJN', 'name' => 'Tian Jin', 'country' => 'China', 'region' => 'Sudeste asiático'],
-            ['code' => 'CNXIA', 'name' => 'Xia Men', 'country' => 'China', 'region' => 'Sudeste asiático'],
-        ];
-
-        $query = strtolower($query);
-        return array_values(array_filter($ports, function ($port) use ($query) {
-            return str_contains(strtolower($port['name']), $query) ||
-                str_contains(strtolower($port['code']), $query) ||
-                str_contains(strtolower($port['country']), $query) ||
-                str_contains(strtolower($port['region']), $query);
-        }));
-    }
     /**
      * Buscar tarifas FCL usando los códigos POL/POD
      */
@@ -799,173 +830,58 @@ class CalculadoraMaritima extends Component
         $this->reset(['rates', 'loadingRates', 'message', 'fclRates']);
         $this->currentRunId = null;
 
-        // 2. Validar puertos
+        // 2. Validar que tengamos puertos
         if (empty($this->polCode) || empty($this->podCode)) {
             $this->message = 'Selecciona origen y destino';
             return;
         }
 
         $this->loadingRates = true;
-        $this->message = 'Conectando con el proveedor de tarifas';
-
-        // Construir la URL dinámica como usa 5688.com.cn
-        // Ejemplo: cnszn-clval → CNSZN = Shenzhen, CLVAL = Valparaiso
-        $originCode = strtolower(substr($this->polCode, 0, 5)); // ej: CNSZN
-        $destCode   = strtolower(substr($this->podCode, 0, 5));  // ej: CLVAL
-        $url = "https://www.5688.com.cn/fcl/{$originCode}-{$destCode}";
+        $this->message = 'Iniciando búsqueda en tiempo real...';
+        $this->rates = null;
+        $this->progress = null;
 
         try {
-            // $response = Http::timeout(120)->withHeaders([
-            //     'Authorization' => 'Bearer ' . config('services.firecrawl.key'), // Recomendado: pon tu API key en .env
-            //     'Content-Type'  => 'application/json',
-            // ])->post('https://api.firecrawl.dev/v2/scrape', [
-            //     'url' => $url,
-            //     'formats' => [
-            //         [
-            //             'type' => 'json',
-            //             'prompt' => 'Extrae todas las tarifas FCL válidas de la tabla. Incluye solo filas completas con precios numéricos. Ignora filas de carga o incompletas.',
-            //             'schema' => [
-            //                 'type' => 'object',
-            //                 'properties' => [
-            //                     'rates' => [
-            //                         'type' => 'array',
-            //                         'items' => [
-            //                             'type' => 'object',
-            //                             'properties' => [
-            //                                 'shipping_line' => ['type' => 'string'],
-            //                                 'gp20'          => ['type' => ['integer', 'null']],
-            //                                 'gp40'          => ['type' => ['integer', 'null']],
-            //                                 'hq40'          => ['type' => ['integer', 'null']],
-            //                                 'transit_time'  => ['type' => ['string', 'null']],
-            //                                 'valid_until'   => ['type' => ['string', 'null']],
-            //                                 'closing'       => ['type' => ['integer', 'null']],
-            //                             ],
-            //                             'required' => ['shipping_line']
-            //                         ]
-            //                     ]
-            //                 ],
-            //                 'required' => ['rates']
-            //             ]
-            //         ]
-            //     ]
-            // ]);
-            //Consumir data del archivo de database/mockup/data.json
-            $response = Http::get('database/mockup/data.json');
-            Log::warning($response);
-
-            if (!$response->successful() || !$response->json('success')) {
-                throw new \Exception($response->json('error.message') ?? 'Error en Firecrawl');
-            }
-
-            $data = $response->json('data.json.rates') ?? [];
-
-            if (empty($data)) {
-                $this->message = 'No se encontraron tarifas para esta ruta en este momento.';
-                $this->fclRates = collect();
-            } else {
-                // Convertir a colección para usar en la vista
-                $this->fclRates = collect($data);
-
-                // Opcional: Guardar en base de datos para caché futura
-                $this->guardarTarifasEnBaseDeDatos($url, $data);
-
-                $this->message = '¡Tarifas actualizadas! Se encontraron ' . count($data) . ' opciones.';
-            }
-            if (empty($data) || count($data) === 0) {
-                $this->message = 'No hay tarifas en tiempo real para esta ruta en este momento.';
-                $this->cargarTarifasDesdeBaseDeDatos(); // Fallback
-                if ($this->fclRates->isNotEmpty()) {
-                    $this->message .= ' Mostrando tarifas guardadas anteriormente.';
-                }
-            }
-        } catch (\Exception $e) {
-            Log::error('Error Firecrawl FCL: ' . $e->getMessage(), [
-                'url' => $url,
-                'pol' => $this->polCode,
-                'pod' => $this->podCode,
+            // Creamos una request "falsa" pero válida
+            $fakeRequest = new \Illuminate\Http\Request();
+            $fakeRequest->setMethod('POST');
+            $fakeRequest->request->add([
+                'polCode'       => $this->polCode,
+                'podCode'       => $this->podCode,
+                'transportType' => 'FCL',
+                'maxRetries'    => 2,
             ]);
 
-            // Fallback: intentar cargar desde base de datos si hay caché
-            $this->cargarTarifasDesdeBaseDeDatos();
+            // Instanciamos el controlador y llamamos directamente al método scrape()
+            $controller = new \App\Http\Controllers\TransportController();
+            $response = $controller->scrape($fakeRequest);
 
-            if ($this->fclRates->isEmpty()) {
-                $this->message = 'No se pudieron obtener tarifas en tiempo real. Inténtalo más tarde.';
+            Log::info('Respuesta del controlador scrape:', [
+                'status'  => $response->getStatusCode(),
+                'content' => $response->getContent(),           // string JSON
+                'data'    => $response->getData(true),          // ya convertido a array
+            ]);
+
+
+            // $response es un JsonResponse
+            $data = $response->getData(true); // devuelve array
+
+            if (isset($data['runId'])) {
+                // Apify devolvió el run correctamente
+                $this->currentRunId = $data['runId'];
+
+                // Le decimos al frontend que abra el SSE
+                $this->dispatch('start-sse', runId: $data['runId']);
+
+                $this->message = 'Buscando tarifas... (puede tardar 30–90 segundos)';
             } else {
-                $this->message = 'Mostrando tarifas guardadas (conexión fallida).';
-            }
-        }
-        $this->loadingRates = false;
-    }
-    private function guardarTarifasEnBaseDeDatos($url, $rates)
-    {
-        try {
-            // Crear o actualizar la búsqueda
-            $search = Search::updateOrCreate(
-                [
-                    'pol_code' => $this->polCode,
-                    'pod_code' => $this->podCode,
-                    'transport_type' => 'FCL',
-                ],
-                [
-                    'external_uid' => null,
-                    'result_page_url' => $url,
-                    'total_rates_found' => count($rates),
-                    'success' => true,
-                    'searched_at' => now(),
-                ]
-            );
-
-            // Limpiar tarifas anteriores de esta búsqueda (opcional)
-            Rate::where('search_id', $search->id)->delete();
-
-            foreach ($rates as $rateData) {
-                $shippingLine = ShippingLine::firstOrCreate(
-                    ['name' => $rateData['shipping_line']],
-                    ['code' => strtoupper(str_replace(' ', '', $rateData['shipping_line'])), 'name' => $rateData['shipping_line']]
-                );
-
-                Rate::create([
-                    'search_id' => $search->id,
-                    'shipping_line_id' => $shippingLine->id,
-                    'valid_until' => $rateData['valid_until'] ?? now()->addWeek(),
-                    'gp20' => $rateData['gp20'],
-                    'gp40' => $rateData['gp40'],
-                    'hq40' => $rateData['hq40'],
-                    'transit_time' => $rateData['transit_time'] ? (int) filter_var($rateData['transit_time'], FILTER_SANITIZE_NUMBER_INT) : null,
-                    'closing' => $rateData['closing'],
-                ]);
+                throw new \Exception($data['message'] ?? 'Respuesta inesperada de Apify');
             }
         } catch (\Exception $e) {
-            Log::warning('No se pudieron guardar las tarifas en BD', ['error' => $e->getMessage()]);
+            Log::error('FCL Scrape error: ' . $e->getMessage());
+            $this->message = 'Error al conectar con el proveedor de tarifas. Intenta de nuevo.';
+            $this->loadingRates = false;
         }
-    }
-    private function cargarTarifasDesdeBaseDeDatos()
-    {
-        // Reutiliza la lógica que ya teníamos antes
-        $today = now()->format('Y-m-d');
-
-        $cachedRates = DB::table('rates')
-            ->join('searches', 'rates.search_id', '=', 'searches.id')
-            ->join('shipping_lines', 'rates.shipping_line_id', '=', 'shipping_lines.id')
-            ->where('searches.pol_code', $this->polCode)
-            ->where('searches.pod_code', $this->podCode)
-            ->where('searches.transport_type', 'FCL')
-            ->where('searches.success', 1)
-            ->where('rates.valid_until', '>=', $today)
-            ->select([
-                'shipping_lines.name as shipping_line_name',
-                'shipping_lines.logo as shipping_line_logo',
-                'rates.gp20',
-                'rates.gp40',
-                'rates.hq40',
-                'rates.transit_time',
-                'rates.closing',
-                'rates.valid_until'
-            ])
-            ->orderBy('rates.gp20')
-            ->get();
-
-        $this->fclRates = $cachedRates->isNotEmpty() ? $cachedRates : collect();
     }
 
     /**

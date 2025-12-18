@@ -32,7 +32,7 @@
                 <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
                     Valor de Mercancía (USD)
                 </label>
-                <input type="number" wire:model="valorMercancia" step="1" placeholder="Ej: 10,000"
+                <input type="number" wire:model="valorMercancia" step="1" required placeholder="Ej: 10,000"
                     class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
             </div>
 
@@ -61,28 +61,16 @@
                 <label class="block text-sm font-medium text-gray-300 mb-2">Seleccione el Método de Cálculo de
                     Volumen:</label>
                 <div class="flex space-x-4">
+                     <button type="button" wire:click="$set('metodoVolumen', 'dimensiones')"
+                        class="px-4 py-2 text-sm rounded-lg transition-all {{ $metodoVolumen == 'dimensiones' ? 'bg-yellow-500 text-black font-bold' : 'bg-black/40 text-gray-400 border border-yellow-500/30 hover:bg-yellow-500/20' }}">
+                        Dimensiones (L x A x H)
+                    </button>
                     <button type="button" wire:click="$set('metodoVolumen', 'cbm_directo')"
                         class="px-4 py-2 text-sm rounded-lg transition-all {{ $metodoVolumen == 'cbm_directo' ? 'bg-yellow-500 text-black font-bold' : 'bg-black/40 text-gray-400 border border-yellow-500/30 hover:bg-yellow-500/20' }}">
                         CBM Directo (M³)
                     </button>
-                    <button type="button" wire:click="$set('metodoVolumen', 'dimensiones')"
-                        class="px-4 py-2 text-sm rounded-lg transition-all {{ $metodoVolumen == 'dimensiones' ? 'bg-yellow-500 text-black font-bold' : 'bg-black/40 text-gray-400 border border-yellow-500/30 hover:bg-yellow-500/20' }}">
-                        Dimensiones (L x A x H)
-                    </button>
                 </div>
             </div>
-
-            @if ($metodoVolumen == 'cbm_directo')
-                <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-                        CBM Total (M³)
-                    </label>
-                    <input type="number" wire:model="volumen" step="0.001" placeholder="Ej: 2.5"
-                        class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
-                    <p class="text-xs text-gray-500 mt-1">Este será el volumen utilizado para la cotización.</p>
-                </div>
-            @endif
-
             @if ($metodoVolumen == 'dimensiones')
                 <div class="sm:col-span-2">
                     <h4 class="text-sm font-bold text-gray-300 mb-3">Dimensiones de la Carga (Cm)</h4>
@@ -110,6 +98,19 @@
                     </div>
                 </div>
             @endif
+            
+            @if ($metodoVolumen == 'cbm_directo')
+                <div class="sm:col-span-2">
+                    <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+                        CBM Total (M³)
+                    </label>
+                    <input type="number" wire:model="volumen" step="0.5" min="0.5" placeholder="Ej: 2.5"
+                        class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+                    <p class="text-xs text-gray-500 mt-1">Este será el volumen utilizado para la cotización.</p>
+                </div>
+            @endif
+
+            
         </div>
         <div class="p-6 shadow-xl">
             <h3 class="text-yellow-500 font-bold mb-6 text-lg uppercase tracking-widest flex items-center">

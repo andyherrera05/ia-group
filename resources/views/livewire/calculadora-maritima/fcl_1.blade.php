@@ -1,6 +1,7 @@
 <div class="space-y-6">
     <!-- Card: Búsqueda de Rutas FCL -->
-    <div class="backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl relative z-10 overflow-visible">
+    <div
+        class="backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl relative z-10 overflow-visible">
         <h3 class="text-yellow-500 font-bold mb-6 text-lg uppercase tracking-widest flex items-center">
             <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
                 <path
@@ -29,14 +30,11 @@
                 <!-- Dropdown de Sugerencias POL -->
                 @if ($showPOLDropdown && count($polSuggestions) > 0)
                     <div class="absolute z-[9999] w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden"
-                        style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
                         x-data="{ activeRegion: null }" style="min-width: 800px; left: 0;">
 
                         <!-- Pestañas de Regiones -->
-                        <div class="border-b border-gray-200 bg-gray-50 p-3"
-                            style="background-color: #030100; color: #FFF;">
-                            <div class="flex flex-wrap gap-2"
-                                style="background-color: #030100; color: #FFF; border: 1px ">
+                        <div class="border-b border-gray-200 bg-gray-50 p-3" style="background-color: #030100; color: #FFF">
+                            <div class="flex flex-wrap gap-2" style="background-color: #030100; color: #FFF">
                                 @php
                                     $regions = collect($polSuggestions)->pluck('region')->unique()->values();
                                 @endphp
@@ -45,8 +43,7 @@
                                         @click="activeRegion = activeRegion === '{{ $region }}' ? null : '{{ $region }}'"
                                         :class="activeRegion === '{{ $region }}' ? 'bg-blue-500 text-white' :
                                             'bg-white text-gray-700 hover:bg-gray-100'"
-                                        style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
-                                        class="px-4 py-2 rounded text-sm font-medium transition-all border border-gray-300">
+                                        class="px-4 py-2 rounded text-sm font-medium transition-all border border-gray-300" style="background-color: #030100; color: #FFF">
                                         {{ $region }}
                                     </button>
                                 @endforeach
@@ -54,8 +51,7 @@
                         </div>
 
                         <!-- Lista de Puertos -->
-                        <div class="max-h-80 overflow-y-auto p-3 bg-white"
-                            style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;">
+                        <div class="max-h-80 overflow-y-auto p-3 bg-white">
                             @foreach ($regions as $region)
                                 <div x-show="activeRegion === '{{ $region }}' || activeRegion === null">
                                     @if ($loop->first || true)
@@ -67,7 +63,6 @@
                                                     @if ($port['region'] === $region)
                                                         <button type="button"
                                                             wire:click="selectPOL('{{ $port['code'] }}', '{{ $port['name'] }}')"
-                                                            style="background-color: #030100; color: #FFF;"
                                                             class="text-left px-3 py-2 hover:bg-blue-50 rounded transition-colors text-sm text-gray-700 hover:text-blue-600">
                                                             {{ $port['name'] }}
                                                         </button>
@@ -112,12 +107,10 @@
                 <!-- Dropdown de Sugerencias POD -->
                 @if ($showPODDropdown && count($podSuggestions) > 0)
                     <div class="absolute z-[9999] w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden"
-                        style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
                         x-data="{ activeRegion: null }" style="min-width: 800px; right: 0;">
 
                         <!-- Pestañas de Regiones -->
-                        <div class="border-b border-gray-200 bg-gray-50 p-3"
-                            style="background-color: #030100; color: #FFF;">
+                        <div class="border-b border-gray-200 bg-gray-50 p-3">
                             <div class="flex flex-wrap gap-2">
                                 @php
                                     $regions = collect($podSuggestions)->pluck('region')->unique()->values();
@@ -127,8 +120,7 @@
                                         @click="activeRegion = activeRegion === '{{ $region }}' ? null : '{{ $region }}'"
                                         :class="activeRegion === '{{ $region }}' ? 'bg-blue-500 text-white' :
                                             'bg-white text-gray-700 hover:bg-gray-100'"
-                                        class="px-4 py-2 rounded text-sm font-medium transition-all border border-gray-300"
-                                        style="background-color: #030100; color: #FFF;border: 1px solid #f0b100;">
+                                        class="px-4 py-2 rounded text-sm font-medium transition-all border border-gray-300">
                                         {{ $region }}
                                     </button>
                                 @endforeach
@@ -136,8 +128,7 @@
                         </div>
 
                         <!-- Lista de Puertos -->
-                        <div class="max-h-80 overflow-y-auto p-3 bg-white"
-                            style="background-color: #030100; color: #FFF;  border: 1px solid #f0b100;">
+                        <div class="max-h-80 overflow-y-auto p-3 bg-white">
                             @foreach ($regions as $region)
                                 <div x-show="activeRegion === '{{ $region }}' || activeRegion === null">
                                     @if ($loop->first || true)
@@ -149,7 +140,6 @@
                                                     @if ($port['region'] === $region)
                                                         <button type="button"
                                                             wire:click="selectPOD('{{ $port['code'] }}', '{{ $port['name'] }}')"
-                                                            style="background-color: #030100; color: #FFF;"
                                                             class="text-left px-3 py-2 hover:bg-blue-50 rounded transition-colors text-sm text-gray-700 hover:text-blue-600">
                                                             {{ $port['name'] }}
                                                         </button>
@@ -163,6 +153,8 @@
                         </div>
                     </div>
                 @endif
+
+
 
                 @if ($podCode)
                     <p class="text-xs text-green-400 mt-1 flex items-center">
@@ -178,161 +170,115 @@
         </div>
         <div class="mt-6 flex justify-center">
             <button wire:click="buscarTarifasFCL"
-                class="relative px-8 py-5 rounded-2xl font-bold text-xl transition-all transform shadow-2xl bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-black hover:scale-105 cursor-pointer disabled:opacity-80 disabled:cursor-not-allowed"
-                wire:loading.attr="disabled" :class="{ 'cursor-not-allowed': $wire.loadingRates }">
-
-                <div wire:loading wire:target="buscarTarifasFCL" class="flex items-center justify-center space-x-3">
-                    <svg class="animate-spin h-6 w-6 text-black" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                            stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
-                    </svg>
-                    <span class="font-medium">
-                        @if ($message && str_starts_with($message, 'Buscando'))
-                            {{ $message }}...
-                        @else
-                            Buscando tarifas en tiempo real...
-                        @endif
+                class="px-6 py-5 rounded-2xl font-bold text-xl transition-all transform shadow-2xl bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-black hover:scale-105 cursor-pointer' 
+                  ">
+                @if ($loadingRates)
+                    <span class="flex items-center justify-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-black" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                        Buscando tarifas
                     </span>
-                </div>
-                <span wire:loading.remove wire:target="buscarTarifasFCL" class="flex items-center justify-center">
-                    <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.817-4.817A6 6 0 012 8z"
-                            clip-rule="evenodd" />
-                    </svg>
-                    Buscar Tarifas FCL
-                </span>
+                @else
+                    Buscar Tarifas
+                @endif
             </button>
         </div>
     </div>
 
     <!-- Resultados de Tarifas -->
     @if (count($fclRates) > 0)
-        <div
-            class="relative overflow-hidden bg-gradient-to-br from-red-900/20 via-black to-red-900/20 backdrop-blur-xl border border-red-500/30 rounded-2xl p-8 shadow-2xl">
-            <!-- Fondo sutil inspirado en la imagen (opcional: puedes poner una imagen de fondo real si quieres) -->
-            <div class="absolute inset-0 opacity-10 bg-gradient-to-tr from-red-600 to-white pointer-events-none"></div>
+        <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-yellow-500 font-bold text-lg uppercase tracking-widest flex items-center">
+                    <!-- icon omitted for brevity -->
+                    Tarifas Disponibles
+                </h3>
+                <span class="text-sm text-gray-400">{{ count($fclRates) }} opciones encontradas</span>
+            </div>
 
-            <div class="relative z-10">
-                <!-- Las 3 píldoras rojas de tipos de contenedor -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                    <div class="bg-red-600 rounded-3xl py-6 text-center shadow-lg">
-                        <p class="text-white text-xl md:text-2xl font-bold uppercase">1x20 ST</p>
-                    </div>
-                    <div class="bg-red-600 rounded-3xl py-6 text-center shadow-lg">
-                        <p class="text-white text-xl md:text-2xl font-bold uppercase">1x40 D/HQ</p>
-                    </div>
-                    <div class="bg-red-600 rounded-3xl py-6 text-center shadow-lg">
-                        <p class="text-white text-xl md:text-2xl font-bold uppercase">40 NOR</p>
-                    </div>
-                </div>
-
-                <!-- Lista vertical de navieras (cada una en un row con grid) -->
-                <div class="space-y-6">
-                    @foreach ($fclRates as $index => $rate)
-                        <div
-                            class="bg-gradient-to-r from-blue-900/60 to-blue-800/40 backdrop-blur-md border border-blue-500/30 rounded-2xl p-6 hover:border-red-500/50 transition-all duration-300 shadow-xl">
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-                                <!-- Columna 1: Naviera + Validez -->
-                                <div class="md:col-span-1 flex items-center space-x-4">
-                                    <div
-                                        class="w-16 h-16 bg-red-600/20 rounded-xl flex items-center justify-center border border-red-500/40">
-                                        <span class="text-red-400 font-black text-2xl">
-                                            {{ strtoupper(substr($rate['shipping_line'], 0, 3)) }}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-white font-bold text-xl uppercase">
-                                            {{ $rate['shipping_line'] }}
-                                        </h4>
-                                        <p class="text-sm text-gray-300">
-                                            Válida {{ \Carbon\Carbon::parse($rate['valid_until'])->format('d/m/Y') }}
-                                        </p>
-                                    </div>
+            <div class="space-y-4">
+                @foreach ($fclRates as $rate)
+                    <div
+                        class="bg-black/30 border border-yellow-500/20 rounded-xl p-5 hover:border-yellow-500/50 transition-all">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center">
+                                    <!-- icon -->
                                 </div>
-
-                                <!-- Columna 2: Precio 20' -->
-                                <div class="text-center">
-                                    @if (!is_null($rate['gp20'] ?? null))
-                                        <button wire:click="selectRate({{ $index }}, 'gp20')"
-                                            class="block w-full bg-white/10 rounded-2xl py-6 hover:bg-red-600/30 hover:scale-105 transition-all duration-300 border border-red-500/30">
-                                            <p class="text-3xl font-black text-white">
-                                                USD {{ number_format($rate['gp20']) }}
-                                            </p>
-                                            <p
-                                                class="text-xs text-green-400 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                ✓ Click para cotizar
-                                            </p>
-                                        </button>
-                                    @else
-                                        <div class="bg-gray-800/50 rounded-2xl py-6 border border-gray-600">
-                                            <p class="text-2xl text-gray-500">N/A</p>
-                                        </div>
-                                    @endif
+                                <div>
+                                    <h4 class="text-white font-bold text-base">{{ $rate['shippingLine'] }}</h4>
+                                    <p class="text-xs text-gray-400">Válido hasta: {{ $rate['validUntil'] }}</p>
                                 </div>
-
-                                <!-- Columna 3: Precio 40' -->
+                            </div>
+                            <div class="flex items-center space-x-4 text-xs text-gray-400">
+                               
                                 <div class="text-center">
-                                    @if (!is_null($rate['gp40'] ?? null))
-                                        <button wire:click="selectRate({{ $index }}, 'gp40')"
-                                            class="block w-full bg-white/10 rounded-2xl py-6 hover:bg-red-600/30 hover:scale-105 transition-all duration-300 border border-red-500/30">
-                                            <p class="text-3xl font-black text-white">
-                                                USD {{ number_format($rate['gp40']) }}
-                                            </p>
-                                            <p
-                                                class="text-xs text-green-400 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                ✓ Click para cotizar
-                                            </p>
-                                        </button>
-                                    @else
-                                        <div class="bg-gray-800/50 rounded-2xl py-6 border border-gray-600">
-                                            <p class="text-2xl text-gray-500">N/A</p>
-                                        </div>
-                                    @endif
+                                    <p class="text-yellow-400 font-bold">{{ $rate['transitTime'] }} días</p>
+                                    <p>Tránsito</p>
                                 </div>
-
-                                <!-- Columna 4: Precio NOR + info extra (tránsito/cierre) -->
                                 <div class="text-center">
-                                    @if (!is_null($rate['hq40'] ?? null))
-                                        <button wire:click="selectRate({{ $index }}, 'hq40')"
-                                            class="block w-full bg-white/10 rounded-2xl py-6 hover:bg-red-600/30 hover:scale-105 transition-all duration-300 border border-red-500/30">
-                                            <p class="text-3xl font-black text-white">
-                                                USD {{ number_format($rate['hq40']) }}
-                                            </p>
-                                            <p
-                                                class="text-xs text-green-400 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                ✓ Click para cotizar
-                                            </p>
-                                        </button>
-                                    @else
-                                        <div class="bg-gray-800/50 rounded-2xl py-6 border border-gray-600">
-                                            <p class="text-2xl text-gray-500">N/A</p>
-                                        </div>
-                                    @endif
-
-                                    <!-- Info extra abajo (tránsito y cierre) -->
-                                    <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                            <p class="text-red-400 font-bold text-xl">{{ $rate['transit_time'] }}</p>
-                                            <p class="text-gray-400">días tránsito</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-red-400 font-bold text-xl">{{ $rate['closing'] }}</p>
-                                            <p class="text-gray-400">días cierre</p>
-                                        </div>
-                                    </div>
+                                    <p class="text-yellow-400 font-bold">{{ $rate['closing'] }} días</p>
+                                    <p>Cierre</p>
                                 </div>
                             </div>
                         </div>
-                    @endforeach
-                </div>
+                        <p class="text-xl text-yellow-400 font-bold">Seleccione una opcion</p>
+                        <div class="grid grid-cols-3 gap-4 pt-4 border-t border-yellow-500/10">
+                            
+                            <div class="text-center">
+                                <button
+                                    wire:click="seleccionarPrecio('gp20')"
+                                    class="group p-6 bg-black/50 rounded-xl border-2 border-yellow-500/50 hover:border-yellow-400 hover:scale-105 transition-all duration-300 cursor-pointer">
+                                    <p class="text-gray-400 text-sm">20' Standard</p>
+                                    <p class="text-4xl font-bold text-yellow-400 mt-2">
+                                        ${{ $rate['price']['gp20'] }}
+                                    </p>
+                                    <p
+                                        class="text-green-400 text-xs mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        Click para cotizar
+                                    </p>
+                                </button>
+                            </div>
+                            <div class="text-center">
+                                <button
+                                    wire:click="seleccionarPrecio('gp40')"
+                                    class="group p-6 bg-black/50 rounded-xl border-2 border-yellow-500/50 hover:border-yellow-400 hover:scale-105 transition-all duration-300 cursor-pointer">
+                                    <p class="text-gray-400 text-sm">40' Standard</p>
+                                    <p class="text-4xl font-bold text-yellow-400 mt-2">
+                                        ${{ $rate['price']['gp40'] }}
+                                    </p>
+                                    <p
+                                        class="text-green-400 text-xs mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        Click para cotizar
+                                    </p>
+                                </button>
+                            </div>
+                            <div class="text-center">
+                                <button
+                                    wire:click="seleccionarPrecio('hq40')"
+                                    class="group p-6 bg-black/50 rounded-xl border-2 border-yellow-500/50 hover:border-yellow-400 hover:scale-105 transition-all duration-300 cursor-pointer">
+                                    <p class="text-gray-400 text-sm">40' High Cube</p>
+                                    <p class="text-4xl font-bold text-yellow-400 mt-2">
+                                        ${{ $rate['price']['hq40'] }}
+                                    </p>
+                                    <p
+                                        class="text-green-400 text-xs mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        Click para cotizar
+                                    </p>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
+
         </div>
     @endif
-
     @if ($loadingRates)
         <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-12 shadow-xl text-center">
             <svg class="animate-spin h-12 w-12 mx-auto mb-4 text-yellow-500" fill="none" viewBox="0 0 24 24">
@@ -370,3 +316,113 @@
         </button>
     </div>
 </div>
+@if($mostrarModal && $rates && $selectedContainer)
+    <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-gray-900 to-black border-2 border-yellow-500 rounded-2xl max-w-2xl w-full p-8 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-yellow-400">
+                    Finalizar Cotización
+                </h2>
+                <button wire:click="cerrarModal" class="text-gray-400 hover:text-white text-3xl">
+                    ×
+                </button>
+            </div>
+
+            <div class="bg-black/50 rounded-xl p-6 mb-6 border border-yellow-500/30">
+                <p class="text-xl text-white mb-4">
+                    <span class="font-bold text-yellow-400">
+                        {{ strtoupper(str_replace('gp', "' GP", str_replace('hq', "' HC", $selectedContainer))) }}
+                    </span> 
+                    con {{ $rate['shippingLine'] }}
+                </p>
+                <p class="text-4xl font-bold text-green-400">
+                    ${{ $rate['price'][$selectedContainer] }}
+                </p>
+                <p class="text-gray-400 mt-2">
+                    Ruta: {{ $polCode }} → {{ $podCode }} | 
+                    Tránsito: {{ $rate['transitTime'] }} días
+                </p>
+            </div>
+
+            <form wire:submit.prevent="enviarCotizacion" class="space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" wire:model="nombre" placeholder="Nombre completo" required
+                           class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white focus:ring-2 focus:ring-yellow-500">
+                    <input type="email" wire:model="email" placeholder="Email" required
+                           class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white focus:ring-2 focus:ring-yellow-500">
+                    <input type="tel" wire:model="telefono" placeholder="Teléfono / WhatsApp"
+                           class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white focus:ring-2 focus:ring-yellow-500">
+                    <input type="text" wire:model="empresa" placeholder="Empresa (opcional)"
+                           class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white focus:ring-2 focus:ring-yellow-500">
+                </div>
+
+                <textarea wire:model="comentarios" rows="4" placeholder="Comentarios adicionales (mercancía, puerto exacto, etc.)"
+                          class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white focus:ring-2 focus:ring-yellow-500"></textarea>
+
+                <div class="flex gap-4">
+                    <button type="submit"
+                            class="flex-1 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-black font-bold py-4 rounded-xl text-lg transform hover:scale-105 transition-all">
+                        Enviar Cotización
+                    </button>
+                    <button type="button" wire:click="cerrarModal"
+                            class="px-8 py-4 bg-white/10 hover:bg-white/20 text-gray-300 rounded-xl border border-white/20">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endif
+
+<script>
+    let sseConnection = null;
+
+    document.addEventListener('livewire:initialized', () => {
+        console.log('LIVEWIRE INICIALIZADO – LISTO');
+
+        window.addEventListener('start-sse', (event) => {
+            const runId = event.detail.runId;
+
+            if (!runId) {
+                console.error('Falta runId');
+                return;
+            }
+
+            console.log('ABRIENDO SSE →', `/scrape/stream/${runId}`);
+
+            if (sseConnection) {
+                console.log('Cerrando SSE anterior');
+                sseConnection.close();
+            }
+
+            sseConnection = new EventSource(`/apify-stream/${runId}`);
+
+            sseConnection.onopen = () => console.log('SSE CONECTADO');
+
+            sseConnection.addEventListener('ready', (e) => {
+                console.log('TARIFAS RECIBIDAS');
+                const data = JSON.parse(e.data);
+
+                // ESTAS SON LAS LÍNEAS QUE FUNCIONAN SIEMPRE
+                Livewire.dispatch('fcl-rates-ready', [data]);
+                // O si prefieres por nombre de componente:
+                // Livewire.dispatchTo('calculadora-maritima', 'fcl-rates-ready', data);
+
+                sseConnection.close();
+                sseConnection = null;
+            });
+
+            sseConnection.addEventListener('heartbeat', () => {
+                console.log('heartbeat');
+                Livewire.dispatch('fcl-heartbeat');
+            });
+
+            sseConnection.onerror = () => {
+                console.error('Error SSE');
+                Livewire.dispatch('fcl-error');
+                sseConnection?.close();
+                sseConnection = null;
+            };
+        });
+    });
+</script>
