@@ -103,7 +103,7 @@ class ScraperController extends Controller
 
         return [
             'title' => $data['title'] ?? 'Sin título',
-            'price' => $data['priceRange'] ?? $data['price'] ?? 'No disponible',
+            'price' => $data['priceTiers'][0]['dollarPrice'] ?? 'No disponible',
             'moq' => $data['moq'] ?? 'N/A',
             'image' => $data['firstImageUrl'] ?? ($data['images'][0] ?? null),
             'micUrl' => $data['micUrl'] ?? null,
@@ -156,8 +156,8 @@ class ScraperController extends Controller
                         $bestItem = collect($items)
                             ->sortByDesc(fn($i) => isset($i['packageSize']) ? 1 : 0)
                             ->first() ?? $items[0];
-
                         $finalResult = $this->procesarDatos($bestItem);
+                        Log::warning($bestItem);
 
                         $cacheKey = 'apify_product_' . md5(strtolower($runInfo['url']));
                         Cache::put($cacheKey, $finalResult, now()->addDays(7));
@@ -192,7 +192,7 @@ class ScraperController extends Controller
             'Content-Type' => 'text/event-stream',
             'Cache-Control' => 'no-cache',
             'Connection' => 'keep-alive',
-            'X-Accel-Buffering' => 'no', 
+            'X-Accel-Buffering' => 'no',
         ]);
     }
 }

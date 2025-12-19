@@ -1397,8 +1397,7 @@
             }
 
             // Insertar datos
-            const priceTextData = data.price
-            let price = priceTextData.split('-').pop().replace(/[^0-9]/g, '').trim();
+            const price = data.price;
             document.getElementById('scraped-price').textContent = `$ ${price}` || '--';
 
             document.getElementById('scraped-moq').textContent =
@@ -1468,6 +1467,7 @@
                 <img src="${imageUrl}" class="boat-svg" style="animation: navigate 8s infinite ease-in-out;" alt="Barco navegando">
             </div>
             <p id="sse-timer" style="margin-top: 10px; font-weight: bold;">Iniciara dentro de poco</p>
+            <p id="note" style="margin-top: 10px;">Si el tiempo de espera supera el minuto, por favor, actualiza la página</p>
         `,
                 allowOutsideClick: false,
                 showConfirmButton: false,
