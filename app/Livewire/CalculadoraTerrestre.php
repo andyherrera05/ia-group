@@ -170,6 +170,12 @@ class CalculadoraTerrestre extends Component
     /**
      * Limpiar formulario
      */
+    public function setTipoCarga($tipo)
+    {
+        $this->tipoCarga = $tipo;
+        $this->limpiar();
+    }
+
     public function limpiar()
     {
         $this->reset(['peso', 'volumen', 'largo', 'ancho', 'alto', 'origen', 'destino', 'distancia', 'valorMercancia', 'resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario']);

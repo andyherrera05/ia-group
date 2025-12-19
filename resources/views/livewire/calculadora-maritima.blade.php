@@ -92,7 +92,7 @@
                                 'fcl' => ['title' => 'FCL', 'subtitle' => 'Contenedor'],
                                 // 'uld' => ['title' => 'ULD', 'subtitle' => 'Aéreo'],
                             ] as $key => $tab)
-                            <button wire:click="$set('tipoCarga', '{{ $key }}')"
+                            <button wire:click="setTipoCarga('{{ $key }}')"
                                 wire:key="tab-{{ $key }}"
                                 class="group relative overflow-hidden px-5 py-4 rounded-xl font-bold transition-all duration-300
                                {{ $tipoCarga === $key

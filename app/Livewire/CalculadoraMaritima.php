@@ -8,6 +8,7 @@ use App\Models\ShippingLine;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
@@ -15,7 +16,7 @@ use Livewire\Attributes\Layout;
 class CalculadoraMaritima extends Component
 {
     // Tipo de carga visible en la UI (LCL por defecto)
-    public $tipoCarga = 'lcl';
+    public $tipoCarga = 'fcl';
 
     // Inputs generales
     public $peso, $volumen, $valorMercancia, $cantidad;
@@ -48,6 +49,8 @@ class CalculadoraMaritima extends Component
 
     // FCL: Resultados de cotizaciones
     public $fclRates = [];
+    public $perPage = 5;
+    public $currentPage = 1;
     public $loadingRates = false;
     public $message = null;
     public $rates = null;
@@ -796,7 +799,7 @@ class CalculadoraMaritima extends Component
     public function buscarTarifasFCL()
     {
         // 1. Limpiar estado anterior
-        $this->reset(['rates', 'loadingRates', 'message', 'fclRates']);
+        $this->reset(['rates', 'loadingRates', 'message', 'fclRates', 'currentPage']);
         $this->currentRunId = null;
 
         // 2. Validar puertos
@@ -850,14 +853,20 @@ class CalculadoraMaritima extends Component
             //     ]
             // ]);
             //Consumir data del archivo de database/mockup/data.json
-            $response = Http::get('database/mockup/data.json');
-            Log::warning($response);
-
-            if (!$response->successful() || !$response->json('success')) {
-                throw new \Exception($response->json('error.message') ?? 'Error en Firecrawl');
+            $filePath = base_path('database/mockup/data.json');
+            
+            if (!File::exists($filePath)) {
+                throw new \Exception("Archivo mockup no encontrado en: {$filePath}");
             }
 
-            $data = $response->json('data.json.rates') ?? [];
+            $jsonContent = File::get($filePath);
+            $responseArray = json_decode($jsonContent, true);
+
+            if (!$responseArray || !($responseArray['success'] ?? false)) {
+                throw new \Exception('Error decodificando el archivo mockup o success es false');
+            }
+
+            $data = $responseArray['data']['json']['rates'] ?? [];
 
             if (empty($data)) {
                 $this->message = 'No se encontraron tarifas para esta ruta en este momento.';
@@ -963,7 +972,10 @@ class CalculadoraMaritima extends Component
                 'rates.valid_until'
             ])
             ->orderBy('rates.gp20')
-            ->get();
+            ->get()
+            ->map(function ($rate) {
+                return (array) $rate;
+            });
 
         $this->fclRates = $cachedRates->isNotEmpty() ? $cachedRates : collect();
     }
@@ -986,6 +998,32 @@ class CalculadoraMaritima extends Component
     public function onProgress($progress)
     {
         $this->progress = $progress;
+    }
+
+    public function setPage($page)
+    {
+        $this->currentPage = $page;
+    }
+
+    public function nextPage()
+    {
+        $totalPages = ceil(count($this->fclRates) / $this->perPage);
+        if ($this->currentPage < $totalPages) {
+            $this->currentPage++;
+        }
+    }
+
+    public function previousPage()
+    {
+        if ($this->currentPage > 1) {
+            $this->currentPage--;
+        }
+    }
+
+    public function setTipoCarga($tipo)
+    {
+        $this->tipoCarga = $tipo;
+        $this->limpiar();
     }
 
     public function limpiar()
