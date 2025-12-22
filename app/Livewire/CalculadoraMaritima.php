@@ -16,7 +16,7 @@ use Livewire\Attributes\Layout;
 class CalculadoraMaritima extends Component
 {
     // Tipo de carga visible en la UI (LCL por defecto)
-    public $tipoCarga = 'fcl';
+    public $tipoCarga = 'lcl';
 
     // Inputs generales
     public $peso, $volumen, $valorMercancia, $cantidad;
@@ -112,8 +112,18 @@ class CalculadoraMaritima extends Component
         'fcl-rates-ready' => 'handleRatesReady',
         'fcl-heartbeat'   => 'handleHeartbeat',
         'fcl-error'       => 'handleError',
-
     ];
+    public function updatedDestinoFinal($value)
+    {
+        // Forzar a 'otros' si es true (por el wire:model.live en Livewire 3)
+        // O a 'tarija' si es false
+        if ($value === true || $value === 'otros') {
+            $this->destinoFinal = 'otros';
+        } else {
+            $this->destinoFinal = 'tarija';
+            $this->departamentoDestino = ''; // Resetear departamento si se desmarca
+        }
+    }
     public function selectRate($index, $container)
     {
         // Obtener la tarifa seleccionada desde la colección
@@ -406,49 +416,102 @@ class CalculadoraMaritima extends Component
             }
         }
 
-        $costoRecojo = $this->costoRecojo;
+       $costoRecojo = $this->costoRecojo;
+    $resultadoDestino = $this->calcularCostoDestino();
+    $costoDestino = $resultadoDestino['costo'];
+    $nombreDestino = $resultadoDestino['nombre'];
 
-        // Calcular el costo de destino usando la nueva función
-        $resultadoDestino = $this->calcularCostoDestino();
-        $costoDestino = $resultadoDestino['costo'];
-        $nombreDestino = $resultadoDestino['nombre'];
-
-        $valorFacturado = 0;
-        $unidad = str_contains($tipoCobro, 'Peso') ? 'kg' : 'm³';
-        if ($unidad == 'kg') {
-            $valorFacturado = $costoFinal * $this->peso;
-        } else {
-            $valorFacturado = $costoFinal * $this->cantidad;
-        }
-
-        $total_costs_import = $this->costs_import();
-        $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
-        $total = $this->valorMercancia + $valorFacturado + $total_costs_import + $total_tiered_charge + $costoRecojo + $costoDestino;
-        $this->desglose = [
-            'Costo por paquetey (' . number_format($valorUsado, 3, '.', '') . ' ' . $tipoCobro . ' )' => number_format($valorFacturado, 2, '.', ''),
-            'Costos de Flete Marítimo' => 51.29,
-            'Cargos de Importación Local' => 8.58,
-            'Costos Totales de Importación' => 47.32,
-            'Seguro' => 38.18,
-            'Costo de Despacho' => 17.09,
-            'Gastos Logísticos Integrales' => 33.70,
-            'Agencia Despachanche' => $total_tiered_charge
-        ];
-        // Agregar servicios adicionales al desglose si aplican
-        if ($this->recojoAlmacen) {
-            $this->desglose["Recojo desde Almacén"] = $costoRecojo;
-        }
-
-        if ($costoDestino > 0 && $nombreDestino) {
-            $this->desglose["Entrega a " . $nombreDestino] = $costoDestino;
-        }
-
-        return [
-            'costo'      => number_format($total, 2, '.', ''),
-            'tipo'       => $tipoCobro,
-            'unidad'     => str_contains($tipoCobro, 'Peso') ? 'kg' : 'm³'
-        ];
+    $valorFacturado = 0;
+    $unidad = str_contains($tipoCobro, 'Peso') ? 'kg' : 'm³';
+    if ($unidad == 'kg') {
+        $valorFacturado = $costoFinal * $this->peso; // o $valorUsado si prefieres
+    } else {
+        $valorFacturado = $costoFinal * $this->cantidad;
     }
+
+    $total_costs_import = $this->costs_import();
+    $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
+
+    // =====================================================
+    // NUEVO: DESGLOSE DETALLADO DEL FLETE MARÍTIMO POR CBM
+    // =====================================================
+    $desgloseFleteMaritimo = [];
+
+    if ($tipoCobro === 'CBM') {
+        // Porcentajes de distribución (ajústalos a tu realidad)
+        $distribucion = [
+            'grupo1' => 0.60,  // 60% → Costos principales de naviera
+            'grupo2' => 0.25,  // 25% → Gastos operativos en origen
+            'grupo3' => 0.15,  // 15% → Margen, comisiones y otros
+        ];
+
+        $grupo1 = $costoFinal * $distribucion['grupo1'];
+        $grupo2 = $costoFinal * $distribucion['grupo2'];
+        $grupo3 = $costoFinal * $distribucion['grupo3'];
+
+        // Grupo 1: Costos Naviera y Documentación
+        $desgloseFleteMaritimo['─ Grupo 1: Costos Naviera y Documentación'] = null;
+        $desgloseFleteMaritimo['   ├─ Flete Marítimo (Naviera)'] = number_format($grupo1 * 0.75, 2);
+        $desgloseFleteMaritimo['   ├─ MBL y Documentación'] = number_format($grupo1 * 0.15, 2);
+        $desgloseFleteMaritimo['   └─ Seguro de Flete Básico'] = number_format($grupo1 * 0.10, 2);
+        $desgloseFleteMaritimo['   Subtotal Grupo 1'] = number_format($grupo1, 2);
+
+        // Grupo 2: Gastos Operativos en Origen
+        $desgloseFleteMaritimo['─ Grupo 2: Gastos Operativos en Origen'] = null;
+        $desgloseFleteMaritimo['   ├─ Comisión Giro China / Handling'] = number_format($grupo2 * 0.40, 2);
+        $desgloseFleteMaritimo['   ├─ Gate In / THC Origen'] = number_format($grupo2 * 0.30, 2);
+        $desgloseFleteMaritimo['   └─ BL Fee y Otros Operativos'] = number_format($grupo2 * 0.30, 2);
+        $desgloseFleteMaritimo['   Subtotal Grupo 2'] = number_format($grupo2, 2);
+
+        // Grupo 3: Margen y Gastos Adicionales
+        $desgloseFleteMaritimo['─ Grupo 3: Margen y Gastos Adicionales'] = null;
+        $desgloseFleteMaritimo['   ├─ Comisión Logística / Margen'] = number_format($grupo3 * 0.50, 2);
+        $desgloseFleteMaritimo['   ├─ Comisiones Bancarias'] = number_format($grupo3 * 0.20, 2);
+        $desgloseFleteMaritimo['   ├─ Flete Interno (si aplica)'] = number_format($grupo3 * 0.20, 2);
+        $desgloseFleteMaritimo['   └─ Seguro Adicional'] = number_format($grupo3 * 0.10, 2);
+        $desgloseFleteMaritimo['   Subtotal Grupo 3'] = number_format($grupo3, 2);
+    }
+
+    // =====================================================
+    // CONSTRUCCIÓN FINAL DEL DESGLOSE
+    // =====================================================
+    $this->desglose = [
+        'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
+        'Costo de Envío por Carga Compartida (LCL)' => number_format($valorFacturado, 2, '.', ''),
+    ];
+
+    // Si es por CBM → insertamos el desglose detallado del flete
+    if ($tipoCobro === 'CBM' && !empty($desgloseFleteMaritimo)) {
+        $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
+    } else {
+        // Si es por peso, puedes poner un mensaje simple
+        $this->desglose['Costo por Peso (W/M)'] = number_format($valorFacturado, 2, '.', '');
+        $this->desglose['Peso Facturado'] = ceil($pesoKg) . ' kg';
+    }
+
+    // Resto de costos (los que ya tenías)
+    $this->desglose['Costos Totales de Importación'] = number_format($total_costs_import, 2, '.', '');
+
+    // Servicios adicionales
+    if ($this->recojoAlmacen) {
+        $this->desglose['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
+        $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $valorUsado, 2, '.', '');
+    }
+
+    if ($costoDestino > 0 && $nombreDestino) {
+        $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
+    }
+
+    // Total general
+    $total = $this->valorMercancia + $valorFacturado + $total_costs_import + $total_tiered_charge + $costoRecojo + $costoDestino;
+
+    return [
+        'costo'  => number_format($total, 2, '.', ''),
+        'tipo'   => $tipoCobro,
+        'unidad' => $unidad,
+        'cbm_facturado' => $tipoCobro === 'CBM' ? $valorUsado : null,
+    ];
+}
 
     /**
      * Calcula el costo del envío SOLO por CBM (volumen real)
@@ -491,19 +554,20 @@ class CalculadoraMaritima extends Component
         $total_costs_import = $this->costs_import();
         $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia) + $costoRecojo + $costoDestino;;
         $this->desglose = [
-            'Costo por paquetex (' . number_format($cbmFacturable, 3, '.', '') . '  m³  )' => number_format($precioPorCbm * $this->cantidad, 2, '.', ''),
+            'Valor de Mercancia' => number_format($this->valorMercancia, 2, '.', ''),
+            'Costo de envio por carga compartida' => number_format($precioPorCbm * $this->cantidad, 2, '.', ''),
             'Costos de Flete Marítimo' => 51.29,
             'Cargos de Importación Local' => 8.58,
             'Costos Totales de Importación' => 47.32,
             'Seguro' => 38.18,
             'Costo de Despacho' => 17.09,
             'Gastos Logísticos Integrales' => 33.70,
-            'Agencia Despachanche' => $total_tiered_charge
         ];
 
         // Agregar servicios adicionales al desglose si aplican
         if ($this->recojoAlmacen) {
-            $this->desglose["Recojo desde Almacén"] = $costoRecojo;
+            $this->desglose['Agencia Despachanche'] = $total_tiered_charge;
+            $this->desglose['Recojo desde Almacén'] = $costoRecojo * $valorUsado;
         }
 
         if ($costoDestino > 0 && $nombreDestino) {
