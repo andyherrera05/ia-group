@@ -23,7 +23,7 @@
                 </label>
                 <input type="text" wire:model.live="searchPOL" x-data x-on:click.away="$wire.showPOLDropdown = false"
                     placeholder="Buscar: Shenzhen, CNSZN, China..."
-                    class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+                    class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
                     autocomplete="off">
 
                 <!-- Dropdown de Sugerencias POL -->
@@ -106,7 +106,7 @@
                 </label>
                 <input type="text" wire:model.live="searchPOD" x-data x-on:click.away="$wire.showPODDropdown = false"
                     placeholder="Buscar: Singapore, SGSGP, USA..."
-                    class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+                    class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
                     autocomplete="off">
 
                 <!-- Dropdown de Sugerencias POD -->
@@ -219,7 +219,7 @@
 
                     @foreach ($paginatedRates as $index => $rate)
                         <div
-                            class="bg-gradient-to-r from-yellow-600/60 to-yellow-800/40 backdrop-blur-md border border-yellow-500/30 rounded-2xl p-6 hover:border-yellow-500/50 transition-all duration-300 shadow-xl">
+                            class="bg-gradient-to-r from-yellow-600/60 to-yellow-800/40 backdrop-blur-md border border-yellow-500/30 rounded-2xl p-2 hover:border-yellow-500/50 transition-all duration-300 shadow-xl">
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
                                 <!-- Columna 1: Naviera + Validez -->
                                 <div class="md:col-span-1 flex items-center space-x-4">
@@ -243,7 +243,7 @@
                                 <div class="text-center">
                                     @if (!is_null($rate['gp20'] ?? null))
                                         <button wire:click="selectRate({{ $index }}, 'gp20')"
-                                            class="block w-full bg-white/10 rounded-2xl py-3 hover:bg-yellow-600/30 hover:scale-105 transition-all duration-300 border border-yellow-500/30">
+                                            class="block w-full bg-white/10 rounded-2xl py-1 hover:bg-yellow-600/30 hover:scale-105 transition-all duration-300 border border-yellow-500/30">
                                             <p class="text-xl font-black text-yellow-400 mt-2">
                                                 20 GP
                                             </p>
@@ -256,7 +256,7 @@
                                             </p>
                                         </button>
                                     @else
-                                        <div class="bg-gray-800/50 rounded-2xl py-3 border border-gray-600">
+                                        <div class="bg-gray-800/50 rounded-2xl py-1 border border-gray-600">
                                             <p class="text-2xl text-gray-500">N/A</p>
                                         </div>
                                     @endif
@@ -266,7 +266,7 @@
                                 <div class="text-center">
                                     @if (!is_null($rate['gp40'] ?? null))
                                         <button wire:click="selectRate({{ $index }}, 'gp40')"
-                                            class="block w-full bg-white/10 rounded-2xl py-3 hover:bg-yellow-600/30 hover:scale-105 transition-all duration-300 border border-yellow-500/30">
+                                            class="block w-full bg-white/10 rounded-2xl py-1 hover:bg-yellow-600/30 hover:scale-105 transition-all duration-300 border border-yellow-500/30">
                                             <p class="text-xl font-black text-yellow-400 mt-2">
                                                 40 GP
                                             </p>
@@ -279,7 +279,7 @@
                                             </p>
                                         </button>
                                     @else
-                                        <div class="bg-gray-800/50 rounded-2xl py-3 border border-gray-600">
+                                        <div class="bg-gray-800/50 rounded-2xl py-1 border border-gray-600">
                                             <p class="text-2xl text-gray-500">N/A</p>
                                         </div>
                                     @endif
@@ -289,7 +289,7 @@
                                 <div class="text-center">
                                     @if (!is_null($rate['hq40'] ?? null))
                                         <button wire:click="selectRate({{ $index }}, 'hq40')"
-                                            class="block w-full bg-white/10 rounded-2xl py-3 hover:bg-yellow-600/30 hover:scale-105 transition-all duration-300 border border-yellow-500/30">
+                                            class="block w-full bg-white/10 rounded-2xl py-1 hover:bg-yellow-600/30 hover:scale-105 transition-all duration-300 border border-yellow-500/30">
                                             <p class="text-xl font-black text-yellow-400 mt-2">
                                                 40 HQ
                                             </p>
@@ -302,7 +302,7 @@
                                             </p>
                                         </button>
                                     @else
-                                        <div class="bg-gray-800/50 rounded-2xl py-3 border border-gray-600">
+                                        <div class="bg-gray-800/50 rounded-2xl py-1 border border-gray-600">
                                             <p class="text-2xl text-gray-500">N/A</p>
                                         </div>
                                     @endif
@@ -380,7 +380,7 @@
     <!-- Botón Limpiar -->
     <div class="flex justify-end">
         <button wire:click="limpiar"
-            class="bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-3 px-8 rounded-xl border border-white/10 hover:border-yellow-500/50 transition-all">
+            class="bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-1 px-8 rounded-xl border border-white/10 hover:border-yellow-500/50 transition-all">
             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

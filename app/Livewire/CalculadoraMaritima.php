@@ -6,6 +6,7 @@ use App\Models\Rate;
 use App\Models\Search;
 use App\Models\ShippingLine;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
