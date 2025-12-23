@@ -43,7 +43,7 @@
                     <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
                         Cantidad (Unidades)
                     </label>
-                    <input type="number" wire:model="cantidad" step="1" placeholder="1" required
+                    <input type="number" wire:model="cantidad" value="1" step="1" placeholder="1" required
                         class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                 </div>
 
@@ -138,7 +138,10 @@
                                         La carga será recogida desde un almacén antes de ser enviada al puerto
                                     </p>
                                 </div>
-                                <span class="text-yellow-400 font-bold text-lg ml-4">+$26.91</span>
+                                <span class="text-yellow-400 font-bold text-lg ml-4">
+                                    +$26.91 
+                                    <span class="text-sm font-normal text-gray-300 ml-1">($/CBM)</span>
+                                </span>
                             </label>
                             @if ($recojoAlmacen)
                                 <div class="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">

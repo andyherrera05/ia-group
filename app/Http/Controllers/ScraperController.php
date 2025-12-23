@@ -80,7 +80,7 @@ class ScraperController extends Controller
 
             return response()->json([
                 'status' => 'processing',
-                'message' => 'Buscando datos reales... (60–90 segundos)',
+                'message' => 'Buscando datos... (60–90 segundos)',
                 'runId' => $run['id'],
                 'datasetId' => $datasetId,
             ]);
@@ -92,13 +92,36 @@ class ScraperController extends Controller
 
     private function procesarDatos($data)
     {
-        $pesoKg = 0.5;
-        if (isset($data['packageWeight'])) {
-            $peso = preg_replace('/[^\d.]/', '', $data['packageWeight']);
-            $pesoKg = $peso > 10 ? $peso / 1000 : $peso;
-        } elseif (isset($data['unitWeight'])) {
-            $peso = preg_replace('/[^\d.]/', '', $data['unitWeight']);
-            $pesoKg = $peso > 10 ? $peso / 1000 : $peso;
+        $dimensiones_cm = null;
+        $dimensiones_origen = 'ninguno';
+
+        if (!empty($data['dimensions']) && is_array($data['dimensions'])) {
+            foreach ($data['dimensions'] as $dim) {
+                if (stripos($dim['attrName'] ?? '', 'dimension') !== false) {
+                    $raw = $dim['attrValue'] ?? '';
+                    $dimensiones_cm = $this->normalizarDimensionesCm($raw);
+                    $dimensiones_origen = 'dimensions → convertido a cm';
+                    break;
+                }
+            }
+        }
+
+        // Si no encontramos en dimensions, intentamos con unitSize (menos confiable)
+        if (!$dimensiones_cm && !empty($data['unitSize'])) {
+            $dimensiones_cm = $this->normalizarDimensionesCm($data['unitSize']);
+            $dimensiones_origen = 'unitSize → convertido/normalizado';
+        }
+
+        // Prioridad para peso (lo que realmente cobra el flete)
+        $peso_final_kg = null;
+        $peso_origen = 'ninguno';
+
+        if (!empty($data['weight'])) {
+            $peso_final_kg = (float) preg_replace('/[^\d.]/', '', $data['weight']);
+            $peso_origen = 'weight (bruto)';
+        } elseif (!empty($data['unitWeight'])) {
+            $peso_final_kg = (float) preg_replace('/[^\d.]/', '', $data['unitWeight']);
+            $peso_origen = 'unitWeight (neto)';
         }
 
         return [
@@ -106,14 +129,56 @@ class ScraperController extends Controller
             'price' => $data['priceTiers'][0]['dollarPrice'] ?? 'No disponible',
             'moq' => $data['moq'] ?? 'N/A',
             'image' => $data['firstImageUrl'] ?? ($data['images'][0] ?? null),
+            'dimensions_cm'       => $dimensiones_cm,              // "112x84x67"
+            'dimensions_origen'   => $dimensiones_origen,
+            'peso_kg_usar'          => $peso_final_kg ? round($peso_final_kg, 1) : null,
+            'peso_origen'           => $peso_origen,
+            'characteristics' => $data['characteristics'] ?? [],
             'micUrl' => $data['micUrl'] ?? null,
             'packageSize' => $data['packageSize'] ?? $data['unitSize'] ?? null,
             'packageWeight' => $data['packageWeight'] ?? $data['unitWeight'] ?? null,
             'source' => $data['source'] ?? 'Alibaba',
-            'peso_paquete_kg' => round($pesoKg, 3),
             'scrapeTimeSec' => $data['scrapeTimeSec'] ?? null,
             'scraped_at' => now()->toDateTimeString(),
         ];
+    }
+
+    /**
+     * Convierte dimensiones a formato cm corto: "112x84x67"
+     */
+    private function normalizarDimensionesCm(?string $dimensionsString): ?string
+    {
+        if (empty($dimensionsString)) {
+            return null;
+        }
+
+        // 1. Limpiar el string: quitar mm, espacios, puntos innecesarios
+        $clean = preg_replace('/\s*mm\s*/i', '', $dimensionsString);
+        $clean = preg_replace('/[^0-9xX*\.]/', '', $clean); // solo números, x/X, *, .
+
+        // 2. Posibles separadores: * o x o X
+        $separador = preg_match('/[xX]/', $clean) ? '[xX]' : '[*]';
+        $partes = preg_split("/{$separador}/", $clean);
+
+        if (count($partes) !== 3) {
+            return null; // formato inválido
+        }
+
+        $resultado = [];
+
+        foreach ($partes as $valor) {
+            $num = (float) trim($valor);
+
+            // Si está en milímetros → convertir a cm
+            if ($num > 500) { // heurística: difícil que una dimensión sea >500cm (5m)
+                $num = round($num / 10); // mm → cm
+            }
+
+            $resultado[] = (int) $num; // quitamos decimales
+        }
+
+        // Formato final deseado
+        return implode('x', $resultado);
     }
     public function stream($runId)
     {

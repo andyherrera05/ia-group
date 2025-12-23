@@ -7,22 +7,30 @@ use Illuminate\Http\Request;
 
 class CotizacionPDFController extends Controller
 {
-        public function generarPDF(Request $request)
+    public function generarPDF(Request $request)
     {
         $data = [
             'tipoCarga' => $request->tipoCarga ?? 'LCL',
             'fecha' => now()->format('d/m/Y H:i'),
             'peso' => $request->peso,
             'volumen' => $request->volumen,
+            'largo' => $request->largo,
+            'ancho' => $request->ancho,
+            'alto' => $request->alto,
+            'cantidad' => $request->cantidad,
             'origen' => $request->origen ?? 'No especificado',
             'destino' => $request->destino ?? 'No especificado',
             'valorMercancia' => $request->valorMercancia ?? 0,
             'resultado' => $request->resultado,
             'desglose' => json_decode($request->desglose, true) ?? [],
+            'tipoCobro' => $request->tipoCobro,
+            'unidad' => $request->unidad,
+            'valorFacturado' => $request->valorFacturado,
+            'cbmFacturado' => $request->cbmFacturado,
         ];
 
         $pdf = Pdf::loadView('pdf.cotizacion-lcl', $data);
-        
+
         return $pdf->download('cotizacion-' . strtolower($data['tipoCarga']) . '-' . date('Ymd-His') . '.pdf');
     }
 }

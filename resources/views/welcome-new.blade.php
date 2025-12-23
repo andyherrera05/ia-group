@@ -356,19 +356,39 @@
 
                                     <!-- Product Image -->
                                     <div
-                                        class="relative overflow-hidden rounded-lg border-2 border-yellow-500/30 hover:border-yellow-500 transition-all group">
-                                        <div
-                                            class="w-full h-48 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                                            <img id="scraped-image" class="w-full h-full object-contain hidden">
-                                            <div id="placeholder-image" class="text-center">
-                                                <svg class="w-16 h-16 mx-auto text-yellow-500/30 mb-2" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                                <p class="text-xs text-gray-500">Imagen del producto</p>
+                                        class="relative overflow-hidden rounded-xl border border-yellow-500 bg-yellow-900/50 hover:border-yellow-500/50 transition-all group p-4">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                            <div
+                                                class="relative w-full h-64 md:h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg flex items-center justify-center overflow-hidden border border-gray-700">
+                                                <img id="scraped-image"
+                                                    class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                                                    src="https://sc04.alicdn.com/kf/H538dfd223b4e42eb8feca0fe023538350.jpg">
+
+                                                <div id="placeholder-image" class="text-center hidden">
+                                                    <svg class="w-16 h-16 mx-auto text-yellow-500/30 mb-2"
+                                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2v12a2 2 0 002 2z">
+                                                        </path>
+                                                    </svg>
+                                                    <p
+                                                        class="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                                                        Vista Previa</p>
+                                                </div>
                                             </div>
+
+                                            <div class="flex flex-col justify-center space-y-4">
+                                                <h3
+                                                    class="text-yellow-500 font-bold text-lg border-b border-gray-700 pb-2">
+                                                    Especificaciones Técnicas</h3>
+
+                                                <ul id="scraped-characteristics-list" class="space-y-3">
+                                                    <!-- Propiedades dinámicas -->
+                                                </ul>
+                                            </div>
+
                                         </div>
                                     </div>
 
@@ -1098,7 +1118,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                             </svg>
-                            <span class="text-gray-400 text-sm">+591 64700457</span>
+                            <span class="text-gray-400 text-sm">+591 72976032</span>
                         </li>
                         <li class="flex items-start space-x-3">
                             <svg class="w-5 h-5 text-yellow-500 mt-0.5" fill="none" stroke="currentColor"
@@ -1231,7 +1251,7 @@
     <div class="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-5">
 
         <!-- WhatsApp - Verdadero color con animación hover -->
-        <a href="https://wa.me/59164700293" target="_blank"
+        <a href="https://web.whatsapp.com/send?phone=59164700293" target="_blank"
             class="group w-16 h-16 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl overflow-hidden transition-all duration-300 hover:scale-110 hover:rotate-6">
             <!-- Color real de WhatsApp solo visible en hover -->
             <div
@@ -1403,16 +1423,40 @@
             document.getElementById('scraped-moq').textContent =
                 data.moq || '--';
 
-            const packageSizeTexto = data.packageSize
-            let [L, A, H] = packageSizeTexto.match(/\d+/g).map(Number);
+            const packageSizeTexto = data.dimensions_cm || "0x0x0";
+            const dimensionsMatch = packageSizeTexto.match(/\d+/g);
+            let [L, A, H] = dimensionsMatch ? dimensionsMatch.map(Number) : [0, 0, 0];
+
+            const packageWeightTexto = data.peso_kg_usar || 0;
             let packageSize = ((L * A * H) / 1000000).toFixed(2);
-            document.getElementById('scraped-package-size').textContent = `${packageSize} m³` || '--';
+            let weightCBM = (((L * A * H) / 5000).toFixed(2));
 
-            const packageWeightTexto = data.packageWeight
-            let packageWeight = (packageWeightTexto.replace(/[^0-9]/g, '') / 5000).toFixed(2);
-            document.getElementById('scraped-package-weight').textContent = `${packageWeight} Kg` || '--';
+            document.getElementById('scraped-package-size').textContent = `${packageSize} m³`;
+            document.getElementById('scraped-package-weight').textContent = `${weightCBM} Kg`;
 
-            const costPackage = calcularCostoMaritimoLCL(Number(packageWeight), Number(packageSize)).costo
+            const charList = document.getElementById('scraped-characteristics-list');
+            charList.innerHTML = '';
+
+            const addCharItem = (label, value, isImportant = false) => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center text-yellow-500 text-sm';
+                const shadowClass = isImportant ? 'shadow-[0_0_8px_rgba(234,179,8,0.6)]' : '';
+                li.innerHTML = `
+                    <span class="w-2 h-2 bg-yellow-500 rounded-full mr-3 ${shadowClass}"></span>
+                    <strong>${label}:</strong> <span class="ml-2 text-white font-semibold">${value}</span>
+                `;
+                charList.appendChild(li);
+            };
+
+            if (data.characteristics && Array.isArray(data.characteristics)) {
+                data.characteristics.forEach(char => {
+                    if (char.attrName && char.attrValue) {
+                        addCharItem(char.attrName, char.attrValue);
+                    }
+                });
+            }
+
+            const costPackage = calcularCostoMaritimoLCL(Number(packageWeightTexto), Number(packageSize)).costo;
             const moq = parseInt(data.moq) || 1;
             const totalProducto = costPackage * moq;
             document.getElementById('costPackage').textContent = `$ ${totalProducto.toFixed(2)}`;

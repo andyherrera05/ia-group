@@ -159,22 +159,82 @@
                             </div>
                             @include('livewire.partials.resultado')
 
-                            <!-- Desglose de costos -->
+                            <!-- Desglose de costos con Accordion -->
                             @if (count($desglose) > 0)
-                                <div class="space-y-3">
+                                <div class="space-y-4" x-data="{ showDetailed: false }">
                                     <h3
-                                        class="font-bold text-yellow-500 uppercase text-xs tracking-widest mb-4 border-b border-yellow-500/20 pb-3">
-                                        Desglose de Costos
+                                        class="font-bold text-yellow-500 uppercase text-xs tracking-widest border-b border-yellow-500/20 pb-3">
+                                        Resumen de Cotización
                                     </h3>
-                                    @foreach ($desglose as $concepto => $valor)
-                                        <div
-                                            class="flex justify-between items-center py-3 border-b border-white/5 hover:bg-white/5 px-4 rounded-lg transition-all">
-                                            <span class="text-gray-300 text-sm font-medium">{{ $concepto }}</span>
-                                            <span class="font-bold text-white text-sm">
-                                                {{ is_numeric($valor) ? '$' . number_format($valor, 2) : $valor }}
-                                            </span>
+
+                                    @php
+                                        $mainItems = [];
+                                        $detailedItems = [];
+                                        foreach ($desglose as $concepto => $valor) {
+                                            $isDetailed = str_contains($concepto, '─') || 
+                                                          str_contains($concepto, '├─') || 
+                                                          str_contains($concepto, '└─') || 
+                                                          str_starts_with(trim($concepto), 'Subtotal');
+                                            
+                                            if ($isDetailed) {
+                                                $detailedItems[$concepto] = $valor;
+                                            } else {
+                                                $mainItems[$concepto] = $valor;
+                                            }
+                                        }
+                                    @endphp
+
+                                    <!-- Items Principales -->
+                                    <div class="space-y-2">
+                                        @foreach ($mainItems as $concepto => $valor)
+                                            <div class="flex justify-between items-center py-2 px-4 bg-white/5 rounded-lg border border-white/5">
+                                                <span class="text-gray-300 text-sm font-medium">{{ $concepto }}</span>
+                                                <span class="font-bold text-white text-sm">
+                                                    {{ is_numeric($valor) ? '$' . number_format($valor, 2) : $valor }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    @if (count($detailedItems) > 0)
+                                        <button @click="showDetailed = !showDetailed" 
+                                            class="w-full flex items-center justify-between py-3 px-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-yellow-500 hover:bg-yellow-500/20 transition-all group">
+                                            <span class="text-sm font-bold uppercase tracking-wider">Ver Desglose Detallado de Flete</span>
+                                            <svg class="w-5 h-5 transform transition-transform duration-300" :class="showDetailed ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+
+                                        <!-- Sección Detallada (Accordion) -->
+                                        <div x-show="showDetailed" 
+                                            x-transition:enter="transition ease-out duration-300"
+                                            x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                            x-transition:enter-end="opacity-100 transform translate-y-0"
+                                            class="space-y-1 pl-4 border-l-2 border-yellow-500/20 mt-2">
+                                            @foreach ($detailedItems as $concepto => $valor)
+                                                @php
+                                                    $isHeader = str_contains($concepto, '─') && !str_contains($concepto, '├─') && !str_contains($concepto, '└─');
+                                                    $isSubtotal = str_contains($concepto, 'Subtotal');
+                                                @endphp
+                                                
+                                                @if ($isHeader)
+                                                    <div class="pt-4 pb-1">
+                                                        <span class="text-yellow-500/70 text-[10px] font-black uppercase tracking-widest">{{ ltrim($concepto, '─ ') }}</span>
+                                                    </div>
+                                                @else
+                                                    <div class="flex justify-between items-center py-1.5 px-3 {{ $isSubtotal ? 'bg-white/5 rounded-md border-t border-white/10 mt-1 mb-2' : '' }}">
+                                                        <span class="{{ $isSubtotal ? 'text-white font-bold text-xs' : 'text-gray-400 text-[11px]' }}">
+                                                            {{ ltrim($concepto, ' ├─└─') }}
+                                                        </span>
+                                                        @if ($valor !== null)
+                                                            <span class="{{ $isSubtotal ? 'text-yellow-400 font-bold text-xs' : 'text-gray-300 text-[11px]' }}">
+                                                                {{ is_numeric($valor) ? '$' . number_format($valor, 2) : $valor }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            @endforeach
                                         </div>
-                                    @endforeach
+                                    @endif
                                 </div>
                             @endif
 
@@ -194,39 +254,58 @@
 
                             <!-- Pregunta interactiva -->
                             @if ($mostrarPregunta && $resultado !== null)
-                                <div class="mt-8 bg-gradient-to-br from-yellow-600/20 to-amber-600/20 border-2 border-yellow-500/50 rounded-xl p-6 animate-pulse"
-                                    style="animation-duration: 3s;">
+                               <div class="mt-8 bg-gradient-to-br from-gray-900 to-black border-2 border-yellow-500/50 rounded-xl p-6 shadow-2xl">
                                     @if ($respuestaUsuario === null)
-                                        <h3 class="text-xl font-black text-yellow-400 text-center mb-6">¿Te gusta este
-                                            precio?</h3>
+                                        <h3 class="text-xl font-black text-yellow-400 text-center mb-6">¿Te gusta este precio?</h3>
                                         <div class="grid grid-cols-2 gap-4">
                                             <button wire:click="responder('si')"
-                                                class="bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-xl transition-all transform hover:scale-110 shadow-lg shadow-green-600/50 uppercase">
+                                                class="bg-green-600 hover:bg-green-500 text-white font-black p-2 rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-green-600/30 uppercase text-sm">
                                                 Sí, ¡me encanta!
                                             </button>
                                             <button wire:click="responder('no')"
-                                                class="bg-red-600 hover:bg-red-500 text-white font-black py-4 rounded-xl transition-all transform hover:scale-110 shadow-lg shadow-red-600/50 uppercase">
+                                                class="bg-red-600 hover:bg-red-500 text-white font-black py-4 rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-red-600/30 uppercase text-sm">
                                                 No, muy caro
                                             </button>
                                         </div>
                                     @else
-                                        <div class="text-center space-y-5">
+                                        <div class="text-center space-y-6">
                                             @if ($respuestaUsuario === 'si')
-                                                <div class="text-green-400 text-6xl">Perfecto</div>
-                                                <p class="text-lg font-bold text-green-400">¡Genial! Estamos listos
-                                                    para tu envío</p>
+                                                <div class="animate-bounce"><span class="text-green-400 text-5xl font-black italic">¡PERFECTO!</span></div>
+                                                <p class="text-lg font-bold text-gray-200">Nuestros especialistas están listos para ayudarte:</p>
                                             @else
-                                                <div class="text-yellow-400 text-6xl">Tranquilo</div>
-                                                <p class="text-lg font-bold text-yellow-400">¡Podemos ajustarlo!</p>
+                                                <div class="animate-pulse"><span class="text-yellow-400 text-5xl font-black italic">TRANQUILO</span></div>
+                                                <p class="text-lg font-bold text-gray-200">¡Podemos ajustarlo! Habla con un experto:</p>
                                             @endif
 
-                                            <a href="https://wa.me/59164700293?text={{ urlencode('Hola IA GROUPS! Quiero hablar sobre esta cotización de $' . number_format($resultado, 2) . ' USD (' . strtoupper($tipoCarga) . ')') }}"
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-left">
+                                                @php
+                                                    $contactos = [
+                                                        ['area' => 'Logística', 'num' => '59172976032', 'color' => 'yellow'],
+                                                        ['area' => 'Auction', 'num' => '59164580634', 'color' => 'yellow'],
+                                                        ['area' => 'Academy', 'num' => '59164700293', 'color' => 'yellow'],
+                                                        ['area' => 'Agents', 'num' => '59172976032', 'color' => 'yellow'],
+                                                        ['area' => 'Negocios', 'num' => '59172981315', 'color' => 'yellow'],
+                                                        ['area' => 'IA Groups', 'num' => '59162931965', 'color' => 'yellow'],
+                                                    ];
+                                                @endphp
+
+                                                @foreach($contactos as $c)
+                                                @php
+                                                    $mensajeTexto = "Hola " . $c['area'] . "! Vengo de la cotización de $" . number_format($resultado, 2) . " USD";
+                                                    $urlWebWa = "https://web.whatsapp.com/send?phone=" . $c['num'] . "&text=" . urlencode($mensajeTexto);
+                                                @endphp
+                                                <a href="{{ $urlWebWa }}" 
                                                 target="_blank"
-                                                class="inline-flex items-center space-x-3 bg-green-600 hover:bg-green-500 text-white font-black py-4 px-8 rounded-xl transition-all transform hover:scale-105 shadow-2xl shadow-green-600/60 mt-6">
-                                                <svg class="w-6 h-6" fill="currentColor"
-                                                    viewBox="0 0 24 24"><!-- WhatsApp icon --></svg>
-                                                <span>Contactar por WhatsApp</span>
-                                            </a>
+                                                class="flex items-center justify-between bg-gray-800/50 p-3 rounded-lg border border-gray-700 hover:border-{{ $c['color'] }}-500 transition-all group">
+                                                    <div class="flex flex-col">
+                                                        <span class="text-xs text-gray-400 uppercase tracking-widest">{{ $c['area'] }}</span>
+                                                        <span class="text-white font-bold">+{{ $c['num'] }}</span>
+                                                    </div>
+                                                </a>
+                                                @endforeach
+                                            </div>
+
+                                            <p class="text-xs text-gray-500 pt-4 italic">Haz clic en el área correspondiente para una atención personalizada.</p>
                                         </div>
                                     @endif
                                 </div>

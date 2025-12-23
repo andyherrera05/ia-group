@@ -229,7 +229,7 @@
                                         <p class="text-gray-300 text-sm mb-6">Hablemos de tu necesidad específica</p>
                                     @endif
                                     
-                                    <a href="https://wa.me/59164700293?text=Hola !%20Vi%20el%20cálculo%20de%20impuestos%20de%20${{ $resultado }}%20y%20me%20gustaría%20más%20información." 
+                                    <a href="https://web.whatsapp.com/send?phone=59164700293?text=Hola !%20Vi%20el%20cálculo%20de%20impuestos%20de%20${{ $resultado }}%20y%20me%20gustaría%20más%20información." 
                                        target="_blank"
                                        class="inline-flex items-center space-x-3 bg-green-600 hover:bg-green-500 text-white font-black py-3 px-6 rounded-lg transition-all transform hover:scale-105 shadow-xl shadow-green-600/40">
                                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
