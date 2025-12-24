@@ -6,6 +6,7 @@ use App\Models\Rate;
 use App\Models\Search;
 use App\Models\ShippingLine;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -160,24 +161,44 @@ class CalculadoraMaritima extends Component
         $shippingLine = $rate['shipping_line'] ?? 'Desconocida';
 
         // Construir desglose
+        $gastosLocales = [
+            '   ├─ Manipulación en Terminal' => 159.00,
+            '   ├─ Gastos de Documentación' => 72.00,
+            '   ├─ Gastos Portuarios Varios' => 102.00,
+            '   ├─ Control de Equipo (EIR)' => 22.00,
+            '   ├─ Sello de Seguridad' => 10.00,
+            '   ├─ Despacho de Aduana' => 40.00,
+            '   └─ Gasto por Liberación Digital' => 65.00
+        ];
+        
+        $subtotalPortuaria = array_sum($gastosLocales);
+
         $this->desglose = [
             "Flete Marítimo ({$shippingLine} - {$containerName})" => $precioBase,
-            'Manipulación en Terminal' => 159.00,
-            'Gastos de Documentación' => 72.00,
-            'DocumentaciónGastos Portuarios Varios' => 102.00,
-            'Control de Equipo (EIR)' => 22.00,
-            'Sello de Seguridad' => 10.00,
-            'Despacho de Aduana' => 40.00,
-            'Gasto por Liberación Digital' => 65.00
+            '─ GESTIÓN PORTUARIA Y LOGÍSTICA' => null,
         ];
+
+        foreach ($gastosLocales as $concepto => $monto) {
+            $this->desglose[$concepto] = number_format($monto, 2);
+        }
+
+        $this->desglose['   Gestión Portuaria'] = number_format($subtotalPortuaria, 2);
 
         // Información adicional (no numérica)
         $this->desglose['Tiempo de Tránsito'] = ($rate['transit_time'] ?? 'N/A') . ' días';
-        $this->desglose['Válido hasta'] = $rate['valid_until'] ?? 'No especificado';
+        $this->desglose['Válido hasta'] = isset($rate['valid_until']) 
+            ? \Carbon\Carbon::parse($rate['valid_until'])->format('d/m/Y') 
+            : 'No especificado';
         $this->desglose['Cierre (cutoff)'] = ($rate['closing'] ?? 'N/A') . ' días';
 
-        // Calcular total solo con valores numéricos
-        $this->resultado = array_sum(array_filter($this->desglose, 'is_numeric'));
+        // Calcular total final
+        $this->resultado = $precioBase + $subtotalPortuaria;
+
+        // Metadatos para el PDF
+        $this->tipoCobroActual = 'Contenedor Completo (FCL)';
+        $this->unidadActual = "Contenedor " . $containerName;
+        $this->valorFacturadoActual = $precioBase;
+        $this->cbmFacturadoActual = $containerName;
 
         $this->mostrarPregunta = true;
         $this->respuestaUsuario = null;
@@ -414,219 +435,219 @@ class CalculadoraMaritima extends Component
         }
 
        $costoRecojo = $this->costoRecojo;
-    $resultadoDestino = $this->calcularCostoDestino();
-    $costoDestino = $resultadoDestino['costo'];
-    $nombreDestino = $resultadoDestino['nombre'];
+        $resultadoDestino = $this->calcularCostoDestino();
+        $costoDestino = $resultadoDestino['costo'];
+        $nombreDestino = $resultadoDestino['nombre'];
 
-    $valorFacturado = 0;
-    $unidad = str_contains($tipoCobro, 'Peso') ? 'kg' : 'm³';
-    if ($unidad == 'kg') {
-        $valorFacturado = $costoFinal * $this->peso; // o $valorUsado si prefieres
-    } else {
-        $valorFacturado = $costoFinal * $this->cantidad;
-    }
+        $valorFacturado = 0;
+        $unidad = str_contains($tipoCobro, 'Peso') ? 'kg' : 'm³';
+        if ($unidad == 'kg') {
+            $valorFacturado = $costoFinal * $this->peso; // o $valorUsado si prefieres
+        } else {
+            $valorFacturado = $costoFinal * $this->cantidad;
+        }
 
-    $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
+        $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
 
-    // =====================================================
-    // NUEVO: DESGLOSE DETALLADO DEL FLETE MARÍTIMO POR CBM
-    // =====================================================
-    $desgloseFleteMaritimo = [];
+        // =====================================================
+        // NUEVO: DESGLOSE DETALLADO DEL FLETE MARÍTIMO POR CBM
+        // =====================================================
+        $desgloseFleteMaritimo = [];
 
-    if ($tipoCobro === 'CBM') {
-        // Porcentajes de distribución (ajústalos a tu realidad)
-        $distribucion = [
-            'grupo1' => 0.60,  // 60% → Costos principales de naviera
-            'grupo2' => 0.25,  // 25% → Gastos operativos en origen
-            'grupo3' => 0.15,  // 15% → Margen, comisiones y otros
+        if ($tipoCobro === 'CBM') {
+            // Porcentajes de distribución (ajústalos a tu realidad)
+            $distribucion = [
+                'grupo1' => 0.60,  // 60% → Costos principales de naviera
+                'grupo2' => 0.25,  // 25% → Gastos operativos en origen
+                'grupo3' => 0.15,  // 15% → Margen, comisiones y otros
+            ];
+
+            $grupo1 = $costoFinal * $distribucion['grupo1'];
+            $grupo2 = $costoFinal * $distribucion['grupo2'];
+            $grupo3 = $costoFinal * $distribucion['grupo3'];
+
+            // Grupo 1: Costos Naviera y Documentación
+            $desgloseFleteMaritimo['─ EJE LOGÍSTICO INTERNACIONAL'] = null;
+            $desgloseFleteMaritimo['   ├─ Flete Marítimo (Puerto a Puerto)'] = number_format($grupo1 * 0.85, 2); // Aumentamos flete
+            $desgloseFleteMaritimo['   ├─ Booking & Space Guarantee'] = number_format($grupo1 * 0.10, 2); // Suena a "asegurar espacio"
+            $desgloseFleteMaritimo['   └─ Protección de Carga (Standard)'] = number_format($grupo1 * 0.05, 2); // En lugar de solo "seguro"
+            $desgloseFleteMaritimo['   Subtotal Eje Logístico Internacional'] = number_format($grupo1, 2);
+
+            // Grupo 2: Gastos Operativos en Origen
+            $desgloseFleteMaritimo['─ GESTIÓN DE SALIDA (ORIGEN)'] = null;
+            $desgloseFleteMaritimo['   ├─ Coordinación de Embarque & Handling'] = number_format($grupo2 * 0.50, 2); 
+            $desgloseFleteMaritimo['   ├─ Maniobras Portuarias (THC/Gate In)'] = number_format($grupo2 * 0.30, 2);
+            $desgloseFleteMaritimo['   └─ Emisión Digital de Documentos (BL)'] = number_format($grupo2 * 0.20, 2);
+            $desgloseFleteMaritimo['   Subtotal Gestion de Salida (Origen)'] = number_format($grupo2, 2);
+
+            // Grupo 3: Margen y Gastos Adicionales
+            $desgloseFleteMaritimo['─ SERVICIOS INTEGRALES Y SEGURIDAD'] = null;
+            $desgloseFleteMaritimo['   ├─ Gestión Administrativa de Importación'] = number_format($grupo3 * 0.60, 2); // En lugar de "comisión"
+            $desgloseFleteMaritimo['   ├─ Transferencia y Cobertura Cambiaria'] = number_format($grupo3 * 0.25, 2); // Suena a protección financiera
+            $desgloseFleteMaritimo['   └─ Monitoreo y Soporte 24/7'] = number_format($grupo3 * 0.15, 2); // Valor percibido alto
+            $desgloseFleteMaritimo['   Subtotal Servicios Integrales y Seguridad'] = number_format($grupo3, 2);
+        }
+
+        // =====================================================
+        // CONSTRUCCIÓN FINAL DEL DESGLOSE
+        // =====================================================
+        $this->desglose = [
+            'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
+            'Costo de Envío de Paquete' => number_format($valorFacturado, 2, '.', ''),
         ];
 
-        $grupo1 = $costoFinal * $distribucion['grupo1'];
-        $grupo2 = $costoFinal * $distribucion['grupo2'];
-        $grupo3 = $costoFinal * $distribucion['grupo3'];
+        // Si es por CBM → insertamos el desglose detallado del flete
+        if ($tipoCobro === 'CBM' && !empty($desgloseFleteMaritimo)) {
+            $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
+        } else {
+            // Si es por peso, puedes poner un mensaje simple
+            $this->desglose['Costo por Peso'] = number_format($valorFacturado, 2, '.', '');
+            $this->desglose['Peso Facturado'] = ceil($pesoKg) . ' kg';
+        }
 
-        // Grupo 1: Costos Naviera y Documentación
-        $desgloseFleteMaritimo['─ EJE LOGÍSTICO INTERNACIONAL'] = null;
-        $desgloseFleteMaritimo['   ├─ Flete Marítimo (Puerto a Puerto)'] = number_format($grupo1 * 0.85, 2); // Aumentamos flete
-        $desgloseFleteMaritimo['   ├─ Booking & Space Guarantee'] = number_format($grupo1 * 0.10, 2); // Suena a "asegurar espacio"
-        $desgloseFleteMaritimo['   └─ Protección de Carga (Standard)'] = number_format($grupo1 * 0.05, 2); // En lugar de solo "seguro"
-        $desgloseFleteMaritimo['   Subtotal Eje Logístico Internacional'] = number_format($grupo1, 2);
+        // Servicios adicionales
+        $addServices = 0;
+        if ($this->recojoAlmacen) {
+            $this->desglose['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
+            $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $valorUsado, 2, '.', '');
+            $addServices = number_format($costoRecojo * $valorUsado, 2, '.', '') + number_format($total_tiered_charge, 2, '.', '');
+        }
 
-        // Grupo 2: Gastos Operativos en Origen
-        $desgloseFleteMaritimo['─ GESTIÓN DE SALIDA (ORIGEN)'] = null;
-        $desgloseFleteMaritimo['   ├─ Coordinación de Embarque & Handling'] = number_format($grupo2 * 0.50, 2); 
-        $desgloseFleteMaritimo['   ├─ Maniobras Portuarias (THC/Gate In)'] = number_format($grupo2 * 0.30, 2);
-        $desgloseFleteMaritimo['   └─ Emisión Digital de Documentos (BL)'] = number_format($grupo2 * 0.20, 2);
-        $desgloseFleteMaritimo['   Subtotal Gestion de Salida (Origen)'] = number_format($grupo2, 2);
+        if ($costoDestino > 0 && $nombreDestino) {
+            $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
+        }
 
-        // Grupo 3: Margen y Gastos Adicionales
-        $desgloseFleteMaritimo['─ SERVICIOS INTEGRALES Y SEGURIDAD'] = null;
-        $desgloseFleteMaritimo['   ├─ Gestión Administrativa de Importación'] = number_format($grupo3 * 0.60, 2); // En lugar de "comisión"
-        $desgloseFleteMaritimo['   ├─ Transferencia y Cobertura Cambiaria'] = number_format($grupo3 * 0.25, 2); // Suena a protección financiera
-        $desgloseFleteMaritimo['   └─ Monitoreo y Soporte 24/7'] = number_format($grupo3 * 0.15, 2); // Valor percibido alto
-        $desgloseFleteMaritimo['   Subtotal Servicios Integrales y Seguridad'] = number_format($grupo3, 2);
+        // Total general
+        $total = $this->valorMercancia + $valorFacturado + $addServices + $costoDestino;
+        return [
+            'costo'  => number_format($total, 2, '.', ''),
+            'tipo'   => $tipoCobro,
+            'unidad' => $unidad,
+            'valor_facturado' => $valorFacturado,
+            'cbm_facturado' => $tipoCobro === 'CBM' ? $valorUsado : null,
+        ];
     }
-
-    // =====================================================
-    // CONSTRUCCIÓN FINAL DEL DESGLOSE
-    // =====================================================
-    $this->desglose = [
-        'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
-        'Costo de Envío de Paquete' => number_format($valorFacturado, 2, '.', ''),
-    ];
-
-    // Si es por CBM → insertamos el desglose detallado del flete
-    if ($tipoCobro === 'CBM' && !empty($desgloseFleteMaritimo)) {
-        $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
-    } else {
-        // Si es por peso, puedes poner un mensaje simple
-        $this->desglose['Costo por Peso'] = number_format($valorFacturado, 2, '.', '');
-        $this->desglose['Peso Facturado'] = ceil($pesoKg) . ' kg';
-    }
-
-    // Servicios adicionales
-    $addServices = 0;
-    if ($this->recojoAlmacen) {
-        $this->desglose['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
-        $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $valorUsado, 2, '.', '');
-        $addServices = number_format($costoRecojo * $valorUsado, 2, '.', '') + number_format($total_tiered_charge, 2, '.', '');
-    }
-
-    if ($costoDestino > 0 && $nombreDestino) {
-        $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
-    }
-
-    // Total general
-    $total = $this->valorMercancia + $valorFacturado + $addServices + $costoDestino;
-    return [
-        'costo'  => number_format($total, 2, '.', ''),
-        'tipo'   => $tipoCobro,
-        'unidad' => $unidad,
-        'valor_facturado' => $valorFacturado,
-        'cbm_facturado' => $tipoCobro === 'CBM' ? $valorUsado : null,
-    ];
-}
 
     /**
      * Calcula el costo del envío SOLO por CBM (volumen real)
      * Ideal para LCL cuando ya tienes el volumen en m³
      */
-private function calculateShippingPackagePerDimensions(float $cbmReal): array
-{
-    $TARIFA_POR_CBM = [
-        ['min' => 20,   'precio' => 129],
-        ['min' => 15,   'precio' => 138],
-        ['min' => 11,   'precio' => 149],
-        ['min' => 8,    'precio' => 159],
-        ['min' => 5,    'precio' => 168],
-        ['min' => 3,    'precio' => 179],
-        ['min' => 1,    'precio' => 188],
-        ['min' => 0.5,  'precio' => 116],
-        ['min' => 0.25, 'precio' => 60]
-    ];
+    private function calculateShippingPackagePerDimensions(float $cbmReal): array
+    {
+        $TARIFA_POR_CBM = [
+            ['min' => 20,   'precio' => 129],
+            ['min' => 15,   'precio' => 138],
+            ['min' => 11,   'precio' => 149],
+            ['min' => 8,    'precio' => 159],
+            ['min' => 5,    'precio' => 168],
+            ['min' => 3,    'precio' => 179],
+            ['min' => 1,    'precio' => 188],
+            ['min' => 0.5,  'precio' => 116],
+            ['min' => 0.25, 'precio' => 60]
+        ];
 
-    // CBM mínimo facturable
-    $cbmFacturable = max($cbmReal, 0.25);
+        // CBM mínimo facturable
+        $cbmFacturable = max($cbmReal, 0.25);
 
-    // Buscar tarifa por tramo (de mayor a menor)
-    $precioPorCbm = 60; // mínimo por defecto
-    $cbmAplicado = 0.25;
+        // Buscar tarifa por tramo (de mayor a menor)
+        $precioPorCbm = 60; // mínimo por defecto
+        $cbmAplicado = 0.25;
 
-    foreach ($TARIFA_POR_CBM as $tramo) {
-        if ($cbmFacturable >= $tramo['min']) {
-            $precioPorCbm = $tramo['precio'];
-            $cbmAplicado = $tramo['min'];
-            break;
+        foreach ($TARIFA_POR_CBM as $tramo) {
+            if ($cbmFacturable >= $tramo['min']) {
+                $precioPorCbm = $tramo['precio'];
+                $cbmAplicado = $tramo['min'];
+                break;
+            }
         }
-    }
 
-    $costoFleteTotal = $precioPorCbm * $this->cantidad;
+        $costoFleteTotal = $precioPorCbm * $this->cantidad;
 
-    // =====================================================
-    // DESGLOSE DETALLADO DEL FLETE MARÍTIMO PORCENTUAL
-    // =====================================================
-    $desgloseFleteMaritimo = [];
+        // =====================================================
+        // DESGLOSE DETALLADO DEL FLETE MARÍTIMO PORCENTUAL
+        // =====================================================
+        $desgloseFleteMaritimo = [];
 
-    // Porcentajes de distribución del costo unitario por CBM
-    $distribucion = [
-        'grupo1' => 0.60,  // 60% → Costos principales naviera
-        'grupo2' => 0.25,  // 25% → Operativos en origen
-        'grupo3' => 0.15,  // 15% → Margen y adicionales
-    ];
+        // Porcentajes de distribución del costo unitario por CBM
+        $distribucion = [
+            'grupo1' => 0.60,  // 60% → Costos principales naviera
+            'grupo2' => 0.25,  // 25% → Operativos en origen
+            'grupo3' => 0.15,  // 15% → Margen y adicionales
+        ];
 
-    $grupo1 = $precioPorCbm * $distribucion['grupo1'];
-    $grupo2 = $precioPorCbm * $distribucion['grupo2'];
-    $grupo3 = $precioPorCbm * $distribucion['grupo3'];
+        $grupo1 = $precioPorCbm * $distribucion['grupo1'];
+        $grupo2 = $precioPorCbm * $distribucion['grupo2'];
+        $grupo3 = $precioPorCbm * $distribucion['grupo3'];
 
-    // Grupo 1: Costos Naviera y Documentación
-    $desgloseFleteMaritimo['─ Grupo 1: Costos Naviera y Documentación'] = null;
-    $desgloseFleteMaritimo['   ├─ Flete Marítimo Principal (Naviera)'] = number_format($grupo1 * 0.75, 2);
-    $desgloseFleteMaritimo['   ├─ MBL y Documentación Oficial'] = number_format($grupo1 * 0.15, 2);
-    $desgloseFleteMaritimo['   └─ Seguro de Flete Básico'] = number_format($grupo1 * 0.10, 2);
-    $desgloseFleteMaritimo['   Subtotal Grupo 1'] = number_format($grupo1, 2);
+        // Grupo 1: Costos Naviera y Documentación
+        $desgloseFleteMaritimo['─ Grupo 1: Costos Naviera y Documentación'] = null;
+        $desgloseFleteMaritimo['   ├─ Flete Marítimo Principal (Naviera)'] = number_format($grupo1 * 0.75, 2);
+        $desgloseFleteMaritimo['   ├─ MBL y Documentación Oficial'] = number_format($grupo1 * 0.15, 2);
+        $desgloseFleteMaritimo['   └─ Seguro de Flete Básico'] = number_format($grupo1 * 0.10, 2);
+        $desgloseFleteMaritimo['   Subtotal Grupo 1'] = number_format($grupo1, 2);
 
-    // Grupo 2: Gastos Operativos en Origen
-    $desgloseFleteMaritimo['─ Grupo 2: Gastos Operativos en Origen'] = null;
-    $desgloseFleteMaritimo['   ├─ Handling, Gate In y THC'] = number_format($grupo2 * 0.40, 2);
-    $desgloseFleteMaritimo['   ├─ Comisión Giro China'] = number_format($grupo2 * 0.30, 2);
-    $desgloseFleteMaritimo['   └─ BL Fee y Otros Operativos'] = number_format($grupo2 * 0.30, 2);
-    $desgloseFleteMaritimo['   Subtotal Grupo 2'] = number_format($grupo2, 2);
+        // Grupo 2: Gastos Operativos en Origen
+        $desgloseFleteMaritimo['─ Grupo 2: Gastos Operativos en Origen'] = null;
+        $desgloseFleteMaritimo['   ├─ Handling, Gate In y THC'] = number_format($grupo2 * 0.40, 2);
+        $desgloseFleteMaritimo['   ├─ Comisión Giro China'] = number_format($grupo2 * 0.30, 2);
+        $desgloseFleteMaritimo['   └─ BL Fee y Otros Operativos'] = number_format($grupo2 * 0.30, 2);
+        $desgloseFleteMaritimo['   Subtotal Grupo 2'] = number_format($grupo2, 2);
 
-    // Grupo 3: Margen y Gastos Adicionales
-    $desgloseFleteMaritimo['─ Grupo 3: Margen y Comisiones'] = null;
-    $desgloseFleteMaritimo['   ├─ Comisión Logística / Margen'] = number_format($grupo3 * 0.50, 2);
-    $desgloseFleteMaritimo['   ├─ Comisiones Bancarias'] = number_format($grupo3 * 0.20, 2);
-    $desgloseFleteMaritimo['   ├─ Flete Interno Adicional'] = number_format($grupo3 * 0.20, 2);
-    $desgloseFleteMaritimo['   └─ Seguro Complementario'] = number_format($grupo3 * 0.10, 2);
-    $desgloseFleteMaritimo['   Subtotal Grupo 3'] = number_format($grupo3, 2);
+        // Grupo 3: Margen y Gastos Adicionales
+        $desgloseFleteMaritimo['─ Grupo 3: Margen y Comisiones'] = null;
+        $desgloseFleteMaritimo['   ├─ Comisión Logística / Margen'] = number_format($grupo3 * 0.50, 2);
+        $desgloseFleteMaritimo['   ├─ Comisiones Bancarias'] = number_format($grupo3 * 0.20, 2);
+        $desgloseFleteMaritimo['   ├─ Flete Interno Adicional'] = number_format($grupo3 * 0.20, 2);
+        $desgloseFleteMaritimo['   └─ Seguro Complementario'] = number_format($grupo3 * 0.10, 2);
+        $desgloseFleteMaritimo['   Subtotal Grupo 3'] = number_format($grupo3, 2);
 
-    // =====================================================
-    // CONSTRUCCIÓN DEL DESGLOSE GENERAL
-    // =====================================================
-    $this->desglose = [
-        'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
-        'Costo de Envío de Paquete' => number_format($costoFleteTotal, 2, '.', ''),
-    ];
+        // =====================================================
+        // CONSTRUCCIÓN DEL DESGLOSE GENERAL
+        // =====================================================
+        $this->desglose = [
+            'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
+            'Costo de Envío de Paquete' => number_format($costoFleteTotal, 2, '.', ''),
+        ];
 
-    // Insertamos el desglose detallado del flete
-    $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
+        // Insertamos el desglose detallado del flete
+        $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
 
-    // Servicios adicionales
-    $costoRecojo = $this->costoRecojo;
-    $resultadoDestino = $this->calcularCostoDestino();
-    $costoDestino = $resultadoDestino['costo'];
-    $nombreDestino = $resultadoDestino['nombre'];
+        // Servicios adicionales
+        $costoRecojo = $this->costoRecojo;
+        $resultadoDestino = $this->calcularCostoDestino();
+        $costoDestino = $resultadoDestino['costo'];
+        $nombreDestino = $resultadoDestino['nombre'];
 
-    $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
-    $additional_services = 0;
-    if ($this->recojoAlmacen) {
-        $this->desglose['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
-        $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $cbmReal, 2, '.', ''); // ajustado por cantidad
-        $additional_services = $costoRecojo + $total_tiered_charge;
-    }
+        $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
+        $additional_services = 0;
+        if ($this->recojoAlmacen) {
+            $this->desglose['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
+            $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $cbmReal, 2, '.', ''); // ajustado por cantidad
+            $additional_services = $costoRecojo + $total_tiered_charge;
+        }
 
-    if ($costoDestino > 0 && $nombreDestino) {
-        $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
-    }
+        if ($costoDestino > 0 && $nombreDestino) {
+            $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
+        }
 
-    // Separador y total final
-    $total = $this->valorMercancia + $costoFleteTotal + $additional_services + $costoDestino;
+        // Separador y total final
+        $total = $this->valorMercancia + $costoFleteTotal + $additional_services + $costoDestino;
 
-    return [
-        'costo' => number_format($total, 2, '.', ''),
-        'tipo'  => 'CBM',
-        'unidad' => 'm³',
-        'valor_facturado' => $costoFleteTotal,
-        'cbm_facturado' => $cbmAplicado,
-        'detalle' => [
-            'cbm_real' => $cbmReal,
+        return [
+            'costo' => number_format($total, 2, '.', ''),
+            'tipo'  => 'CBM',
+            'unidad' => 'm³',
+            'valor_facturado' => $costoFleteTotal,
             'cbm_facturado' => $cbmAplicado,
-            'precio_por_unidad' => $precioPorCbm,
-            'cantidad' => $this->cantidad,
-            'flete_total' => $costoFleteTotal
-        ]
-    ];
-}
+            'detalle' => [
+                'cbm_real' => $cbmReal,
+                'cbm_facturado' => $cbmAplicado,
+                'precio_por_unidad' => $precioPorCbm,
+                'cantidad' => $this->cantidad,
+                'flete_total' => $costoFleteTotal
+            ]
+        ];
+    }
 
     /**
      * Responder a la pregunta del precio
@@ -641,12 +662,20 @@ private function calculateShippingPackagePerDimensions(float $cbmReal): array
      */
     public function descargarPDF()
     {
+        // Si es FCL, usamos los campos de búsqueda de puertos
+        $origenFinal = $this->tipoCarga === 'fcl' ? $this->searchPOL : $this->origen;
+        $destinoFinal = $this->tipoCarga === 'fcl' ? $this->searchPOD : $this->destino;
+
         return redirect()->route('cotizacion.pdf', [
             'tipoCarga' => $this->tipoCarga,
             'peso' => $this->peso,
             'volumen' => $this->volumen,
-            'origen' => $this->origen,
-            'destino' => $this->destino,
+            'largo' => $this->largo,
+            'ancho' => $this->ancho,
+            'alto' => $this->alto,
+            'cantidad' => $this->cantidad,
+            'origen' => $origenFinal,
+            'destino' => $destinoFinal,
             'valorMercancia' => $this->valorMercancia,
             'resultado' => $this->resultado,
             'desglose' => json_encode($this->desglose),
@@ -911,7 +940,7 @@ private function calculateShippingPackagePerDimensions(float $cbmReal): array
     /**
      * Buscar tarifas FCL usando los códigos POL/POD
      */
-    public function buscarTarifasFCL()
+      public function buscarTarifasFCL()
     {
         // 1. Limpiar estado anterior
         $this->reset(['rates', 'loadingRates', 'message', 'fclRates', 'currentPage']);
@@ -933,67 +962,74 @@ private function calculateShippingPackagePerDimensions(float $cbmReal): array
         $url = "https://www.5688.com.cn/fcl/{$originCode}-{$destCode}";
 
         try {
-            $response = Http::timeout(120)->withHeaders([
-                'Authorization' => 'Bearer ' . config('services.firecrawl.key'), // Recomendado: pon tu API key en .env
-                'Content-Type'  => 'application/json',
-            ])->post('https://api.firecrawl.dev/v2/scrape', [
-                'url' => $url,
-                'formats' => [
-                    [
-                        'type' => 'json',
-                        'prompt' => 'Extrae todas las tarifas FCL válidas de la tabla. Incluye solo filas completas con precios numéricos. Ignora filas de carga o incompletas.',
-                        'schema' => [
-                            'type' => 'object',
-                            'properties' => [
-                                'rates' => [
-                                    'type' => 'array',
-                                    'items' => [
-                                        'type' => 'object',
-                                        'properties' => [
-                                            'shipping_line' => ['type' => 'string'],
-                                            'gp20'          => ['type' => ['integer', 'null']],
-                                            'gp40'          => ['type' => ['integer', 'null']],
-                                            'hq40'          => ['type' => ['integer', 'null']],
-                                            'transit_time'  => ['type' => ['string', 'null']],
-                                            'valid_until'   => ['type' => ['string', 'null']],
-                                            'closing'       => ['type' => ['string', 'null']],
-                                        ],
-                                        'required' => ['shipping_line']
-                                    ]
-                                ]
-                            ],
-                            'required' => ['rates']
-                        ]
-                    ]
-                ]
-            ]);
-       
-         
-            $responseArray = json_decode($response->body(), true);
+            // $response = Http::timeout(120)->withHeaders([
+            //     'Authorization' => 'Bearer ' . config('services.firecrawl.key'), // Recomendado: pon tu API key en .env
+            //     'Content-Type'  => 'application/json',
+            // ])->post('https://api.firecrawl.dev/v2/scrape', [
+            //     'url' => $url,
+            //     'formats' => [
+            //         [
+            //             'type' => 'json',
+            //             'prompt' => 'Extrae todas las tarifas FCL válidas de la tabla. Incluye solo filas completas con precios numéricos. Ignora filas de carga o incompletas.',
+            //             'schema' => [
+            //                 'type' => 'object',
+            //                 'properties' => [
+            //                     'rates' => [
+            //                         'type' => 'array',
+            //                         'items' => [
+            //                             'type' => 'object',
+            //                             'properties' => [
+            //                                 'shipping_line' => ['type' => 'string'],
+            //                                 'gp20'          => ['type' => ['integer', 'null']],
+            //                                 'gp40'          => ['type' => ['integer', 'null']],
+            //                                 'hq40'          => ['type' => ['integer', 'null']],
+            //                                 'transit_time'  => ['type' => ['string', 'null']],
+            //                                 'valid_until'   => ['type' => ['string', 'null']],
+            //                                 'closing'       => ['type' => ['integer', 'null']],
+            //                             ],
+            //                             'required' => ['shipping_line']
+            //                         ]
+            //                     ]
+            //                 ],
+            //                 'required' => ['rates']
+            //             ]
+            //         ]
+            //     ]
+            // ]);
+            //Consumir data del archivo de database/mockup/data.json
+            $filePath = base_path('database/mockup/data.json');
+            
+            if (!File::exists($filePath)) {
+                throw new \Exception("Archivo mockup no encontrado en: {$filePath}");
+            }
+
+            $jsonContent = File::get($filePath);
+            $responseArray = json_decode($jsonContent, true);
 
             if (!$responseArray || !($responseArray['success'] ?? false)) {
-                throw new \Exception('Error al conectar con Firecrawl o respuesta no exitosa.');
+                throw new \Exception('Error decodificando el archivo mockup o success es false');
             }
 
             $data = $responseArray['data']['json']['rates'] ?? [];
 
             if (empty($data)) {
-                $this->message = 'No se encontraron tarifas en tiempo real para esta ruta. Intentando recuperar historial...';
-                $this->cargarTarifasDesdeBaseDeDatos();
-                
-                if ($this->fclRates->isNotEmpty()) {
-                    $this->message = 'No hay tarifas en tiempo real nuevas. Mostrando tarifas guardadas anteriormente.';
-                } else {
-                    $this->message = 'No se encontraron tarifas para esta ruta en este momento.';
-                }
+                $this->message = 'No se encontraron tarifas para esta ruta en este momento.';
+                $this->fclRates = collect();
             } else {
                 // Convertir a colección para usar en la vista
                 $this->fclRates = collect($data);
 
-                // Guardar en base de datos para caché futura
+                // Opcional: Guardar en base de datos para caché futura
                 $this->guardarTarifasEnBaseDeDatos($url, $data);
 
                 $this->message = '¡Tarifas actualizadas! Se encontraron ' . count($data) . ' opciones.';
+            }
+            if (empty($data) || count($data) === 0) {
+                $this->message = 'No hay tarifas en tiempo real para esta ruta en este momento.';
+                $this->cargarTarifasDesdeBaseDeDatos(); // Fallback
+                if ($this->fclRates->isNotEmpty()) {
+                    $this->message .= ' Mostrando tarifas guardadas anteriormente.';
+                }
             }
         } catch (\Exception $e) {
             Log::error('Error Firecrawl FCL: ' . $e->getMessage(), [

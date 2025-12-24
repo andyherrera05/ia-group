@@ -152,7 +152,7 @@
             font-size: 13px;
             color: #4b5563;
         }
-
+ 
         .result-box {
             background: #f59e0b;
             border-radius: 8px;
@@ -297,22 +297,8 @@
         <div class="content">
             <!-- Información del Envío -->
             <div class="info-section">
-                <div class="info-title">Detalles del Envío</div>
+                <div class="info-title">Detalles de la Ruta y Carga</div>
                 <div class="info-grid">
-                    <div class="info-row">
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Peso Total</div>
-                                <div class="info-value">{{ number_format($peso, 2) }} KG</div>
-                            </div>
-                        </div>
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Volumen Total</div>
-                                <div class="info-value">{{ number_format($volumen, 3) }} M³</div>
-                            </div>
-                        </div>
-                    </div>
                     <div class="info-row">
                         <div class="info-cell">
                             <div class="info-item">
@@ -330,8 +316,8 @@
                     <div class="info-row">
                         <div class="info-cell">
                             <div class="info-item">
-                                <div class="info-label">Dimensiones</div>
-                                <div class="info-value">{{ $largo ?? '0' }}x{{ $ancho ?? '0' }}x{{ $alto ?? '0' }} cm</div>
+                                <div class="info-label">Tipo de Envío</div>
+                                <div class="info-value">Contenedor Completo (FCL)</div>
                             </div>
                         </div>
                         <div class="info-cell">
@@ -350,14 +336,13 @@
                 </div>
                 @endif
             </div>
-
+ 
             <!-- Resumen de Cálculo -->
             <div class="calc-summary">
                 <div class="calc-title">Base de Cotización</div>
                 <div class="calc-detail">
-                    Carga cobrada por <strong>{{ $tipoCobro }}</strong>. 
-                    Concepto: {{ $tipoCobro == 'CBM' ? 'Volumen facturado' : 'Peso facturado' }}: 
-                    <strong>{{ is_numeric($cbmFacturado) ? number_format($cbmFacturado, 2) : number_format($peso, 2) }} {{ $unidad ?: 'kg' }}</strong>.
+                    Carga cotizada bajo la modalidad de <strong>{{ $tipoCobro }}</strong>. 
+                    Unidad de medida: <strong>{{ $unidad }}</strong>.
                 </div>
             </div>
             
@@ -378,17 +363,19 @@
                     $conceptosPrincipales = [
                         'Valor de Mercancía', 
                         'Costo de Envío de Paquete', 
+                        'Gestión Portuaria',
+                        'Flete Marítimo',
                         'Agencia Despachante', 
                         'Recojo desde Almacén'
                     ];
-
+ 
                     foreach($desglose as $concepto => $valor) {
                         $isMain = false;
                         foreach($conceptosPrincipales as $main) {
                             if (str_contains($concepto, $main)) { $isMain = true; break; }
                         }
                         if (str_contains($concepto, 'Entrega a')) { $isMain = true; }
-
+ 
                         if ($isMain && !is_null($valor)) {
                             $principales[$concepto] = $valor;
                         } else {
@@ -396,7 +383,7 @@
                         }
                     }
                 @endphp
-
+ 
                 <!-- Tabla 1: Resumen de Inversión -->
                 <div class="info-section">
                     <div class="info-title">Resumen de Inversión</div>
@@ -410,7 +397,7 @@
                         <tbody>
                             @foreach($principales as $concepto => $valor)
                                 <tr>
-                                    <td style="font-weight: bold; color: #111827;">{{ $concepto }}</td>
+                                    <td style="font-weight: bold; color: #111827;">{{ trim($concepto) }}</td>
                                     <td style="text-align: right; font-weight: bold; color: #b45309;">
                                         {{ is_numeric($valor) ? '$' . number_format($valor, 2) : $valor }}
                                     </td>
@@ -419,7 +406,7 @@
                         </tbody>
                     </table>
                 </div>
-
+ 
                 <!-- Tabla 2: Detalle Operativo (Opcional) -->
                 @if(count($detalles) > 0)
                 <div class="info-section" style="margin-top: 20px;">

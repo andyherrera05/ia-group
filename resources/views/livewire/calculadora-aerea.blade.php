@@ -128,16 +128,6 @@
                     </div>
                 </div>
 
-
-
-                {{-- <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl transition-all duration-300 hover:border-yellow-500/30">
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" wire:model="urgente" class="w-5 h-5 text-yellow-500 bg-black/30 border-2 border-white/10 rounded focus:ring-yellow-500 focus:ring-2">
-                        <span class="ml-3 text-yellow-400 font-bold">SERVICIO URGENTE (+30%)</span>
-                    </label>
-                    <p class="text-yellow-500/70 text-xs mt-2 pl-1">Entrega en 24-48 horas</p>
-                </div> --}}
-
                 <div class="flex space-x-4">
                     <button wire:click="calcular"
                         class="flex-1 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-500 hover:from-yellow-400 hover:via-amber-400 hover:to-yellow-400 text-black font-black py-4 px-6 text-lg uppercase tracking-wider transition-all transform hover:scale-105 hover:-translate-y-1 shadow-xl hover:shadow-yellow-500/50 rounded-xl">
@@ -165,31 +155,81 @@
                         </div>
 
                         @if (count($desglose) > 0)
-                            <div class="space-y-3">
+                            <div class="space-y-4" x-data="{ showDetailed: false }">
                                 <h3
-                                    class="font-bold text-yellow-500 uppercase text-sm tracking-widest mb-4 border-b border-yellow-500/20 pb-3">
-                                    Desglose:
+                                    class="font-bold text-yellow-500 uppercase text-xs tracking-widest border-b border-yellow-500/20 pb-3">
+                                    Resumen de Cotización
                                 </h3>
 
-                                @foreach ($desglose as $concepto => $valor)
-                                    <div
-                                        class="flex justify-between items-center py-3 border-b border-white/5 hover:bg-white/5 px-3 rounded-lg transition-all">
-                                        <span class="text-gray-300 text-sm font-medium">{{ $concepto }}</span>
-                                        <span class="font-bold text-white text-sm">
-                                            @if (is_numeric($valor))
-                                                @if ($valor > 0)
-                                                    ${{ number_format($valor, 2) }}
-                                                @else
-                                                    Gratis
-                                                    <!-- o "No aplica", "$0.00", o simplemente "-" según prefieras -->
-                                                @endif
+                                @php
+                                    $mainItems = [];
+                                    $detailedItems = [];
+                                    foreach ($desglose as $concepto => $valor) {
+                                        $trimmedConcepto = trim($concepto);
+                                        $isDetailed = str_contains($concepto, '─') || 
+                                                      str_contains($concepto, '├─') || 
+                                                      str_contains($concepto, '└─') || 
+                                                      str_starts_with($trimmedConcepto, 'Subtotal');
+                                        
+                                        if ($isDetailed) {
+                                            $detailedItems[$concepto] = $valor;
+                                        } else {
+                                            $mainItems[$concepto] = $valor;
+                                        }
+                                    }
+                                @endphp
+
+                                <!-- Items Principales -->
+                                <div class="space-y-2">
+                                    @foreach ($mainItems as $concepto => $valor)
+                                        <div class="flex justify-between items-center py-2 px-4 bg-white/5 rounded-lg border border-white/5">
+                                            <span class="text-gray-300 text-sm font-medium">{{ trim($concepto) }}</span>
+                                            <span class="font-bold text-white text-sm">
+                                                {{ is_numeric($valor) ? '$' . number_format($valor, 2) : $valor }}
+                                            </span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                @if (count($detailedItems) > 0)
+                                    <button @click="showDetailed = !showDetailed" 
+                                        class="w-full flex items-center justify-between py-3 px-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-yellow-500 hover:bg-yellow-500/20 transition-all group">
+                                        <span class="text-sm font-bold uppercase tracking-wider">Ver Desglose Detallado</span>
+                                        <svg class="w-5 h-5 transform transition-transform duration-300" :class="showDetailed ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Sección Detallada (Accordion) -->
+                                    <div x-show="showDetailed" 
+                                        x-transition:enter="transition ease-out duration-300"
+                                        x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                        x-transition:enter-end="opacity-100 transform translate-y-0"
+                                        class="space-y-1 pl-4 border-l-2 border-yellow-500/20 mt-2">
+                                        @foreach ($detailedItems as $concepto => $valor)
+                                            @php
+                                                $isHeader = str_contains($concepto, '─') && !str_contains($concepto, '├─') && !str_contains($concepto, '└─');
+                                                $isSubtotal = str_contains($concepto, 'Subtotal');
+                                            @endphp
+                                            
+                                            @if ($isHeader)
+                                                <div class="pt-4 pb-1">
+                                                    <span class="text-yellow-500/70 text-[10px] font-black uppercase tracking-widest">{{ ltrim($concepto, '─ ') }}</span>
+                                                </div>
                                             @else
-                                                {{ $valor }}
-                                                <!-- Aquí NO se pone $ porque ya es un mensaje como "No aplica (< 5 kg)" -->
+                                                <div class="flex justify-between items-center py-1.5 px-3 {{ $isSubtotal ? 'bg-white/5 rounded-md border-t border-white/10 mt-1 mb-2' : '' }}">
+                                                    <span class="{{ $isSubtotal ? 'text-white font-bold text-xs' : 'text-gray-400 text-[11px]' }}">
+                                                        {{ ltrim($concepto, ' ├─└─') }}
+                                                    </span>
+                                                    @if ($valor !== null)
+                                                        <span class="{{ $isSubtotal ? 'text-yellow-400 font-bold text-xs' : 'text-gray-300 text-[11px]' }}">
+                                                            {{ is_numeric($valor) ? '$' . number_format($valor, 2) : $valor }}
+                                                        </span>
+                                                    @endif
+                                                </div>
                                             @endif
-                                        </span>
+                                        @endforeach
                                     </div>
-                                @endforeach
+                                @endif
                             </div>
                         @endif
                     @else
@@ -219,44 +259,53 @@
                                 <div class="grid grid-cols-2 gap-3">
                                     <button wire:click="responder('si')"
                                         class="bg-green-500 hover:bg-green-400 text-white font-black py-3 px-4 rounded-lg transition-all transform hover:scale-105 shadow-lg shadow-green-500/30 uppercase text-sm">
-                                        😊 SÍ
+                                         Sí, ¡me encanta!
                                     </button>
                                     <button wire:click="responder('no')"
                                         class="bg-red-500 hover:bg-red-400 text-white font-black py-3 px-4 rounded-lg transition-all transform hover:scale-105 shadow-lg shadow-red-500/30 uppercase text-sm">
-                                        😕 NO
+                                        No, muy caro
                                     </button>
                                 </div>
                             @else
-                                {{-- Respuesta basada en la elección --}}
-                                <div class="text-center space-y-4">
-                                    @if ($respuestaUsuario === 'si')
-                                        <svg class="w-16 h-16 mx-auto text-green-500 mb-3" fill="none"
-                                            stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <h3 class="text-lg font-black text-green-500 mb-3">¡Perfecto!</h3>
-                                        <p class="text-gray-300 text-sm mb-6">Contáctanos para confirmar tu envío</p>
-                                    @else
-                                        <svg class="w-16 h-16 mx-auto text-yellow-500 mb-3" fill="none"
-                                            stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <h3 class="text-lg font-black text-yellow-500 mb-3">¡Podemos mejorarlo!</h3>
-                                        <p class="text-gray-300 text-sm mb-6">Hablemos de tu necesidad específica</p>
-                                    @endif
+                                <div class="text-center space-y-6">
+                                            @if ($respuestaUsuario === 'si')
+                                                <div class="animate-bounce"><span class="text-green-400 text-5xl font-black italic">¡PERFECTO!</span></div>
+                                                <p class="text-lg font-bold text-gray-200">Nuestros especialistas están listos para ayudarte:</p>
+                                            @else
+                                                <div class="animate-pulse"><span class="text-yellow-400 text-5xl font-black italic">TRANQUILO</span></div>
+                                                <p class="text-lg font-bold text-gray-200">¡Podemos ajustarlo! Habla con un experto:</p>
+                                            @endif
 
-                                    <a href="https://web.whatsapp.com/send?phone=59164700293?text=Hola !%20Vi%20el%20precio%20del%20envío%20aéreo%20de%20${{ $resultado }}%20y%20me%20gustaría%20más%20información."
-                                        target="_blank"
-                                        class="inline-flex items-center space-x-3 bg-green-600 hover:bg-green-500 text-white font-black py-3 px-6 rounded-lg transition-all transform hover:scale-105 shadow-xl shadow-green-600/40">
-                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                                        </svg>
-                                        <span>Contáctanos</span>
-                                    </a>
-                                </div>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-left">
+                                                @php
+                                                    $contactos = [
+                                                        ['area' => 'Logística', 'num' => '59172976032', 'color' => 'yellow'],
+                                                        ['area' => 'Auction', 'num' => '59164580634', 'color' => 'yellow'],
+                                                        ['area' => 'Academy', 'num' => '59164700293', 'color' => 'yellow'],
+                                                        ['area' => 'Agents', 'num' => '59172976032', 'color' => 'yellow'],
+                                                        ['area' => 'Negocios', 'num' => '59172981315', 'color' => 'yellow'],
+                                                        ['area' => 'IA Groups', 'num' => '59162931965', 'color' => 'yellow'],
+                                                    ];
+                                                @endphp
+
+                                                @foreach($contactos as $c)
+                                                @php
+                                                    $mensajeTexto = "Hola " . $c['area'] . "! Vengo de la cotización de $" . number_format($resultado, 2) . " USD";
+                                                    $urlWebWa = "https://web.whatsapp.com/send?phone=" . $c['num'] . "&text=" . urlencode($mensajeTexto);
+                                                @endphp
+                                                <a href="{{ $urlWebWa }}" 
+                                                target="_blank"
+                                                class="flex items-center justify-between bg-gray-800/50 p-3 rounded-lg border border-gray-700 hover:border-{{ $c['color'] }}-500 transition-all group">
+                                                    <div class="flex flex-col">
+                                                        <span class="text-xs text-gray-400 uppercase tracking-widest">{{ $c['area'] }}</span>
+                                                        <span class="text-white font-bold">+{{ $c['num'] }}</span>
+                                                    </div>
+                                                </a>
+                                                @endforeach
+                                            </div>
+
+                                            <p class="text-xs text-gray-500 pt-4 italic">Haz clic en el área correspondiente para una atención personalizada.</p>
+                                        </div>
                             @endif
                         </div>
                     @endif

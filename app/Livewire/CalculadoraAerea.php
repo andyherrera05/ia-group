@@ -18,6 +18,7 @@ class CalculadoraAerea extends Component
     public $alto = '';
     public $valorMercancia = '';
     public $urgente = false;
+    public $diasAlmacen = 7;
 
     // Tarifas configurables (más caras que marítimo)
     public $tarifaBase = 800;
@@ -61,13 +62,9 @@ class CalculadoraAerea extends Component
     /**
      * Cálculo para peso volumetrico
      */
-    private function calcularPesoVolumetrico()
+    private function calcularPesoVolumetrico($longitudCm, $anchoCm, $alturaCm)
     {
-        $largo = $this->largo;
-        $ancho = $this->ancho;
-        $alto = $this->alto;
-
-        $volumen = ($largo * $ancho * $alto) / 5000;
+        $volumen = ($longitudCm * $anchoCm * $alturaCm) / 5000;
 
         return $volumen;
     }
@@ -151,8 +148,6 @@ class CalculadoraAerea extends Component
         }
 
         $costoFinal = $tarifaPorKg * $pesoRedondeado;
-        Log::warning("tarifa ".$tarifaPorKg);
-        Log::warning("pesoRedondeado ".$pesoRedondeado);
 
         $comision = $valorMercancia * 0.06;
         $factura  = 70;
@@ -165,19 +160,59 @@ class CalculadoraAerea extends Component
         $aplicarAdicionales = ($pesoRedondeado > 5);
 
         if ($aplicarAdicionales) {
-            $consolidacion = 10;
-            $almacen       = 3.5;
+            // Tabla de consolidación dinámica
+            if ($pesoRedondeado <= 25) {
+                $consolidacion = 10;
+            } elseif ($pesoRedondeado <= 50) {
+                $consolidacion = 18;
+            } else {
+                $consolidacion = 24;
+            }
+            
+            // Almacén dinámico
+            $dias = floatval($this->diasAlmacen) ?: 7;
+            if ($pesoRedondeado <= 25) {
+                $tarifaAlmacen = 0.50;
+            } elseif ($pesoRedondeado <= 50) {
+                $tarifaAlmacen = 1.00;
+            } else {
+                $tarifaAlmacen = 1.50;
+            }
+            $almacen = $tarifaAlmacen * $dias;
+
             $impuestos     = 25;
         }
 
+        // Grupo 1: Servicios en Origen (China)
+        $subtotalOrigen = $comision + $factura;
+        
+        // Grupo 2: Eje Logístico Internacional
+        $subtotalFlete = $costoFinal;
+        
+        // Grupo 3: Gestión y Protección
+        $subtotalGestion = $seguro + $consolidacion + $almacen + $impuestos;
+
+        // Cálculo de subtotales para el resumen
+        $subtotalFleteAereo = $costoFinal;
+        $subtotalGestionChina = $comision + $factura + $seguro + $consolidacion + $almacen + $impuestos;
+
         $this->desglose = [
-            'Tarifa por KG'                       => number_format($tarifaPorKg, 2),
-            'Comisión en China (6% del valor)'     => number_format($comision, 2),
-            'Factura y lista de empaque'           => number_format($factura, 2),
-            'Seguro (2% del valor)'                => number_format($seguro, 2),
-            'Consolidación de paquetes'           => $aplicarAdicionales ? number_format($consolidacion, 2) : 'No aplica (< 5 kg)',
-            'Almacén (0.5 USD/día aprox.)'         => $aplicarAdicionales ? number_format($almacen, 2) : 'No aplica (< 5 kg)',
-            'Exportación e Impuestos'             => $aplicarAdicionales ? number_format($impuestos, 2) : 'No aplica (< 5 kg)',
+            'Valor de la mercancía' => number_format($valorMercancia, 2),
+            'Flete Aéreo Internacional' => number_format($subtotalFleteAereo, 2),
+            'Gestión Logística en China' => number_format($subtotalGestionChina, 2),
+            
+            '─ DETALLE DE SERVICIOS EN ORIGEN' => null,
+            '   ├─ Gestión Administrativa en China' => number_format($comision, 2),
+            '   └─ Documentación y Packing List' => number_format($factura, 2),
+
+            '─ DETALLE DE FLETE Y SEGURO' => null,
+            '   ├─ Flete Internacional Aéreo Express' => number_format($tarifaPorKg, 2),
+            '   └─ Seguro y Protección de Carga' => number_format($seguro, 2),
+
+            '─ DETALLE DE OPERACIÓN Y LOGÍSTICA' => null,
+            '   ├─ Consolidación y Verificación' => $aplicarAdicionales ? number_format($consolidacion, 2) : 'No aplica (< 5 kg)',
+            '   ├─ Almacenaje en China (' . ($tarifaAlmacen ?? 0.5) . ' USD/día x' . ($dias ?? 7) . ' días)' => $aplicarAdicionales ? number_format($almacen, 2) : 'No aplica (< 5 kg)',
+            '   └─ Tasas de Exportación y Aduana' => $aplicarAdicionales ? number_format($impuestos, 2) : 'No aplica (< 5 kg)',
         ];
 
         // Cálculo del total general
@@ -218,7 +253,8 @@ class CalculadoraAerea extends Component
      */
     public function limpiar()
     {
-        $this->reset(['peso', 'largo', 'ancho', 'alto', 'valorMercancia', 'urgente', 'resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario']);
+        $this->reset(['peso', 'largo', 'ancho', 'alto', 'valorMercancia', 'urgente', 'resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario', 'diasAlmacen']);
+        $this->diasAlmacen = 7; // Asegurar valor por defecto
         session()->flash('info', 'Formulario limpiado.');
     }
 

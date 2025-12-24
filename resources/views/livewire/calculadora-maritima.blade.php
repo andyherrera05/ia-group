@@ -171,10 +171,12 @@
                                         $mainItems = [];
                                         $detailedItems = [];
                                         foreach ($desglose as $concepto => $valor) {
-                                            $isDetailed = str_contains($concepto, '─') || 
+                                            $trimmedConcepto = trim($concepto);
+                                            $isDetailed = (str_contains($concepto, '─') || 
                                                           str_contains($concepto, '├─') || 
                                                           str_contains($concepto, '└─') || 
-                                                          str_starts_with(trim($concepto), 'Subtotal');
+                                                          str_starts_with($trimmedConcepto, 'Subtotal')) &&
+                                                          !str_contains($trimmedConcepto, 'Gestión Portuaria');
                                             
                                             if ($isDetailed) {
                                                 $detailedItems[$concepto] = $valor;
@@ -188,7 +190,7 @@
                                     <div class="space-y-2">
                                         @foreach ($mainItems as $concepto => $valor)
                                             <div class="flex justify-between items-center py-2 px-4 bg-white/5 rounded-lg border border-white/5">
-                                                <span class="text-gray-300 text-sm font-medium">{{ $concepto }}</span>
+                                                <span class="text-gray-300 text-sm font-medium">{{ trim($concepto) }}</span>
                                                 <span class="font-bold text-white text-sm">
                                                     {{ is_numeric($valor) ? '$' . number_format($valor, 2) : $valor }}
                                                 </span>
@@ -238,8 +240,7 @@
                                 </div>
                             @endif
 
-                            <!-- Botón PDF solo en LCL -->
-                            @if ($tipoCarga === 'lcl')
+                            <!-- Botón PDF -->
                                 <div class="mt-6">
                                     <button wire:click="descargarPDF" wire:loading.attr="disabled"
                                         class="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-xl shadow-red-600/40 flex items-center justify-center space-x-3">
@@ -250,11 +251,10 @@
                                         <span>Descargar Cotización en PDF</span>
                                     </button>
                                 </div>
-                            @endif
 
                             <!-- Pregunta interactiva -->
                             @if ($mostrarPregunta && $resultado !== null)
-                               <div class="mt-8 bg-gradient-to-br from-gray-900 to-black border-2 border-yellow-500/50 rounded-xl p-6 shadow-2xl">
+                               <div class="mt-8 bg-gradient-to-br border-2 border-yellow-500/50 rounded-xl p-6 shadow-2xl">
                                     @if ($respuestaUsuario === null)
                                         <h3 class="text-xl font-black text-yellow-400 text-center mb-6">¿Te gusta este precio?</h3>
                                         <div class="grid grid-cols-2 gap-4">

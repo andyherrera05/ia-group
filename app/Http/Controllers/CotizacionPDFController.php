@@ -29,7 +29,8 @@ class CotizacionPDFController extends Controller
             'cbmFacturado' => $request->cbmFacturado,
         ];
 
-        $pdf = Pdf::loadView('pdf.cotizacion-lcl', $data);
+        $view = (strtolower($data['tipoCarga']) === 'fcl') ? 'pdf.cotizacion-fcl' : 'pdf.cotizacion-lcl';
+        $pdf = Pdf::loadView($view, $data);
 
         return $pdf->download('cotizacion-' . strtolower($data['tipoCarga']) . '-' . date('Ymd-His') . '.pdf');
     }
