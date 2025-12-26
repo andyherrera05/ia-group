@@ -282,7 +282,7 @@
                                 ['area' => 'Auction', 'num' => '59164580634', 'color' => 'yellow'],
                                 ['area' => 'Academy', 'num' => '59164700293', 'color' => 'yellow'],
                                 ['area' => 'Imports & Exports', 'num' => '59172976032', 'color' => 'yellow'],
-                                ['area' => 'Agemte de carga', 'num' => '5974518652', 'color' => 'yellow'],
+                                ['area' => 'Agente de carga', 'num' => '5974518652', 'color' => 'yellow'],
                                 ['area' => 'Negocios', 'num' => '59164583783', 'color' => 'yellow'],
                                 ['area' => 'IA Groups', 'num' => '59172981315', 'color' => 'yellow'],
                                 @endphp
