@@ -171,10 +171,16 @@ class ScraperController extends Controller
 
             // Si está en milímetros → convertir a cm
             if ($num > 500) { // heurística: difícil que una dimensión sea >500cm (5m)
-                $num = round($num / 10); // mm → cm
+                $num = $num / 10; // mm → cm (SIN REDONDEAR A ENTERO)
             }
 
-            $resultado[] = (int) $num; // quitamos decimales
+            // Si tiene decimales, redondear a 2, si no, entero.
+            // Para el string final, usamos lógica simple:
+            if (floor($num) == $num) {
+                $resultado[] = (int) $num;
+            } else {
+                $resultado[] = round($num, 2);
+            }
         }
 
         // Formato final deseado
