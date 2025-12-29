@@ -32,7 +32,7 @@
                 <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
                     Valor de Mercancía (USD)
                 </label>
-                <input type="number" wire:model="valorMercancia" step="1" required placeholder="Ej: 10,000"
+                <input type="number" wire:model.live="valorMercancia" step="1" required placeholder="Ej: 10,000"
                     class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
             </div>
 
@@ -43,7 +43,7 @@
                     <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
                         Cantidad (Unidades)
                     </label>
-                    <input type="number" wire:model="cantidad" value="1" step="1" placeholder="1" required
+                    <input type="number" wire:model.live="cantidad" value="1" step="1" placeholder="1" required
                         class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                 </div>
 
@@ -51,7 +51,7 @@
                     <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
                         Peso Total (KG)
                     </label>
-                    <input type="number" wire:model="peso" step="1" placeholder="Ej: 500"
+                    <input type="number" wire:model.live="peso" step="1" placeholder="Ej: 500"
                         class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                     <p class="text-xs text-gray-500 mt-1">Peso bruto incluyendo embalaje</p>
                 </div>
@@ -79,19 +79,19 @@
 
                         <div>
                             <label class="block text-xs font-medium text-gray-400 mb-2">Largo (cm)</label>
-                            <input type="number" wire:model="largo" placeholder="120"
+                            <input type="number" wire:model.live="largo" placeholder="120"
                                 class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
                         </div>
 
                         <div>
                             <label class="block text-xs font-medium text-gray-400 mb-2">Ancho (cm)</label>
-                            <input type="number" wire:model="ancho" placeholder="80"
+                            <input type="number" wire:model.live="ancho" placeholder="80"
                                 class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
                         </div>
 
                         <div>
                             <label class="block text-xs font-medium text-gray-400 mb-2">Alto (cm)</label>
-                            <input type="number" wire:model="alto" placeholder="100"
+                            <input type="number" wire:model.live="alto" placeholder="100"
                                 class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
                         </div>
 
@@ -104,7 +104,7 @@
                     <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
                         CBM Total (M³)
                     </label>
-                    <input type="number" wire:model="volumen" step="0.5" min="0.5" placeholder="Ej: 2.5"
+                    <input type="number" wire:model.live="volumen" step="0.5" min="0.5" placeholder="Ej: 2.5"
                         class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                     <p class="text-xs text-gray-500 mt-1">Este será el volumen utilizado para la cotización.</p>
                 </div>
@@ -126,7 +126,7 @@
                 <!-- Recojo de Almacén -->
                 <div class="bg-black/20 border border-yellow-500/20 rounded-xl p-5">
                     <div class="flex items-start space-x-4">
-                        <input type="checkbox" wire:model="recojoAlmacen" id="recojoAlmacen"
+                        <input type="checkbox" wire:model.live="recojoAlmacen" id="recojoAlmacen"
                             class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
                         <div class="flex-1">
                             <label for="recojoAlmacen" class="flex items-center justify-between cursor-pointer">
@@ -165,7 +165,7 @@
                                     <input type="checkbox" wire:model.live="destinoFinal" value="otros" name="destinoFinal"
                                         class="w-5 h-5 border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
                                     <div class="flex-1">
-                                        <span class="text-white font-medium">¿Dónde que se entregue la carga en Bolivia?</span>
+                                        <span class="text-white font-medium">¿Dónde se hara la entrega de la carga en Bolivia?</span>
                                     </div>
                                 </div>
                             </label>
@@ -222,8 +222,78 @@
                             @endif
 
                         </div>
+                </div>
+                <div class="space-y-4">
+                    <h4 class="text-yellow-500 font-bold text-sm uppercase tracking-wider mb-2">Servicios de Verificación</h4>
+                    
+                    <!-- Verificación de Producto -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model.live="verificacionProducto" id="verificacionProducto"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="verificacionProducto" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">Verificación de Producto</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Obtención de video real y fotos del producto real.</p>
+                                    </div>
+                                    <span class="text-yellow-400 font-bold text-base ml-2">+$10</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                
+
+                    <!-- Verificación de Calidad -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model.live="verificacionCalidad" id="verificacionCalidad"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="verificacionCalidad" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">Verificación de la Calidad</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Recepción en almacén y pruebas de funcionamiento/uso.</p>
+                                    </div>
+                                    <span class="text-yellow-400 font-bold text-base ml-2">+$50</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verificación de Empresa Digital -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model.live="verificacionEmpresaDigital" id="verificacionEmpresaDigital"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="verificacionEmpresaDigital" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">Verificación de Empresa Digital</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Investigación de veracidad de licencias y establecimiento.</p>
+                                    </div>
+                                    <span class="text-yellow-400 font-bold text-base ml-2">+$100</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verificación Presencial de Empresa -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model.live="verificacionEmpresaPresencial" id="verificacionEmpresaPresencial"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="verificacionEmpresaPresencial" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">Verificación Presencial de Empresa</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Realización de viaje y visita técnica a la fábrica.</p>
+                                    </div>
+                                    <span class="text-yellow-400 font-bold text-base ml-2">+$350</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

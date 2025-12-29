@@ -112,6 +112,21 @@
                 transform: translateY(-5px);
             }
         }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(234, 179, 8, 0.3);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(234, 179, 8, 0.5);
+        }
     </style>
 </head>
 
@@ -354,39 +369,53 @@
                                 <!-- TODO: Backend - Conectar con scraper de productos -->
                                 <div class="space-y-4">
 
-                                    <!-- Product Image -->
+                                    <!-- Product Image & Specs -->
                                     <div
-                                        class="relative overflow-hidden rounded-xl border border-yellow-500 bg-yellow-900/50 hover:border-yellow-500/50 transition-all group p-4">
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        class="relative overflow-hidden rounded-xl border border-yellow-500 bg-yellow-900/50 hover:border-yellow-500/50 transition-all group p-6">
+                                        <div class="flex flex-col space-y-6">
+                                            
+                                            <!-- Product Title -->
+                                            <h2 id="scraped-title" class="text-yellow-500 text-2xs md:text-xl font-black text-center uppercase tracking-tighter leading-tight line-clamp-2 px-4 italic">
+                                                Cargando nombre del producto...
+                                            </h2>
 
-                                            <div
-                                                class="relative w-full h-64 md:h-full bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg flex items-center justify-center overflow-hidden border border-gray-700">
-                                                <img id="scraped-image"
-                                                    class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                                                    src="https://sc04.alicdn.com/kf/H538dfd223b4e42eb8feca0fe023538350.jpg">
+                                            <!-- Centered Image Container -->
+                                            <div class="flex justify-center">
+                                                <div
+                                                    class="relative w-full max-w-md h-64 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-700 shadow-2xl">
+                                                    <img id="scraped-image"
+                                                        class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                                                        src="https://sc04.alicdn.com/kf/H538dfd223b4e42eb8feca0fe023538350.jpg">
 
-                                                <div id="placeholder-image" class="text-center hidden">
-                                                    <svg class="w-16 h-16 mx-auto text-yellow-500/30 mb-2"
-                                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2v12a2 2 0 002 2z">
-                                                        </path>
-                                                    </svg>
-                                                    <p
-                                                        class="text-xs text-gray-500 font-medium uppercase tracking-wider">
-                                                        Vista Previa</p>
+                                                    <div id="placeholder-image" class="text-center hidden">
+                                                        <svg class="w-16 h-16 mx-auto text-yellow-500/30 mb-2"
+                                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2v12a2 2 0 002 2z">
+                                                            </path>
+                                                        </svg>
+                                                        <p
+                                                            class="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                                                            Vista Previa</p>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            <div class="flex flex-col justify-center space-y-4">
+                                            <!-- Specifications Grid (4 columns) -->
+                                            <div class="flex flex-col space-y-4">
                                                 <h3
-                                                    class="text-yellow-500 font-bold text-lg border-b border-gray-700 pb-2">
-                                                    Especificaciones Técnicas</h3>
+                                                    class="text-yellow-500 font-bold text-lg border-b border-gray-700 pb-2 flex items-center">
+                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
+                                                    Especificaciones Técnicas
+                                                </h3>
 
-                                                <ul id="scraped-characteristics-list" class="space-y-3">
-                                                    <!-- Propiedades dinámicas -->
-                                                </ul>
+                                                <div id="scraped-characteristics-list" 
+                                                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                                    <!-- Propiedades dinámicas en estilo card -->
+                                                </div>
                                             </div>
 
                                         </div>
@@ -415,6 +444,8 @@
                                         <div class="bg-black/40 border border-yellow-500/20 rounded-lg p-3">
                                             <p class="text-xs text-gray-500 mb-1">CBM(Kg)</p>
                                             <p id="scraped-package-weight" class="text-sm font-bold text-green-400">--
+                                            </p>
+                                             <p id="data-package-weight" class="hidden text-sm font-bold text-green-400">--
                                             </p>
                                         </div>
 
@@ -1429,6 +1460,11 @@
 
             const img = document.getElementById('scraped-image');
             const placeholder = document.getElementById('placeholder-image');
+            const titleElem = document.getElementById('scraped-title');
+
+            if (titleElem) {
+                titleElem.textContent = data.title || 'Producto Sin Nombre';
+            }
 
             if (data.image) {
                 img.src = data.image;
@@ -1451,24 +1487,32 @@
             const dimensionsMatch = packageSizeTexto.match(/[\d.]+/g);
             let [L, A, H] = dimensionsMatch ? dimensionsMatch.map(Number) : [0, 0, 0];
 
-            let packageSize = ((L * A * H) / 1000000).toFixed(2);
-            let weightCBM = (((L * A * H) / 5000).toFixed(2));
+            let packageSize = ((L * A * H) / 1000000).toFixed(3);
+            let weightCBM = (((L * A * H) / 5000).toFixed(3));
+
+            console.log(data.dimensions_cm);
+            console.log(data.dimensions_origen);
+            console.log("packageSize",packageSize);
+            console.log("packageSizeTexto",packageSizeTexto)
 
             document.getElementById('scraped-package-size').textContent = `${packageSize} m³`;
             document.getElementById('scraped-package-weight').textContent = `${weightCBM} Kg`;
+            document.getElementById('data-package-weight').textContent = `${data.packageWeight}`;
 
             const charList = document.getElementById('scraped-characteristics-list');
             charList.innerHTML = '';
 
             const addCharItem = (label, value, isImportant = false) => {
-                const li = document.createElement('li');
-                li.className = 'flex items-center text-yellow-500 text-sm';
-                const shadowClass = isImportant ? 'shadow-[0_0_8px_rgba(234,179,8,0.6)]' : '';
-                li.innerHTML = `
-                    <span class="w-2 h-2 bg-yellow-500 rounded-full mr-3 ${shadowClass}"></span>
-                    <strong>${label}:</strong> <span class="ml-2 text-white font-semibold">${value}</span>
+                const item = document.createElement('div');
+                item.className = 'group bg-black/30 border border-yellow-500/10 hover:border-yellow-500/40 rounded-lg p-2 transition-all duration-300';
+                
+                item.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="text-[6px] uppercase text-yellow-500 mb-1">${label}</span>
+                        <span class="text-[5px] text-white font-semibold line-clamp-2 leading-tight">${value}</span>
+                    </div>
                 `;
-                charList.appendChild(li);
+                charList.appendChild(item);
             };
 
             if (data.characteristics && Array.isArray(data.characteristics)) {
@@ -1527,7 +1571,7 @@
 
 
         function mostrarLoadingNavegacion() {
-            const imageUrl = '/images/ship.svg';
+            const imageUrl = "{{ asset('images/ship.svg') }}";
             Swal.fire({
                 title: 'Buscando datos...',
                 html: `
@@ -1649,7 +1693,8 @@
 
             if (maritimeBtn) {
                 const packageSizeText = document.getElementById('scraped-package-size').textContent.replace(' m³', '');
-                const packageWeightText = document.getElementById('scraped-package-weight').textContent.replace(' Kg', '');
+                const packageWeightText = document.getElementById('data-package-weight').textContent.replace(' Kg', '');
+                console.log(packageWeightText);
 
                 const payload = {};
 

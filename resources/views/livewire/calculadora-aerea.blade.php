@@ -278,13 +278,15 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-left">
                                 @php
-                                $contactos =
+                                $contactos = [
                                 ['area' => 'Auction', 'num' => '59164580634', 'color' => 'yellow'],
                                 ['area' => 'Academy', 'num' => '59164700293', 'color' => 'yellow'],
                                 ['area' => 'Imports & Exports', 'num' => '59172976032', 'color' => 'yellow'],
                                 ['area' => 'Agente de carga', 'num' => '5974518652', 'color' => 'yellow'],
                                 ['area' => 'Negocios', 'num' => '59164583783', 'color' => 'yellow'],
                                 ['area' => 'IA Groups', 'num' => '59172981315', 'color' => 'yellow'],
+                                ];
+                                shuffle($contactos);
                                 @endphp
 
                                 @foreach($contactos as $c)

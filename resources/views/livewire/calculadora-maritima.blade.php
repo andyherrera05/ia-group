@@ -287,6 +287,7 @@
                                 ['area' => 'Negocios', 'num' => '59164583783', 'color' => 'yellow'],
                                 ['area' => 'IA Groups', 'num' => '59172981315', 'color' => 'yellow'],
                                 ];
+                                shuffle($contactos);
                                 @endphp
 
                                 @foreach($contactos as $c)

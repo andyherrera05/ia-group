@@ -126,7 +126,7 @@ class ScraperController extends Controller
 
         return [
             'title' => $data['title'] ?? 'Sin título',
-            'price' => $data['priceTiers'][0]['dollarPrice'] ?? 'No disponible',
+            'price' => $data['priceTiers'][0]['dollarPrice'] ?? $data['priceRange'] ?? 'No disponible',
             'moq' => $data['moq'] ?? 'N/A',
             'image' => $data['firstImageUrl'] ?? ($data['images'][0] ?? null),
             'dimensions_cm'       => $dimensiones_cm,              // "112x84x67"

@@ -274,6 +274,32 @@
             line-height: 1.4;
             text-align: justify;
         }
+
+        .note-box {
+            background-color: #fffbeb;
+            border: 1px dashed #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        
+        .note-box p {
+            font-size: 11px;
+            font-weight: bold;
+            color: #b45309;
+            margin-bottom: 5px;
+        }
+        
+        .note-box ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+        
+        .note-box li {
+            font-size: 10px;
+            color: #92400e;
+            margin-bottom: 3px;
+        }
     </style>
 </head>
 <body>
@@ -317,13 +343,13 @@
                         <div class="info-cell">
                             <div class="info-item">
                                 <div class="info-label">Puerto Origen</div>
-                                <div class="info-value">{{ $origen ?: 'No especificado' }}</div>
+                                <div class="info-value">{{ $origen ?: 'Puerto de Ningbo-Zhoushan' }}</div>
                             </div>
                         </div>
                         <div class="info-cell">
                             <div class="info-item">
                                 <div class="info-label">Puerto Destino</div>
-                                <div class="info-value">{{ $destino ?: 'No especificado' }}</div>
+                                <div class="info-value">{{ $destino ?: 'Puerto de Iquique' }}</div>
                             </div>
                         </div>
                     </div>
@@ -352,6 +378,7 @@
             </div>
 
             <!-- Resumen de Cálculo -->
+            @if($tipoCobro == 'CBM')
             <div class="calc-summary">
                 <div class="calc-title">Base de Cotización</div>
                 <div class="calc-detail">
@@ -360,7 +387,7 @@
                     <strong>{{ is_numeric($cbmFacturado) ? number_format($cbmFacturado, 2) : number_format($peso, 2) }} {{ $unidad ?: 'kg' }}</strong>.
                 </div>
             </div>
-            
+            @endif          
             <!-- Resultado Total -->
             <div class="result-box">
                 <div class="result-label">Total Estimado desde China</div>
@@ -379,7 +406,8 @@
                         'Valor de Mercancía', 
                         'Costo de Envío de Paquete', 
                         'Agencia Despachante', 
-                        'Recojo desde Almacén'
+                        'Recojo desde Almacén',
+                        'Verificación'
                     ];
 
                     foreach($desglose as $concepto => $valor) {
@@ -458,6 +486,16 @@
                 @endif
             @endif
         </div>
+
+        <div class="note-box">
+            <p>AGRADECEMOS SU CONSULTA</p>
+            <p style="font-weight: normal; color: #d97706;">CONSIDERE QUE TAMBIÉN TENDRÁ OTROS CARGOS ADICIONALES:</p>
+            <ul>
+                <li>NACIONALIZACIÓN E IMPUESTOS</li>
+                <li>SERVICIOS DE AGENCIA DESPACHANTE</li>
+                <li>DESPACHO</li>
+            </ul>
+        </div>  
         
         <!-- Footer -->
         <div class="footer">
