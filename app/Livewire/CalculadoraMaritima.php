@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 
 #[Layout('layouts.app')]
 class CalculadoraMaritima extends Component
@@ -19,7 +20,47 @@ class CalculadoraMaritima extends Component
     public $tipoCarga = 'lcl';
 
     // Inputs generales
-    public $peso, $volumen, $valorMercancia, $cantidad;
+    #[Url]
+    public $peso;
+
+    #[Url(as: 'cbm')]
+    public $volumen;
+
+    #[Url]
+    public $valorMercancia;
+
+    #[Url]
+    public $cantidad;
+
+    #[Url]
+    public $cbm_directo;
+
+    #[Url]
+    public $q;
+
+    public function mount()
+    {
+        // Decodificar parámetro 'q' si existe
+        if ($this->q) {
+            try {
+                $decoded = json_decode(base64_decode($this->q), true);
+                if (is_array($decoded)) {
+                    $this->peso = $decoded['peso'] ?? $this->peso;
+                    $this->volumen = $decoded['cbm'] ?? $this->volumen;
+                    $this->valorMercancia = $decoded['valorMercancia'] ?? $this->valorMercancia;
+                    $this->cantidad = $decoded['cantidad'] ?? $this->cantidad;
+                    $this->cbm_directo = $decoded['cbm_directo'] ?? $this->cbm_directo;
+                }
+            } catch (\Exception $e) {
+                // Silenciosamente fallar si la decodificación falla
+            }
+        }
+
+        if ($this->cbm_directo) {
+            $this->metodoVolumen = 'cbm_directo';
+        }
+    }
+
     public $largo, $ancho, $alto;
     public $origen = '';
     public $destino = '';

@@ -335,10 +335,10 @@
                     </div>
 
                     <!-- Dashboard Content -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 sm:p-6 lg:p-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-4 sm:p-6 lg:p-8">
 
                         <!-- Left Column: Product Analysis -->
-                        <div class="space-y-6">
+                        <div class="space-y-6 lg:col-span-2">
                             <div
                                 class="bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 border border-yellow-500/30 rounded-xl p-6">
                                 <h4 class="text-lg font-bold text-yellow-500 mb-4 flex items-center">
@@ -402,9 +402,8 @@
                                         <div class="bg-black/40 border border-yellow-500/20 rounded-lg p-3">
                                             <label for="moqInput" class="text-xs text-gray-500 mb-1 block">Cantidad
                                                 (MOQ)</label>
-                                            <input type="number" id="scraped-moq" min="1" value="1"
-                                                class="w-full bg-black/60 border border-purple-500/40 rounded px-2 py-1 text-lg font-bold text-purple-400 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                                                placeholder="1">
+                                            <input type="number" id="scraped-moq" min="1"
+                                                class="w-full bg-black/60 border border-purple-500/40 rounded px-2 py-1 text-lg font-bold text-purple-400 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500">
                                         </div>
 
                                         <div class="bg-black/40 border border-yellow-500/20 rounded-lg p-3">
@@ -472,7 +471,7 @@
 
                                 <div class="space-y-4">
                                     <!-- Cotización Marítima -->
-                                    <a href="/maritimo"
+                                    <a href="/maritimo" id="btn-quote-maritime"
                                         class="block bg-gradient-to-br from-blue-900/30 to-blue-800/20 border-2 border-blue-500/40 hover:border-blue-500 rounded-xl p-5 transition-all group hover:shadow-lg hover:shadow-blue-500/20">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center space-x-4">
@@ -1319,7 +1318,8 @@
         });
         let eventSource = null;
 
-        function calcularCostoMaritimoLCL(pesoKg, cbmReal) {
+        function calcularCostoMaritimoLCL(volumen, cbmReal, pesoKg) {
+            // TARIFA POR PESO (cuando CBM < 0.1)
             const TARIFA_POR_KG = {
                 1: 10,
                 2: 9.5,
@@ -1336,69 +1336,92 @@
                 13: 4,
                 14: 3.5,
                 15: 3,
-                16: 2.5,
-                BASE_PESO_MAYOR: 2
+                16: 2.5
             };
 
-            const TARIFA_POR_CBM = {
-                20: 129,
-                15: 138,
-                11: 149,
-                8: 159,
-                5: 168,
-                3: 179,
-                1: 188,
-                0.5: 116,
-                0.25: 60
-            };
-
-            const PESO_VOLUMETRICO = cbmReal * 1000;
-            const PESO_FACTURABLE = Math.max(pesoKg, PESO_VOLUMETRICO);
+            // TARIFA POR M³ (cuando CBM ≥ 0.1)
+            const TARIFA_POR_CBM = [{
+                    min: 20,
+                    precio: 129
+                },
+                {
+                    min: 15,
+                    precio: 138
+                },
+                {
+                    min: 11,
+                    precio: 149
+                },
+                {
+                    min: 8,
+                    precio: 159
+                },
+                {
+                    min: 5,
+                    precio: 168
+                },
+                {
+                    min: 3,
+                    precio: 179
+                },
+                {
+                    min: 1,
+                    precio: 188
+                },
+                {
+                    min: 0.5,
+                    precio: 116
+                },
+                {
+                    min: 0.25,
+                    precio: 60
+                }
+            ];
 
             let costoFinal = 0;
             let tipoCobro = '';
             let valorUsado = 0;
 
-            if (cbmReal < 0.10) {
-                tipoCobro = 'Peso Mínimo (W/M)';
-                valorUsado = Math.ceil(pesoKg);
+            if (cbmReal === null || cbmReal < 0.1) {
+                tipoCobro = 'Peso (W/M)';
+                valorUsado = Math.ceil(volumen);
 
-                if (valorUsado <= 16) {
-                    costoFinal = TARIFA_POR_KG[valorUsado] * valorUsado;
+                if (valorUsado >= 1 && valorUsado <= 16 && TARIFA_POR_KG.hasOwnProperty(valorUsado)) {
+                    costoFinal = TARIFA_POR_KG[valorUsado];
                 } else {
-                    costoFinal = TARIFA_POR_KG.BASE_PESO_MAYOR * valorUsado;
+                    costoFinal = 2.5;
                 }
-
             } else {
-                if (pesoKg > PESO_VOLUMETRICO) {
-                    tipoCobro = 'Peso Facturable (W)';
-                } else {
-                    tipoCobro = 'Volumen Facturable (M)';
-                }
-
+                // COBRO POR CBM REAL
+                tipoCobro = 'CBM';
                 valorUsado = cbmReal;
-                const claves = Object.keys(TARIFA_POR_CBM).map(Number).sort((a, b) => b - a);
 
-                let tarifaEncontrada = 0;
-                for (let limite of claves) {
-                    if (cbmReal >= limite) {
-                        tarifaEncontrada = TARIFA_POR_CBM[limite];
+                for (const tramo of TARIFA_POR_CBM) {
+                    if (cbmReal >= tramo.min) {
+                        costoFinal = tramo.precio;
                         break;
                     }
                 }
-                if (tarifaEncontrada === 0) {
-                    tarifaEncontrada = TARIFA_POR_CBM[0.25];
+                // Si es menor a 0.25 → se cobra como 0.25
+                if (costoFinal === 0) {
+                    costoFinal = 60;
                 }
+            }
 
-                costoFinal = tarifaEncontrada;
+            const unidad = tipoCobro.includes('Peso') ? 'kg' : 'm³';
+            let valorFacturado = 0;
+
+            if (unidad === 'kg') {
+                valorFacturado = costoFinal * pesoKg;
+            } else {
+                valorFacturado = costoFinal;
             }
 
             return {
-                costo: costoFinal.toFixed(2),
+                costo: valorFacturado.toFixed(2),
                 tipo: tipoCobro,
-                pesoFacturable: PESO_FACTURABLE.toFixed(2) + ' kg',
-                valorFacturado: valorUsado.toFixed(3),
-                unidad: tipoCobro.includes('Peso') ? 'kg' : 'm³'
+                unidad,
+                cbm_facturado: tipoCobro === 'CBM' ? valorUsado : null,
             };
         }
 
@@ -1420,14 +1443,14 @@
             const price = data.price;
             document.getElementById('scraped-price').textContent = `$ ${price}` || '--';
 
-            document.getElementById('scraped-moq').textContent =
-                data.moq || '--';
+            document.getElementById('scraped-moq').value =
+                data.moq || 1;
 
             const packageSizeTexto = data.dimensions_cm || "0x0x0";
-            const dimensionsMatch = packageSizeTexto.match(/\d+/g);
+            const packageWeightTexto = data.peso_kg_usar || 0;
+            const dimensionsMatch = packageSizeTexto.match(/[\d.]+/g);
             let [L, A, H] = dimensionsMatch ? dimensionsMatch.map(Number) : [0, 0, 0];
 
-            const packageWeightTexto = data.peso_kg_usar || 0;
             let packageSize = ((L * A * H) / 1000000).toFixed(2);
             let weightCBM = (((L * A * H) / 5000).toFixed(2));
 
@@ -1456,10 +1479,8 @@
                 });
             }
 
-            const costPackage = calcularCostoMaritimoLCL(Number(packageWeightTexto), Number(packageSize)).costo;
-            const moq = parseInt(data.moq) || 1;
-            const totalProducto = costPackage * moq;
-            document.getElementById('costPackage').textContent = `$ ${totalProducto.toFixed(2)}`;
+            const costPackage = calcularCostoMaritimoLCL(Number(weightCBM), Number(packageSize), Number(packageWeightTexto));
+            document.getElementById('costPackage').textContent = `$ ${Number(costPackage.costo).toFixed(2)}`;
 
             const priceProductElement = document.getElementById('scraped-price');
             const costPackageElement = document.getElementById('costPackage');
@@ -1473,18 +1494,21 @@
             const priceProduct = parseFloat(cleanPriceText);
             const costPackageProduct = parseFloat(cleanCostText);
 
-            const estimatedTotal = priceProduct + costPackageProduct;
+            updateTotalAndLink();
 
-            if (!isNaN(estimatedTotal)) {
-                document.getElementById('estimatedTotal').textContent = `$ ${estimatedTotal.toFixed(2)}`;
-            } else {
-                document.getElementById('estimatedTotal').textContent = '--';
-            }
             // Mostrar dashboard con animación
             const quoteDashboard = document.getElementById('quoteDashboard');
-            quoteDashboard.classList.remove('hidden');
-            quoteDashboard.style.opacity = '0';
-            quoteDashboard.style.transform = 'translateY(20px)';
+            if (quoteDashboard) {
+                quoteDashboard.classList.remove('hidden');
+                quoteDashboard.style.opacity = '0';
+                quoteDashboard.style.transform = 'translateY(20px)';
+
+                setTimeout(() => {
+                    quoteDashboard.style.transition = 'all 0.5s ease';
+                    quoteDashboard.style.opacity = '1';
+                    quoteDashboard.style.transform = 'translateY(0)';
+                }, 50);
+            }
 
             setTimeout(() => {
                 quoteDashboard.style.transition = 'all 0.5s ease';
@@ -1552,7 +1576,6 @@
                     throw new Error('No se pudo iniciar');
                 }
 
-                // ABRIR SSE
                 eventSource = new EventSource(`/scrape-stream/${json.runId}`);
 
                 eventSource.addEventListener('heartbeat', (e) => {
@@ -1592,6 +1615,63 @@
             document.getElementById('search-button-loading').style.display = 'none';
             document.getElementById('productUrl').value = '';
         }
+
+        function updateTotalAndLink() {
+            const moqInput = document.getElementById('scraped-moq');
+            const priceProductElement = document.getElementById('scraped-price');
+            const costPackageElement = document.getElementById('costPackage');
+            const estimatedTotalElement = document.getElementById('estimatedTotal');
+            const maritimeBtn = document.getElementById('btn-quote-maritime');
+
+            if (!moqInput || !priceProductElement || !costPackageElement) return;
+
+            const moq = parseInt(moqInput.value) || 1;
+
+            const priceText = priceProductElement.textContent;
+            const costText = costPackageElement.textContent;
+
+            const priceProduct = parseFloat(priceText.replace(/[^0-9.]/g, '')) || 0;
+            const costPackageProduct = parseFloat(costText.replace(/[^0-9.]/g, '')) || 0;
+
+
+
+            const totalValue = ((priceProduct * moq) + costPackageProduct);
+
+            if (!isNaN(totalValue) && totalValue > 0) {
+                const formattedTotal = totalValue.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                estimatedTotalElement.textContent = `$ ${formattedTotal}`;
+            } else {
+                estimatedTotalElement.textContent = '--';
+            }
+
+            if (maritimeBtn) {
+                const packageSizeText = document.getElementById('scraped-package-size').textContent.replace(' m³', '');
+                const packageWeightText = document.getElementById('scraped-package-weight').textContent.replace(' Kg', '');
+
+                const payload = {};
+
+                const cbm = parseFloat(packageSizeText);
+                const weight = parseFloat(packageWeightText);
+
+                if (!isNaN(cbm)) payload.cbm = cbm;
+                if (!isNaN(weight)) payload.peso = weight;
+
+                payload.cantidad = moq;
+                if (priceProduct > 0) payload.valorMercancia = priceProduct;
+
+                payload.cbm_directo = "cbm_directo";
+
+                const encoded = btoa(JSON.stringify(payload));
+                maritimeBtn.href = `/maritimo?q=${encoded}`;
+            }
+        }
+
+        // Add event listener to MOQ input
+        document.getElementById('scraped-moq').addEventListener('input', updateTotalAndLink);
+        document.getElementById('scraped-moq').addEventListener('change', updateTotalAndLink);
     </script>
 </body>
 
