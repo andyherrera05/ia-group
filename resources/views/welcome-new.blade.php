@@ -1635,7 +1635,7 @@
 
 
 
-            const totalValue = (priceProduct + costPackageProduct) * moq;
+            const totalValue = ((priceProduct * moq) + costPackageProduct);
 
             if (!isNaN(totalValue) && totalValue > 0) {
                 const formattedTotal = totalValue.toLocaleString('en-US', {
