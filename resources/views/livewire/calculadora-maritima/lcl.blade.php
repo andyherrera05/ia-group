@@ -19,8 +19,8 @@
             </div>
         </div>
     </div>
-    @if($imagen || $producto || $id_producto)
-    <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl flex items-center space-x-6 animate-fade-in">
+    @if($esAnalisis)
+    <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl flex items-center space-x-6 animate-fade-in relative group">
         @if($imagen)
         <div class="w-24 h-24 rounded-lg overflow-hidden border border-yellow-500/30 flex-shrink-0">
             <img src="{{ $imagen }}" alt="{{ $producto }}" class="w-full h-full object-cover">
@@ -34,6 +34,39 @@
             <p class="text-gray-400 text-xs mt-1 font-mono uppercase tracking-tighter">ID: {{ $id_producto }}</p>
             @endif
             <p class="text-gray-500 text-[10px] mt-2 italic">* Información cargada desde el análisis del producto</p>
+        </div>
+        {{-- Botón para resetear y cargar manual si lo desean --}}
+        <button wire:click="$set('producto', ''); $set('imagen', ''); $set('id_producto', ''); $set('esAnalisis', false);" 
+            class="absolute top-4 right-4 text-gray-500 hover:text-red-400 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+        </button>
+    </div>
+    @else
+    <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl animate-fade-in">
+        <h4 class="text-yellow-500 font-bold text-sm mb-4 uppercase tracking-widest flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Entrada Manual de Producto
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Nombre del Producto</label>
+                <input type="text" wire:model.live.debounce.500ms="producto" placeholder="Ej: Zapatillas Deportivas"
+                    class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Imagen del Producto (Opcional)</label>
+                <div class="flex items-center space-x-4">
+                    <input type="file" wire:model="manualImagen" class="text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-yellow-500/10 file:text-yellow-500 hover:file:bg-yellow-500/20 transition-all">
+                    <div wire:loading wire:target="manualImagen" class="text-yellow-500 italic text-[10px]">Cargando...</div>
+                </div>
+                @if ($manualImagen)
+                    <div class="mt-2 text-xs text-green-500">Imagen lista para la cotización</div>
+                @endif
+            </div>
         </div>
     </div>
     @endif

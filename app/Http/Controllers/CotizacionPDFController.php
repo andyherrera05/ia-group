@@ -13,15 +13,22 @@ class CotizacionPDFController extends Controller
 
         // Convertir imagen remota a base64 para mayor fiabilidad en el PDF
         if (!empty($desglose_reporte['imagen'])) {
-            try {
-                $imageData = file_get_contents($desglose_reporte['imagen']);
-                if ($imageData !== false) {
-                    $type = pathinfo($desglose_reporte['imagen'], PATHINFO_EXTENSION) ?: 'jpg';
-                    $base64 = 'data:image/' . $type . ';base64,' . base64_encode($imageData);
-                    $desglose_reporte['imagen'] = $base64;
+            $url = $desglose_reporte['imagen'];
+            
+            // Evitar deadlock en local (php artisan serve) que es mono-hilo
+            $isLocal = str_contains($url, '127.0.0.1') || str_contains($url, 'localhost');
+
+            if (!$isLocal) {
+                try {
+                    $imageData = @file_get_contents($url);
+                    if ($imageData !== false) {
+                        $type = pathinfo($url, PATHINFO_EXTENSION) ?: 'jpg';
+                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($imageData);
+                        $desglose_reporte['imagen'] = $base64;
+                    }
+                } catch (\Exception $e) {
+                    // Si falla, mantenemos la URL original
                 }
-            } catch (\Exception $e) {
-                // Si falla, mantenemos la URL original
             }
         }
 
@@ -52,6 +59,7 @@ class CotizacionPDFController extends Controller
             'clienteDireccion' => $request->clienteDireccion,
             'clienteCiudad' => $request->clienteCiudad,
             'agente' => json_decode($request->agente, true) ?? [],
+            'gastosAdicionales' => json_decode($request->gastosAdicionales, true) ?? [],
         ];
 
         $view = (strtolower($data['tipoCarga']) === 'fcl') ? 'pdf.cotizacion-fcl' : 'pdf.cotizacion-lcl';

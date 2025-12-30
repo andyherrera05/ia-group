@@ -101,7 +101,6 @@
             font-size: 12px;
             text-align: center;
             vertical-align: middle;
-            height: 200px;
         }
         .ref-cell { width: 10%; }
         .foto-cell { width: 30%; }
@@ -134,6 +133,9 @@
                     <div class="address-line">Direccion Bolivia: Tarija colon y bolivar 820</div>
                     <div class="contact-line">pagina: https://ia-groups.com/ &nbsp;&nbsp; correo: {{ $agente['email'] ?? 'info@iagroups.com' }} &nbsp;&nbsp; telefono: {{ $agente['telefono'] ?? '+591 702693251' }}</div>
                     <div class="agent-line">AGENTE DE CARGA: {{ $agente['nombre'] ?? 'IA GROUPS' }}</div>
+                    <div class="agent-line">CLIENTE: {{ $clienteNombre ?: 'Consignatario' }}</div>
+                    <div class="agent-line">CIUDAD: {{ $clienteCiudad ?: 'BOLIVIA' }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; EMAIL: {{ $clienteEmail ?: 'N/A' }}</div>
+                    <div class="agent-line">DIRECCION: {{ $clienteDireccion ?: 'N/A' }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TELEFONO: {{ $clienteTelefono ?: 'N/A' }}</div>
                 </td>
             </tr>
         </table>
@@ -194,11 +196,63 @@
                 </tr>
                 @else
                 <tr>
-                    <td colspan="8" style="height: 50px;">No hay información disponible</td>
+                    <td colspan="7" style="height: 50px;">No hay información disponible</td>
                 </tr>
                 @endif
             </tbody>
         </table>
+
+
+        <!-- Tabla de Gastos Adicionales -->
+        <h4 style="margin-top: 25px; margin-bottom: 10px; font-size: 14px; text-transform: uppercase;">Detalle de Gastos Adicionales / Logística</h4>
+        <table class="product-table" style="margin-bottom: 20px;">
+            <thead>
+                <tr>
+                    <th style="width: 70%; text-align: left; padding-left: 15px;">CONCEPTO / SERVICIO</th>
+                    <th style="width: 30%; text-align: right; padding-right: 15px;">MONTO (USD)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php 
+                    $subtotalGastos = 0; 
+                    // El flete principal está en $desglose['Costo de Envío de Paquete']
+                    $fleteInternacional = (float)($desglose['Costo de Envío de Paquete'] ?? 0);
+                    $valorMercancia = (float)($desglose['Valor de Mercancía'] ?? 0);
+                @endphp
+
+                {{-- Mostramos el Flete Marítimo primero --}}
+                <tr style="height: auto;">
+                    <td style="text-align: left; padding: 8px 15px; height: auto;">Costo de Envío de Paquete</td>
+                    <td style="text-align: right; padding: 8px 15px; height: auto; font-weight: bold;">$ {{ number_format($fleteInternacional, 2) }}</td>
+                </tr>
+
+                {{-- Mostramos los gastos adicionales (servicios, entrega, verificaciones) --}}
+                @foreach($gastosAdicionales as $concepto => $monto)
+                    @php 
+                        $montoNum = is_numeric($monto) ? (float)$monto : 0;
+                        $subtotalGastos += $montoNum;
+                    @endphp
+                    <tr style="height: auto;">
+                        <td style="text-align: left; padding: 8px 15px; height: auto;">{{ $concepto }}</td>
+                        <td style="text-align: right; padding: 8px 15px; height: auto; font-weight: bold;">$ {{ number_format($montoNum, 2) }}</td>
+                    </tr>
+                @endforeach
+
+                @php 
+                    $granTotal = $valorMercancia + $fleteInternacional + $subtotalGastos;
+                @endphp
+                <tr style="background-color: #d9e1f2; font-weight: bold;">
+                    <td style="text-align: right;">TOTAL GENERAL ESTIMADO (USD)</td>
+                    <td style="text-align: right; font-size: 16px;">$ {{ number_format($granTotal, 2) }}</td>
+                </tr>
+                <tr style="background-color: #d9e1f2; font-weight: bold;">
+                    <td style="text-align: right;">TOTAL GENERAL ESTIMADO (BS)</td>
+                    <td style="text-align: right; font-size: 16px;">Bs {{ number_format($granTotal * 9.61, 2) }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+
 
         <div class="footer-note">
             * ESTA COTIZACIÓN TIENE UNA VALIDEZ DE 7 DÍAS<br>

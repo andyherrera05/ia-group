@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
+use Livewire\WithFileUploads;
 
 #[Layout('layouts.app')]
 class CalculadoraMaritima extends Component
 {
+    use WithFileUploads;
     // Tipo de carga visible en la UI (LCL por defecto)
     public $tipoCarga = 'lcl';
 
@@ -46,6 +48,11 @@ class CalculadoraMaritima extends Component
 
     #[Url]
     public $imagen = '';
+
+    #[Url]
+    public $esAnalisis = false; // Flag para distinguir entre análisis de Alibaba y carga manual
+
+    public $manualImagen; // Propiedad para carga manual de imagen
 
     public function mount()
     {
@@ -79,6 +86,12 @@ class CalculadoraMaritima extends Component
 
         if ($this->cbm_directo) {
             $this->metodoVolumen = 'cbm_directo';
+        }
+
+        // Solo activamos esAnalisis si detectamos que realmente viene de una búsqueda de Alibaba
+        // comprobando el id_producto y que no se haya reseteado explícitamente a false
+        if ($this->id_producto && ($this->producto || $this->imagen)) {
+            $this->esAnalisis = true;
         }
 
         // Aleatorizar la lista de agentes
@@ -159,6 +172,7 @@ class CalculadoraMaritima extends Component
     public $clienteDireccion = '';
     public $clienteCiudad = '';
     public $agenteId = '';
+    public $gastosAdicionales = []; // Para almacenar desglose de servicios, entrega y verificaciones
 
     public $agentes = [
         [
@@ -517,10 +531,8 @@ class CalculadoraMaritima extends Component
             $shippingPackage = $this->calculateShippingPackagePerDimensions($CBM);
         } elseif (empty($largo) || empty($ancho) || empty($alto)) {
             $shippingPackage = $this->calculateShippingPackage($this->peso, $volumetricWeight);
-            Log::info('Peso1: ' . $this->peso . 'CBM1: ' . $CBM);
         } else {
             $shippingPackage = $this->calculateShippingPackage($this->peso, $CBM);
-            Log::info('Peso2: ' . $this->peso . 'CBM2: ' . $CBM);
         }
 
         $this->resultado = (float) $shippingPackage['costo'];
@@ -531,11 +543,16 @@ class CalculadoraMaritima extends Component
 
         $this->mostrarPregunta = true;
 
+        // Si hay una imagen manual, la procesamos
+        if ($this->manualImagen) {
+            $this->imagen = $this->manualImagen->temporaryUrl();
+        }
+
         // Generar desglose para el reporte (LCL)
         if ($this->tipoCarga === 'lcl') {
             $this->desglose_reporte = [
-                'ref' => $this->id_producto ?: 'Sin ID', // Use actual ID if available
-                'descripcion' => $this->producto ?: 'Sin nombre', // Use actual title if available
+                'ref' => $this->id_producto ?: 'MANUAL', // Use actual ID if available
+                'descripcion' => $this->producto ?: 'Producto sin nombre', // Use actual title if available
                 'cantidad' => $this->cantidad ?: 1,
                 'unidad' => 'PCS', // Placeholder
                 'precio' => $this->valorMercancia,
@@ -739,6 +756,19 @@ class CalculadoraMaritima extends Component
             $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
         }
 
+        $this->gastosAdicionales = [];
+        if ($this->recojoAlmacen) {
+            $this->gastosAdicionales['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
+            $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $valorUsado, 2, '.', '');
+        }
+        if ($costoDestino > 0 && $nombreDestino) {
+            $this->gastosAdicionales["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
+        }
+        if ($this->verificacionProducto) $this->gastosAdicionales['Verificación de Producto'] = 10.00;
+        if ($this->verificacionCalidad) $this->gastosAdicionales['Verificación de Calidad'] = 50.00;
+        if ($this->verificacionEmpresaDigital) $this->gastosAdicionales['Verificación de Empresa Digital'] = 100.00;
+        if ($this->verificacionEmpresaPresencial) $this->gastosAdicionales['Verificación Presencial de Empresa'] = 350.00;
+
         // Total general
         $total = $total_valor_mercancia + $valorFacturado + $addServices + $costoDestino + $costoVerificacion;
         return [
@@ -852,6 +882,23 @@ class CalculadoraMaritima extends Component
             $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
         }
 
+        // =====================================================
+        // NUEVO: SEPARACIÓN DE GASTOS ADICIONALES
+        // =====================================================
+        $this->gastosAdicionales = [];
+        if ($this->recojoAlmacen) {
+            $this->gastosAdicionales['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
+            $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $cbmReal, 2, '.', '');
+        }
+        if ($costoDestino > 0 && $nombreDestino) {
+            $this->gastosAdicionales["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
+        }
+        // Verificaciones (LCL usualmente no las tiene todas pero por si acaso)
+        if ($this->verificacionProducto) $this->gastosAdicionales['Verificación de Producto'] = 10.00;
+        if ($this->verificacionCalidad) $this->gastosAdicionales['Verificación de Calidad'] = 50.00;
+        if ($this->verificacionEmpresaDigital) $this->gastosAdicionales['Verificación de Empresa Digital'] = 100.00;
+        if ($this->verificacionEmpresaPresencial) $this->gastosAdicionales['Verificación Presencial de Empresa'] = 350.00;
+
         // Separador y total final
         $total = $this->valorMercancia + $costoFleteTotal + $additional_services + $costoDestino;
 
@@ -909,6 +956,7 @@ class CalculadoraMaritima extends Component
             'valorFacturado' => $this->valorFacturadoActual,
             'cbmFacturado' => $this->cbmFacturadoActual,
             'desglose_reporte' => json_encode($this->desglose_reporte),
+            'gastosAdicionales' => json_encode($this->gastosAdicionales),
             
             // Datos personalizados del cliente
             'clienteNombre' => $this->clienteNombre,
