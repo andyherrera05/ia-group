@@ -155,7 +155,7 @@
                         <p class="text-5xl font-black text-yellow-400 leading-tight">
                             ${{ number_format($resultado, 2) }}
                         </p>
-                        <p class="text-xs text-gray-400 mt-2">USD - Impuestos incluidos</p>
+                        <p class="text-xs text-gray-400 mt-2">USD - No incluye impuestos</p>
                     </div>
                     @include('livewire.partials.resultado')
 

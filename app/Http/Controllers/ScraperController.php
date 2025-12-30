@@ -92,99 +92,220 @@ class ScraperController extends Controller
 
     private function procesarDatos($data)
     {
-        $dimensiones_cm = null;
-        $dimensiones_origen = 'ninguno';
+        $candidates = [];
 
         if (!empty($data['dimensions']) && is_array($data['dimensions'])) {
             foreach ($data['dimensions'] as $dim) {
                 if (stripos($dim['attrName'] ?? '', 'dimension') !== false) {
                     $raw = $dim['attrValue'] ?? '';
-                    $dimensiones_cm = $this->normalizarDimensionesCm($raw);
-                    $dimensiones_origen = 'dimensions → convertido a cm';
-                    break;
+                    $parsed = $this->parsearDimensiones($raw, $dim['attrName'] ?? '');
+                    if ($parsed) {
+                        $parsed['origen'] = 'dimensions (' . ($dim['attrName'] ?? '?') . ')';
+                        $candidates[] = $parsed;
+                    }
                 }
             }
         }
 
-        // Si no encontramos en dimensions, intentamos con unitSize (menos confiable)
-        if (!$dimensiones_cm && !empty($data['unitSize'])) {
-            $dimensiones_cm = $this->normalizarDimensionesCm($data['unitSize']);
-            $dimensiones_origen = 'unitSize → convertido/normalizado';
+        if (!empty($data['unitSize'])) {
+            $parsed = $this->parsearDimensiones($data['unitSize'], 'unitSize');
+            if ($parsed) {
+                $parsed['origen'] = 'unitSize';
+                $candidates[] = $parsed;
+            }
         }
 
-        // Prioridad para peso (lo que realmente cobra el flete)
-        $peso_final_kg = null;
-        $peso_origen = 'ninguno';
+        if (!empty($data['dimensionsDetail'])) {
+            $parsed = $this->parsearDimensiones($data['dimensionsDetail'], 'dimensionsDetail');
+            if ($parsed) {
+                $parsed['origen'] = 'dimensionsDetail';
+                $candidates[] = $parsed;
+            }
+        }
+
+        $bestDim = null;
+        if (count($candidates) > 0) {
+            usort($candidates, fn($a, $b) => $a['vol'] <=> $b['vol']);
+            $bestDim = $candidates[0];
+        }
+
+        $dimensiones_cm = $bestDim ? $bestDim['formatted'] : null;
+        $dimensiones_origen = $bestDim ? $bestDim['origen'] : 'ninguno';
+        $weightCandidates = [];
 
         if (!empty($data['weight'])) {
-            $peso_final_kg = (float) preg_replace('/[^\d.]/', '', $data['weight']);
-            $peso_origen = 'weight (bruto)';
-        } elseif (!empty($data['unitWeight'])) {
-            $peso_final_kg = (float) preg_replace('/[^\d.]/', '', $data['unitWeight']);
-            $peso_origen = 'unitWeight (neto)';
+            $parsed = $this->parsearPeso($data['weight']);
+            if ($parsed) {
+                $parsed['origen'] = 'weight';
+                $weightCandidates[] = $parsed;
+            }
         }
+
+        if (!empty($data['unitWeight'])) {
+            $parsed = $this->parsearPeso($data['unitWeight']);
+            if ($parsed) {
+                $parsed['origen'] = 'unitWeight';
+                $weightCandidates[] = $parsed;
+            }
+        }
+
+        if (!empty($data['weightDetail'])) {
+            $parsed = $this->parsearPeso($data['weightDetail']);
+            if ($parsed) {
+                $parsed['origen'] = 'weightDetail';
+                $weightCandidates[] = $parsed;
+            }
+        }
+
+        if (!empty($data['packageWeight'])) {
+            $parsed = $this->parsearPeso($data['packageWeight']);
+            if ($parsed) {
+                $parsed['origen'] = 'packageWeight';
+                $weightCandidates[] = $parsed;
+            }
+        }
+
+        $bestWeight = null;
+        if (count($weightCandidates) > 0) {
+            usort($weightCandidates, fn($a, $b) => $a['kg'] <=> $b['kg']);
+            $bestWeight = $weightCandidates[0];
+        }
+
+        $peso_final_kg = $bestWeight ? $bestWeight['kg'] : null;
+        $peso_origen = $bestWeight ? $bestWeight['origen'] : 'ninguno';
 
         return [
             'title' => $data['title'] ?? 'Sin título',
             'price' => $data['priceTiers'][0]['dollarPrice'] ?? $data['priceRange'] ?? 'No disponible',
             'moq' => $data['moq'] ?? 'N/A',
             'image' => $data['firstImageUrl'] ?? ($data['images'][0] ?? null),
-            'dimensions_cm'       => $dimensiones_cm,              // "112x84x67"
+            'dimensions_cm'       => $dimensiones_cm,
             'dimensions_origen'   => $dimensiones_origen,
-            'peso_kg_usar'          => $peso_final_kg ? round($peso_final_kg, 1) : null,
+            'peso_kg_usar'          => $peso_final_kg ? round($peso_final_kg, 2) : null,
             'peso_origen'           => $peso_origen,
             'characteristics' => $data['characteristics'] ?? [],
             'micUrl' => $data['micUrl'] ?? null,
             'packageSize' => $data['packageSize'] ?? $data['unitSize'] ?? null,
             'packageWeight' => $data['packageWeight'] ?? $data['unitWeight'] ?? null,
-            'source' => $data['source'] ?? 'Alibaba',
-            'scrapeTimeSec' => $data['scrapeTimeSec'] ?? null,
-            'scraped_at' => now()->toDateTimeString(),
         ];
     }
 
     /**
-     * Convierte dimensiones a formato cm corto: "112x84x67"
+     * Parsea un string de peso a kg. "400g" -> 0.4, "15" -> 15.0
+     * Retorna array ['kg' => float, 'original' => string] o null.
      */
-    private function normalizarDimensionesCm(?string $dimensionsString): ?string
+    private function parsearPeso($raw): ?array
     {
-        if (empty($dimensionsString)) {
+        if (empty($raw)) return null;
+        // Convertir a string por si viene número
+        $str = strtolower((string)$raw);
+        $clean = preg_replace('/[^0-9\.]/', '', $str);
+
+        if (!is_numeric($clean)) return null;
+
+        $val = (float) $clean;
+        $factor = 1.0; // por defecto kg
+
+        if (str_contains($str, 'kg') || str_contains($str, 'kilogram')) {
+            $factor = 1.0;
+        } elseif (str_contains($str, 'mg')) {
+            $factor = 0.000001;
+        } elseif (str_contains($str, 'g') || str_contains($str, 'gram')) { // Cuidado: 'kg' contiene 'g', el orden importa o regex
+            // Si ya detectamos kg antes, no entra aquí, pero mejor ser específico
+            if (!str_contains($str, 'kg')) {
+                $factor = 0.001;
+            }
+        } elseif (str_contains($str, 'lb') || str_contains($str, 'pound')) {
+            $factor = 0.453592;
+        } elseif (str_contains($str, 'oz')) {
+            $factor = 0.0283495;
+        } else {
+            // Sin unidad. Heurística simple:
+            // Si es muy grande (ej > 1000), probablemente sean gramos? 
+            // Alibaba suele usar kg por defecto. Si dice "15", es 15kg. Si dice "1500", podría ser 1.5kg o 1500kg.
+            // Asumiremos KG por defecto excepto si es absurdo? 
+            // Mejor dejar default kg.
+        }
+
+        return [
+            'kg' => $val * $factor,
+            'original' => $raw
+        ];
+    }
+
+    /**
+     * Parsea un string de dimensiones a cm.
+     * Retorna array ['vals' => [l,w,h], 'vol' => float, 'formatted' => string] o null.
+     */
+    private function parsearDimensiones(?string $raw, string $contextHint = ''): ?array
+    {
+        if (empty($raw)) return null;
+
+        $lowerRaw = strtolower($raw);
+        $lowerHint = strtolower($contextHint);
+        $factor = 1.0; // por defecto cm
+        $detectedUnit = false;
+
+        // 1. Detectar unidad explícita en el VALOR (Prioridad Alta)
+        if (str_contains($lowerRaw, 'mm')) {
+            $factor = 0.1;
+            $detectedUnit = true;
+        } elseif (preg_match('/(inch|in|"\s*$)/i', $lowerRaw)) {
+            $factor = 2.54;
+            $detectedUnit = true;
+        } elseif (str_contains($lowerRaw, 'cm')) {
+            $factor = 1.0;
+            $detectedUnit = true;
+        }
+
+        // 2. Si no hay unidad en valor, mirar el HINT (Key)
+        if (!$detectedUnit) {
+            if (str_contains($lowerHint, 'mm')) {
+                $factor = 0.1;
+                $detectedUnit = true;
+            } elseif (preg_match('/(inch|in\b)/i', $lowerHint)) {
+                $factor = 2.54;
+                $detectedUnit = true;
+            }
+        }
+
+        // Limpiar para dejar solo números y separadores
+        $clean = preg_replace('/[^0-9xX*\.]/', '', $raw);
+        $separador = preg_match('/[xX]/', $clean) ? '[xX]' : '[*]';
+        $partes = preg_split("/{$separador}/", $clean);
+        $partes = array_filter($partes, fn($p) => trim($p) !== '');
+
+        if (count($partes) !== 3) {
             return null;
         }
 
-        // 1. Limpiar el string: quitar mm, espacios, puntos innecesarios
-        $clean = preg_replace('/\s*mm\s*/i', '', $dimensionsString);
-        $clean = preg_replace('/[^0-9xX*\.]/', '', $clean); // solo números, x/X, *, .
-
-        // 2. Posibles separadores: * o x o X
-        $separador = preg_match('/[xX]/', $clean) ? '[xX]' : '[*]';
-        $partes = preg_split("/{$separador}/", $clean);
-
-        if (count($partes) !== 3) {
-            return null; // formato inválido
+        $dims = [];
+        foreach ($partes as $p) {
+            $dims[] = (float) $p;
         }
 
-        $resultado = [];
-
-        foreach ($partes as $valor) {
-            $num = (float) trim($valor);
-
-            // Si está en milímetros → convertir a cm
-            if ($num > 500) { // heurística: difícil que una dimensión sea >500cm (5m)
-                $num = $num / 10; // mm → cm (SIN REDONDEAR A ENTERO)
-            }
-
-            // Si tiene decimales, redondear a 2, si no, entero.
-            // Para el string final, usamos lógica simple:
-            if (floor($num) == $num) {
-                $resultado[] = (int) $num;
-            } else {
-                $resultado[] = round($num, 2);
+        // 3. Heurística de seguridad si NO se detectó unidad
+        if (!$detectedUnit && $factor === 1.0) {
+            // Si alguna dimensión es muy grande (>200), asumimos mm
+            if (max($dims) > 200) {
+                $factor = 0.1;
             }
         }
 
-        // Formato final deseado
-        return implode('x', $resultado);
+        // Calcular finales
+        $finalDims = array_map(fn($d) => $d * $factor, $dims);
+        $vol = $finalDims[0] * $finalDims[1] * $finalDims[2];
+
+        // Formatear LxAxH
+        $formattedParts = array_map(function ($d) {
+            return (floor($d) == $d) ? (int)$d : round($d, 2);
+        }, $finalDims);
+
+        return [
+            'vals' => $finalDims,
+            'vol' => $vol,
+            'formatted' => implode('x', $formattedParts)
+        ];
     }
     public function stream($runId)
     {
@@ -228,7 +349,6 @@ class ScraperController extends Controller
                             ->sortByDesc(fn($i) => isset($i['packageSize']) ? 1 : 0)
                             ->first() ?? $items[0];
                         $finalResult = $this->procesarDatos($bestItem);
-                        Log::warning($bestItem);
 
                         $cacheKey = 'apify_product_' . md5(strtolower($runInfo['url']));
                         Cache::put($cacheKey, $finalResult, now()->addDays(7));

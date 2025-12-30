@@ -116,14 +116,17 @@
         .custom-scrollbar::-webkit-scrollbar {
             width: 4px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.2);
             border-radius: 10px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: rgba(234, 179, 8, 0.3);
             border-radius: 10px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: rgba(234, 179, 8, 0.5);
         }
@@ -373,7 +376,7 @@
                                     <div
                                         class="relative overflow-hidden rounded-xl border border-yellow-500 bg-yellow-900/50 hover:border-yellow-500/50 transition-all group p-6">
                                         <div class="flex flex-col space-y-6">
-                                            
+
                                             <!-- Product Title -->
                                             <h2 id="scraped-title" class="text-yellow-500 text-2xs md:text-xl font-black text-center uppercase tracking-tighter leading-tight line-clamp-2 px-4 italic">
                                                 Cargando nombre del producto...
@@ -412,7 +415,7 @@
                                                     Especificaciones Técnicas
                                                 </h3>
 
-                                                <div id="scraped-characteristics-list" 
+                                                <div id="scraped-characteristics-list"
                                                     class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                                                     <!-- Propiedades dinámicas en estilo card -->
                                                 </div>
@@ -445,7 +448,7 @@
                                             <p class="text-xs text-gray-500 mb-1">CBM(Kg)</p>
                                             <p id="scraped-package-weight" class="text-sm font-bold text-green-400">--
                                             </p>
-                                             <p id="data-package-weight" class="hidden text-sm font-bold text-green-400">--
+                                            <p id="data-package-weight" class="hidden text-sm font-bold text-green-400">--
                                             </p>
                                         </div>
 
@@ -1489,15 +1492,13 @@
 
             let packageSize = ((L * A * H) / 1000000).toFixed(3);
             let weightCBM = (((L * A * H) / 5000).toFixed(3));
+            let pesoAlto = data.peso_kg_usar || 0;
 
-            console.log(data.dimensions_cm);
-            console.log(data.dimensions_origen);
-            console.log("packageSize",packageSize);
-            console.log("packageSizeTexto",packageSizeTexto)
+            let finalWeight = Math.max(parseFloat(weightCBM), parseFloat(pesoAlto));
 
             document.getElementById('scraped-package-size').textContent = `${packageSize} m³`;
-            document.getElementById('scraped-package-weight').textContent = `${weightCBM} Kg`;
-            document.getElementById('data-package-weight').textContent = `${data.packageWeight}`;
+            document.getElementById('scraped-package-weight').textContent = `${finalWeight.toFixed(2)} Kg`;
+            document.getElementById('data-package-weight').textContent = `${pesoAlto}`;
 
             const charList = document.getElementById('scraped-characteristics-list');
             charList.innerHTML = '';
@@ -1505,7 +1506,7 @@
             const addCharItem = (label, value, isImportant = false) => {
                 const item = document.createElement('div');
                 item.className = 'group bg-black/30 border border-yellow-500/10 hover:border-yellow-500/40 rounded-lg p-2 transition-all duration-300';
-                
+
                 item.innerHTML = `
                     <div class="flex flex-col">
                         <span class="text-[6px] uppercase text-yellow-500 mb-1">${label}</span>
@@ -1523,7 +1524,8 @@
                 });
             }
 
-            const costPackage = calcularCostoMaritimoLCL(Number(weightCBM), Number(packageSize), Number(packageWeightTexto));
+            const costPackage = calcularCostoMaritimoLCL(Number(finalWeight), Number(packageSize), Number(packageWeightTexto));
+
             document.getElementById('costPackage').textContent = `$ ${Number(costPackage.costo).toFixed(2)}`;
 
             const priceProductElement = document.getElementById('scraped-price');
@@ -1694,7 +1696,6 @@
             if (maritimeBtn) {
                 const packageSizeText = document.getElementById('scraped-package-size').textContent.replace(' m³', '');
                 const packageWeightText = document.getElementById('data-package-weight').textContent.replace(' Kg', '');
-                console.log(packageWeightText);
 
                 const payload = {};
 

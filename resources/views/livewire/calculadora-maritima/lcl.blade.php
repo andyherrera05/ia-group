@@ -43,7 +43,7 @@
                     <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
                         Cantidad (Unidades)
                     </label>
-                    <input type="number" wire:model.live="cantidad" value="1" step="1" placeholder="1" required
+                    <input type="number" wire:model.live="cantidad" value="1" step="1" required
                         class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                 </div>
 
@@ -61,7 +61,7 @@
                 <label class="block text-sm font-medium text-gray-300 mb-2">Seleccione el Método de Cálculo de
                     Volumen:</label>
                 <div class="flex space-x-4">
-                     <button type="button" wire:click="$set('metodoVolumen', 'dimensiones')"
+                    <button type="button" wire:click="$set('metodoVolumen', 'dimensiones')"
                         class="px-4 py-2 text-sm rounded-lg transition-all {{ $metodoVolumen == 'dimensiones' ? 'bg-yellow-500 text-black font-bold' : 'bg-black/40 text-gray-400 border border-yellow-500/30 hover:bg-yellow-500/20' }}">
                         Dimensiones (L x A x H)
                     </button>
@@ -72,45 +72,45 @@
                 </div>
             </div>
             @if ($metodoVolumen == 'dimensiones')
-                <div class="sm:col-span-2">
-                    <h4 class="text-sm font-bold text-gray-300 mb-3">Dimensiones de la Carga (Cm)</h4>
+            <div class="sm:col-span-2">
+                <h4 class="text-sm font-bold text-gray-300 mb-3">Dimensiones de la Carga (Cm)</h4>
 
-                    <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-3 gap-4">
 
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-2">Largo (cm)</label>
-                            <input type="number" wire:model.live="largo" placeholder="120"
-                                class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-2">Ancho (cm)</label>
-                            <input type="number" wire:model.live="ancho" placeholder="80"
-                                class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-2">Alto (cm)</label>
-                            <input type="number" wire:model.live="alto" placeholder="100"
-                                class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
-                        </div>
-
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-2">Largo (cm)</label>
+                        <input type="number" wire:model.live="largo" placeholder="120"
+                            class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
                     </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-2">Ancho (cm)</label>
+                        <input type="number" wire:model.live="ancho" placeholder="80"
+                            class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-2">Alto (cm)</label>
+                        <input type="number" wire:model.live="alto" placeholder="100"
+                            class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
+                    </div>
+
                 </div>
-            @endif
-            
-            @if ($metodoVolumen == 'cbm_directo')
-                <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-                        CBM Total (M³)
-                    </label>
-                    <input type="number" wire:model.live="volumen" step="0.5" min="0.5" placeholder="Ej: 2.5"
-                        class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
-                    <p class="text-xs text-gray-500 mt-1">Este será el volumen utilizado para la cotización.</p>
-                </div>
+            </div>
             @endif
 
-            
+            @if ($metodoVolumen == 'cbm_directo')
+            <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+                    CBM Total (M³)
+                </label>
+                <input type="number" wire:model.live="volumen" step="0.5" min="0.5" placeholder="Ej: 2.5"
+                    class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+                <p class="text-xs text-gray-500 mt-1">Este será el volumen utilizado para la cotización.</p>
+            </div>
+            @endif
+
+
         </div>
         <div class="p-6 shadow-xl">
             <h3 class="text-yellow-500 font-bold mb-6 text-lg uppercase tracking-widest flex items-center">
@@ -139,93 +139,93 @@
                                     </p>
                                 </div>
                                 <span class="text-yellow-400 font-bold text-lg ml-4">
-                                    +$26.91 
+                                    +$26.91
                                     <span class="text-sm font-normal text-gray-300 ml-1">($/CBM)</span>
                                 </span>
                             </label>
                             @if ($recojoAlmacen)
-                                <div class="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                                    <p class="text-yellow-300 text-xs flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                        Servicio incluido: Recojo, embalaje y transporte al puerto
-                                    </p>
-                                </div>
+                            <div class="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                                <p class="text-yellow-300 text-xs flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    Servicio incluido: Recojo, embalaje y transporte al puerto
+                                </p>
+                            </div>
                             @endif
                         </div>
                     </div>
                 </div>
                 <div class="space-y-4">
-                        <div class="border-2 rounded-lg transition-all border-yellow-500/20 bg-black/30'">
-                            <label class="flex items-center justify-between p-4 cursor-pointer">
-                                <div class="flex items-center space-x-3 flex-1">
-                                    <input type="checkbox" wire:model.live="destinoFinal" value="otros" name="destinoFinal"
-                                        class="w-5 h-5 border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                                    <div class="flex-1">
-                                        <span class="text-white font-medium">¿Dónde se hara la entrega de la carga en Bolivia?</span>
-                                    </div>
+                    <div class="border-2 rounded-lg transition-all border-yellow-500/20 bg-black/30'">
+                        <label class="flex items-center justify-between p-4 cursor-pointer">
+                            <div class="flex items-center space-x-3 flex-1">
+                                <input type="checkbox" wire:model.live="destinoFinal" value="otros" name="destinoFinal"
+                                    class="w-5 h-5 border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                                <div class="flex-1">
+                                    <span class="text-white font-medium">¿Dónde se hara la entrega de la carga en Bolivia?</span>
                                 </div>
+                            </div>
+                        </label>
+                        @if ($destinoFinal === 'otros' || $destinoFinal === true)
+                        <div class="p-4 pt-2 border-t border-yellow-500/20">
+                            <label for="departamentoDestino" class="block text-xs font-medium text-gray-400 mb-2">
+                                Seleccionar Departamento:
                             </label>
-                            @if ($destinoFinal === 'otros' || $destinoFinal === true)
-                                <div class="p-4 pt-2 border-t border-yellow-500/20">
-                                    <label for="departamentoDestino" class="block text-xs font-medium text-gray-400 mb-2">
-                                        Seleccionar Departamento:
-                                    </label>
-                                    <select id="departamentoDestino" wire:model.live="departamentoDestino"
-                                        class="w-full px-4 py-3 bg-black/60 border border-yellow-500/40 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+                            <select id="departamentoDestino" wire:model.live="departamentoDestino"
+                                class="w-full px-4 py-3 bg-black/60 border border-yellow-500/40 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
 
-                                        <option value="" style="background-color: #0f0e0d">
-                                            -- Selecciona un departamento --
-                                        </option>
-                                        @foreach ($departamentosAgrupados as $zona)
-                                            <optgroup label="{{ $zona['label'] }}"
-                                                class="bg-gray-900 {{ $zona['color'] }}"
-                                                style="background-color: #0f0e0d">
-                                                @foreach ($zona['departamentos'] as $departamento)
-                                                    <option value="{{ $departamento['value'] }}"
-                                                        class="bg-gray-900 text-white" style="background-color: #0f0e0d">
-                                                        {{ $departamento['nombre'] }} - {{ $zona['costo'] }}
-                                                    </option>
-                                                @endforeach
-                                            </optgroup>
-                                        @endforeach
+                                <option value="" style="background-color: #0f0e0d">
+                                    -- Selecciona un departamento --
+                                </option>
+                                @foreach ($departamentosAgrupados as $zona)
+                                <optgroup label="{{ $zona['label'] }}"
+                                    class="bg-gray-900 {{ $zona['color'] }}"
+                                    style="background-color: #0f0e0d">
+                                    @foreach ($zona['departamentos'] as $departamento)
+                                    <option value="{{ $departamento['value'] }}"
+                                        class="bg-gray-900 text-white" style="background-color: #0f0e0d">
+                                        {{ $departamento['nombre'] }} - {{ $zona['costo'] }}
+                                    </option>
+                                    @endforeach
+                                </optgroup>
+                                @endforeach
 
-                                    </select>
+                            </select>
 
-                                    @if ($departamentoDestino)
-                                        <div class="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                                            <p class="text-yellow-300 text-xs flex items-start">
-                                                <svg class="w-4 h-4 mr-1 mt-0.5 flex-shrink-0" fill="currentColor"
-                                                    viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd"
-                                                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                                        clip-rule="evenodd" />
-                                                </svg>
-                                                <span>
-                                                    @if ($departamentoDestino === 'beni' || $departamentoDestino === 'pando')
-                                                        Zona amazónica: Tiempo de entrega extendido de 5-8 días
-                                                        adicionales por logística especial.
-                                                    @elseif($departamentoDestino === 'la_paz' || $departamentoDestino === 'cochabamba' || $departamentoDestino === 'santa_cruz')
-                                                        Eje central: Tiempo de entrega de 3-5 días adicionales con rutas
-                                                        principales.
-                                                    @else
-                                                        Zona sur: Tiempo de entrega de 2-4 días adicionales.
-                                                    @endif
-                                                </span>
-                                            </p>
-                                        </div>
-                                    @endif
-                                </div>
+                            @if ($departamentoDestino)
+                            <div class="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                                <p class="text-yellow-300 text-xs flex items-start">
+                                    <svg class="w-4 h-4 mr-1 mt-0.5 flex-shrink-0" fill="currentColor"
+                                        viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    <span>
+                                        @if ($departamentoDestino === 'beni' || $departamentoDestino === 'pando')
+                                        Zona amazónica: Tiempo de entrega extendido de 5-8 días
+                                        adicionales por logística especial.
+                                        @elseif($departamentoDestino === 'la_paz' || $departamentoDestino === 'cochabamba' || $departamentoDestino === 'santa_cruz')
+                                        Eje central: Tiempo de entrega de 3-5 días adicionales con rutas
+                                        principales.
+                                        @else
+                                        Zona sur: Tiempo de entrega de 2-4 días adicionales.
+                                        @endif
+                                    </span>
+                                </p>
+                            </div>
                             @endif
-
                         </div>
+                        @endif
+
+                    </div>
                 </div>
                 <div class="space-y-4">
                     <h4 class="text-yellow-500 font-bold text-sm uppercase tracking-wider mb-2">Servicios de Verificación</h4>
-                    
+
                     <!-- Verificación de Producto -->
                     <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
                         <div class="flex items-start space-x-3">

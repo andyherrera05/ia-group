@@ -179,19 +179,58 @@ class CalculadoraMaritima extends Component
         $this->calcular();
     }
 
-    public function updatedPeso() { $this->calcular(); }
-    public function updatedVolumen() { $this->calcular(); }
-    public function updatedValorMercancia() { $this->calcular(); }
-    public function updatedCantidad() { $this->calcular(); }
-    public function updatedLargo() { $this->calcular(); }
-    public function updatedAncho() { $this->calcular(); }
-    public function updatedAlto() { $this->calcular(); }
-    public function updatedDepartamentoDestino() { $this->calcular(); }
-    public function updatedRecojoAlmacen() { $this->calcular(); }
-    public function updatedVerificacionProducto() { $this->calcular(); }
-    public function updatedVerificacionCalidad() { $this->calcular(); }
-    public function updatedVerificacionEmpresaDigital() { $this->calcular(); }
-    public function updatedVerificacionEmpresaPresencial() { $this->calcular(); }
+    public function updatedPeso()
+    {
+        $this->calcular();
+    }
+    public function updatedVolumen()
+    {
+        $this->calcular();
+    }
+    public function updatedValorMercancia()
+    {
+        $this->calcular();
+    }
+    public function updatedCantidad()
+    {
+        $this->calcular();
+    }
+    public function updatedLargo()
+    {
+        $this->calcular();
+    }
+    public function updatedAncho()
+    {
+        $this->calcular();
+    }
+    public function updatedAlto()
+    {
+        $this->calcular();
+    }
+    public function updatedDepartamentoDestino()
+    {
+        $this->calcular();
+    }
+    public function updatedRecojoAlmacen()
+    {
+        $this->calcular();
+    }
+    public function updatedVerificacionProducto()
+    {
+        $this->calcular();
+    }
+    public function updatedVerificacionCalidad()
+    {
+        $this->calcular();
+    }
+    public function updatedVerificacionEmpresaDigital()
+    {
+        $this->calcular();
+    }
+    public function updatedVerificacionEmpresaPresencial()
+    {
+        $this->calcular();
+    }
     public function selectRate($index, $container)
     {
         // Obtener la tarifa seleccionada desde la colección
@@ -232,7 +271,7 @@ class CalculadoraMaritima extends Component
             '   ├─ Despacho de Aduana' => 40.00,
             '   └─ Gasto por Liberación Digital' => 65.00
         ];
-        
+
         $subtotalPortuaria = array_sum($gastosLocales);
 
         $this->desglose = [
@@ -248,8 +287,8 @@ class CalculadoraMaritima extends Component
 
         // Información adicional (no numérica)
         $this->desglose['Tiempo de Tránsito'] = ($rate['transit_time'] ?? 'N/A') . ' días';
-        $this->desglose['Válido hasta'] = isset($rate['valid_until']) 
-            ? \Carbon\Carbon::parse($rate['valid_until'])->format('d/m/Y') 
+        $this->desglose['Válido hasta'] = isset($rate['valid_until'])
+            ? \Carbon\Carbon::parse($rate['valid_until'])->format('d/m/Y')
             : 'No especificado';
         $this->desglose['Cierre (cutoff)'] = ($rate['closing'] ?? 'N/A') . ' días';
 
@@ -372,8 +411,8 @@ class CalculadoraMaritima extends Component
     {
         $this->validate([
             'peso' => 'nullable|numeric|min:0',
-            'volumen' => 'nullable|numeric|min:0.01',
-            'valorMercancia' => 'nullable|numeric|min:0',
+            'volumen' => 'nullable|numeric|min:0.000001',
+            'valorMercancia' => 'required|numeric|min:0',
         ]);
 
         // Reiniciar estado de pregunta
@@ -400,9 +439,8 @@ class CalculadoraMaritima extends Component
         }
 
         if (($this->peso > 0) && (empty($largo) || empty($ancho) || empty($alto)) && $CBM <= 0) {
-            $CBM_estimado = $this->peso / 300; 
+            $CBM_estimado = $this->peso / 300;
             $shippingPackage = $this->calculateShippingPackage($this->peso, $CBM_estimado);
-
         } elseif (empty($this->peso) || $this->peso <= 0) {
             $shippingPackage = $this->calculateShippingPackagePerDimensions($CBM);
         } elseif (empty($largo) || empty($ancho) || empty($alto)) {
@@ -497,7 +535,7 @@ class CalculadoraMaritima extends Component
             }
         }
 
-       $costoRecojo = $this->costoRecojo;
+        $costoRecojo = $this->costoRecojo;
         $resultadoDestino = $this->calcularCostoDestino();
         $costoDestino = $resultadoDestino['costo'];
         $nombreDestino = $resultadoDestino['nombre'];
@@ -529,7 +567,7 @@ class CalculadoraMaritima extends Component
             $grupo2 = $costoFinal * $distribucion['grupo2'];
             $grupo3 = $costoFinal * $distribucion['grupo3'];
 
-             // Grupo 1: Costos Naviera y Documentación
+            // Grupo 1: Costos Naviera y Documentación
             $desgloseFleteMaritimo['─ TRAMO INTERNACIONAL (MARÍTIMO)'] = null;
             $desgloseFleteMaritimo['   ├─ Flete Puerto a Puerto (Ningbo - Iquique)'] = number_format($grupo1 * 0.85, 2); // Aumentamos flete
             $desgloseFleteMaritimo['   ├─ Seguro y Garantía de Espacio'] = number_format($grupo1 * 0.15, 2); // Suena a "asegurar espacio"
@@ -537,7 +575,7 @@ class CalculadoraMaritima extends Component
 
             // Grupo 2: Gastos Operativos en Origen
             $desgloseFleteMaritimo['─ OPERACIÓN EN ORIGEN (CHINA)'] = null;
-            $desgloseFleteMaritimo['   ├─ Logística Interna (Shenzhen - Yiwu - Ningbo)'] = number_format($grupo2 * 0.80, 2); 
+            $desgloseFleteMaritimo['   ├─ Logística Interna (Shenzhen - Yiwu - Ningbo)'] = number_format($grupo2 * 0.80, 2);
             $desgloseFleteMaritimo['   ├─ Gastos Portuarios y Documentación (BL)'] = number_format($grupo2 * 0.20, 2);
             $desgloseFleteMaritimo['   Subtotal Operación en Origen (China)'] = number_format($grupo2, 2);
 
@@ -546,8 +584,8 @@ class CalculadoraMaritima extends Component
             $desgloseFleteMaritimo['   ├─ Flete Terrestre (Iquique - Destino Bolivia)'] = number_format($grupo3 * 0.75, 2); // En lugar de "comisión"
             $desgloseFleteMaritimo['   ├─ Maniobras y Despacho de Tránsito'] = number_format($grupo3 * 0.25, 2); // Suena a protección financiera
             $desgloseFleteMaritimo['   Subtotal Tramo Final y Entrega (Bolivia)'] = number_format($grupo3, 2);
-        }else {
-             $distribucion = [
+        } else {
+            $distribucion = [
                 'grupo1' => 0.60,  // 60% → Costos principales de naviera
                 'grupo2' => 0.25,  // 25% → Gastos operativos en origen
                 'grupo3' => 0.15,  // 15% → Margen, comisiones y otros
@@ -565,7 +603,7 @@ class CalculadoraMaritima extends Component
 
             // Grupo 2: Gastos Operativos en Origen
             $desgloseFleteMaritimo['─ OPERACIÓN EN ORIGEN (CHINA)'] = null;
-            $desgloseFleteMaritimo['   ├─ Logística Interna (Shenzhen - Yiwu - Ningbo)'] = number_format($grupo2 * 0.80, 2); 
+            $desgloseFleteMaritimo['   ├─ Logística Interna (Shenzhen - Yiwu - Ningbo)'] = number_format($grupo2 * 0.80, 2);
             $desgloseFleteMaritimo['   ├─ Gastos Portuarios y Documentación (BL)'] = number_format($grupo2 * 0.20, 2);
             $desgloseFleteMaritimo['   Subtotal Operación en Origen (China)'] = number_format($grupo2, 2);
 
@@ -1039,7 +1077,7 @@ class CalculadoraMaritima extends Component
     /**
      * Buscar tarifas FCL usando los códigos POL/POD
      */
-      public function buscarTarifasFCL()
+    public function buscarTarifasFCL()
     {
         // 1. Limpiar estado anterior
         $this->reset(['rates', 'loadingRates', 'message', 'fclRates', 'currentPage']);
@@ -1097,7 +1135,7 @@ class CalculadoraMaritima extends Component
             // ]);
             //Consumir data del archivo de database/mockup/data.json
             $filePath = base_path('database/mockup/data.json');
-            
+
             if (!File::exists($filePath)) {
                 throw new \Exception("Archivo mockup no encontrado en: {$filePath}");
             }
@@ -1271,7 +1309,7 @@ class CalculadoraMaritima extends Component
 
     public function limpiar()
     {
-        $this->reset(['peso', 'volumen','cantidad', 'largo', 'ancho', 'alto', 'valorMercancia', 'resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario']);
+        $this->reset(['peso', 'volumen', 'cantidad', 'largo', 'ancho', 'alto', 'valorMercancia', 'resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario']);
 
         // Limpiar también datos FCL
         if ($this->tipoCarga === 'fcl') {
