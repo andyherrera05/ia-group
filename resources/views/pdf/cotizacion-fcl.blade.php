@@ -281,8 +281,11 @@
         <!-- Header -->
         <div class="header">
             <div class="header-content">
-                <img src="{{ public_path('images/bg_pdf.png') }}" class="header-logo">
-                <div class="logo">IA GROUPS</div>
+                @if(!empty($logoBase64))
+                    <img src="{{ $logoBase64 }}" class="header-logo">
+                @else
+                    <div class="logo">IA GROUPS</div>
+                @endif
             </div>
             <div class="subtitle">Logística Internacional</div>
             <div class="title">COTIZACIÓN DE ENVÍO {{ strtoupper($tipoCarga) }}</div>

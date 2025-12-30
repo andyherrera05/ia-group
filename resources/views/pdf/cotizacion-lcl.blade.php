@@ -125,7 +125,11 @@
         <table class="header-table">
             <tr>
                 <td class="logo-cell">
-                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo_amarillo.png'))) }}" alt="Logo">
+                    @if(!empty($logoBase64))
+                        <img src="{{ $logoBase64 }}" alt="Logo">
+                    @else
+                        <div style="color: #f59e0b; font-weight: bold; font-size: 24px;">IA GROUPS</div>
+                    @endif
                 </td>
                 <td class="header-info-cell">
                     <div class="header-title">COTIZACION IA GROUPS</div>
@@ -184,8 +188,10 @@
                 <tr>
                     <td>{{ $desglose_reporte['ref'] }}</td>
                     <td>
-                        @if(!empty($desglose_reporte['imagen']))
-                        <img src="{{ $desglose_reporte['imagen'] }}" style="max-width: 150px; max-height: 150px; object-fit: contain;">
+                        @if(!empty($desglose_reporte['imagen']) && (str_starts_with($desglose_reporte['imagen'], 'data:image') || str_starts_with($desglose_reporte['imagen'], 'http')))
+                            <img src="{{ $desglose_reporte['imagen'] }}" style="max-width: 150px; max-height: 150px; object-fit: contain;">
+                        @else
+                            <div style="color: #9ca3af; font-size: 10px; font-style: italic;">Sin imagen</div>
                         @endif
                     </td>
                     <td>{{ $desglose_reporte['descripcion'] }}</td>

@@ -11,23 +11,45 @@ class CotizacionPDFController extends Controller
     {
         $desglose_reporte = json_decode($request->desglose_reporte, true) ?? [];
 
-        // Convertir imagen remota a base64 para mayor fiabilidad en el PDF
+        // 1. Cargar Logo robustamente (Base64)
+        $logoBase64 = null;
+        $logoPaths = [
+            public_path('images/logo_amarillo.png'),
+            public_path('images/logo.png'),
+            public_path('images/logo-ia.png')
+        ];
+
+        foreach ($logoPaths as $path) {
+            if (file_exists($path)) {
+                try {
+                    $logoData = file_get_contents($path);
+                    $logoBase64 = 'data:image/png;base64,' . base64_encode($logoData);
+                    break;
+                } catch (\Exception $e) {}
+            }
+        }
+
+        // 2. Convertir imagen del producto a base64 (solo si no es local)
         if (!empty($desglose_reporte['imagen'])) {
             $url = $desglose_reporte['imagen'];
-            
-            // Evitar deadlock en local (php artisan serve) que es mono-hilo
             $isLocal = str_contains($url, '127.0.0.1') || str_contains($url, 'localhost');
 
             if (!$isLocal) {
                 try {
                     $imageData = @file_get_contents($url);
-                    if ($imageData !== false) {
-                        $type = pathinfo($url, PATHINFO_EXTENSION) ?: 'jpg';
-                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($imageData);
-                        $desglose_reporte['imagen'] = $base64;
+                    if ($imageData !== false && !empty($imageData)) {
+                        $ext = strtolower(pathinfo($url, PATHINFO_EXTENSION));
+                        $mime = match($ext) {
+                            'png' => 'image/png',
+                            'gif' => 'image/gif',
+                            'svg' => 'image/svg+xml',
+                            'webp' => 'image/webp',
+                            default => 'image/jpeg'
+                        };
+                        $desglose_reporte['imagen'] = 'data:' . $mime . ';base64,' . base64_encode($imageData);
                     }
                 } catch (\Exception $e) {
-                    // Si falla, mantenemos la URL original
+                    // Si falla, mantenemos la URL original o limpiamos si causa error
                 }
             }
         }
@@ -60,6 +82,7 @@ class CotizacionPDFController extends Controller
             'clienteCiudad' => $request->clienteCiudad,
             'agente' => json_decode($request->agente, true) ?? [],
             'gastosAdicionales' => json_decode($request->gastosAdicionales, true) ?? [],
+            'logoBase64' => $logoBase64,
         ];
 
         $view = (strtolower($data['tipoCarga']) === 'fcl') ? 'pdf.cotizacion-fcl' : 'pdf.cotizacion-lcl';
