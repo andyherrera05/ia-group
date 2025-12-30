@@ -289,12 +289,52 @@
         </div>
         
         <!-- Fecha -->
-        <div class="date">
-            Generado: {{ $fecha }}
+        <div class="date" style="display: table; width: 100%;">
+            <div style="display: table-cell; text-align: left;">
+                Agente: <strong>{{ $agente['nombre'] ?? 'IA GROUPS' }}</strong> | Tel: {{ $agente['telefono'] ?? 'N/A' }} | Email: {{ $agente['email'] ?? 'N/A' }}
+            </div>
+            <div style="display: table-cell; text-align: right;">
+                Generado: {{ $fecha }}
+            </div>
         </div>
         
         <!-- Contenido -->
         <div class="content">
+            <!-- Información del Cliente -->
+            <div class="info-section">
+                <div class="info-title">Información del Cliente</div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <div class="info-cell">
+                            <div class="info-item">
+                                <div class="info-label">Nombre / Empresa</div>
+                                <div class="info-value">{{ $clienteNombre ?: 'Consignatario' }}</div>
+                            </div>
+                        </div>
+                        <div class="info-cell">
+                            <div class="info-item">
+                                <div class="info-label">Ciudad</div>
+                                <div class="info-value">{{ $clienteCiudad ?: 'N/A' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-cell">
+                            <div class="info-item">
+                                <div class="info-label">Email</div>
+                                <div class="info-value">{{ $clienteEmail ?: 'N/A' }}</div>
+                            </div>
+                        </div>
+                        <div class="info-cell">
+                            <div class="info-item">
+                                <div class="info-label">Teléfono</div>
+                                <div class="info-value">{{ $clienteTelefono ?: 'N/A' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Información del Envío -->
             <div class="info-section">
                 <div class="info-title">Detalles de la Ruta y Carga</div>

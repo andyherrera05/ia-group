@@ -38,9 +38,27 @@ class CalculadoraMaritima extends Component
     #[Url]
     public $q;
 
+    #[Url]
+    public $producto = '';
+
+    #[Url]
+    public $id_producto = '';
+
+    #[Url]
+    public $imagen = '';
+
     public function mount()
     {
-        // Decodificar parámetro 'q' si existe
+        // Capturar parámetros directamente del request para mayor fiabilidad
+        $this->producto = request()->input('producto') ?? $this->producto;
+        $this->id_producto = request()->input('id_producto') ?? $this->id_producto;
+        $this->imagen = request()->input('imagen') ?? $this->imagen;
+        $this->peso = request()->input('peso') ?? $this->peso;
+        $this->volumen = request()->input('cbm') ?? $this->volumen;
+        $this->valorMercancia = request()->input('valorMercancia') ?? $this->valorMercancia;
+        $this->cantidad = request()->input('cantidad') ?? $this->cantidad;
+
+        // Decodificar parámetro 'q' si existe (compatibilidad)
         if ($this->q) {
             try {
                 $decoded = json_decode(base64_decode($this->q), true);
@@ -50,6 +68,9 @@ class CalculadoraMaritima extends Component
                     $this->valorMercancia = $decoded['valorMercancia'] ?? $this->valorMercancia;
                     $this->cantidad = $decoded['cantidad'] ?? $this->cantidad;
                     $this->cbm_directo = $decoded['cbm_directo'] ?? $this->cbm_directo;
+                    $this->producto = $decoded['producto'] ?? '';
+                    $this->id_producto = $decoded['id_producto'] ?? '';
+                    $this->imagen = $decoded['imagen'] ?? '';
                 }
             } catch (\Exception $e) {
                 // Silenciosamente fallar si la decodificación falla
@@ -59,6 +80,9 @@ class CalculadoraMaritima extends Component
         if ($this->cbm_directo) {
             $this->metodoVolumen = 'cbm_directo';
         }
+
+        // Aleatorizar la lista de agentes
+        shuffle($this->agentes);
     }
 
     public $largo, $ancho, $alto;
@@ -126,6 +150,54 @@ class CalculadoraMaritima extends Component
     public $unidadActual = '';
     public $valorFacturadoActual = 0;
     public $cbmFacturadoActual = 0;
+    public $desglose_reporte = [];
+
+    // Personalización del cliente
+    public $clienteNombre = '';
+    public $clienteEmail = '';
+    public $clienteTelefono = '';
+    public $clienteDireccion = '';
+    public $clienteCiudad = '';
+    public $agenteId = '';
+
+    public $agentes = [
+        [
+            'id' => 1,
+            'nombre' => 'Alejandra Gonzales Soliz',
+            'email' => 'logistica@iagroups.com',
+            'telefono' => '702693251'
+        ],
+        [
+            'id' => 2,
+            'nombre' => 'Christian Quispe Tolaba',
+            'email' => 'auction@iagroups.com',
+            'telefono' => '64580634'
+        ],
+        [
+            'id' => 3,
+            'nombre' => 'Brenda Garcia Gonzales',
+            'email' => 'consultora@iagroups.com',
+            'telefono' => '64583783'
+        ],
+        [
+            'id' => 4,
+            'nombre' => 'Ivana Rodas Vasquez',
+            'email' => 'agentes@iagroups.com',
+            'telefono' => '64583783'
+        ],
+        [
+            'id' => 5,
+            'nombre' => 'Marcelo Veliz',
+            'email' => 'tarija@iagroups.com',
+            'telefono' => '72981315'
+        ],
+        [
+            'id' => 6,
+            'nombre' => 'Alejandra Gonzales Soliz',
+            'email' => 'academy@iagroups.com',
+            'telefono' => '64700293'
+        ],
+    ];
 
 
     public $departamentosAgrupados = [
@@ -458,6 +530,19 @@ class CalculadoraMaritima extends Component
         $this->cbmFacturadoActual = $shippingPackage['cbm_facturado'] ?? 0;
 
         $this->mostrarPregunta = true;
+
+        // Generar desglose para el reporte (LCL)
+        if ($this->tipoCarga === 'lcl') {
+            $this->desglose_reporte = [
+                'ref' => $this->id_producto ?: 'Sin ID', // Use actual ID if available
+                'descripcion' => $this->producto ?: 'Sin nombre', // Use actual title if available
+                'cantidad' => $this->cantidad ?: 1,
+                'unidad' => 'PCS', // Placeholder
+                'precio' => $this->valorMercancia,
+                'total' => $this->valorMercancia * ($this->cantidad ?: 1),
+                'imagen' => $this->imagen // Store image for the report
+            ];
+        }
 
         session()->flash('success', 'Cálculo completado exitosamente.');
     }
@@ -803,6 +888,9 @@ class CalculadoraMaritima extends Component
         $origenFinal = $this->tipoCarga === 'fcl' ? $this->searchPOL : $this->origen;
         $destinoFinal = $this->tipoCarga === 'fcl' ? $this->searchPOD : $this->destino;
 
+        // Buscar el agente seleccionado
+        $agenteSeleccionado = collect($this->agentes)->firstWhere('id', $this->agenteId);
+
         return redirect()->route('cotizacion.pdf', [
             'tipoCarga' => $this->tipoCarga,
             'peso' => $this->peso,
@@ -820,6 +908,15 @@ class CalculadoraMaritima extends Component
             'unidad' => $this->unidadActual,
             'valorFacturado' => $this->valorFacturadoActual,
             'cbmFacturado' => $this->cbmFacturadoActual,
+            'desglose_reporte' => json_encode($this->desglose_reporte),
+            
+            // Datos personalizados del cliente
+            'clienteNombre' => $this->clienteNombre,
+            'clienteEmail' => $this->clienteEmail,
+            'clienteTelefono' => $this->clienteTelefono,
+            'clienteDireccion' => $this->clienteDireccion,
+            'clienteCiudad' => $this->clienteCiudad,
+            'agente' => json_encode($agenteSeleccionado),
         ]);
     }
     

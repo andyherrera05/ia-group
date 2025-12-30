@@ -19,13 +19,87 @@
             </div>
         </div>
     </div>
+    @if($imagen || $producto || $id_producto)
+    <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl flex items-center space-x-6 animate-fade-in">
+        @if($imagen)
+        <div class="w-24 h-24 rounded-lg overflow-hidden border border-yellow-500/30 flex-shrink-0">
+            <img src="{{ $imagen }}" alt="{{ $producto }}" class="w-full h-full object-cover">
+        </div>
+        @endif
+        <div class="flex-1">
+            @if($producto)
+            <h4 class="text-yellow-500 font-bold text-lg leading-tight">{{ $producto }}</h4>
+            @endif
+            @if($id_producto)
+            <p class="text-gray-400 text-xs mt-1 font-mono uppercase tracking-tighter">ID: {{ $id_producto }}</p>
+            @endif
+            <p class="text-gray-500 text-[10px] mt-2 italic">* Información cargada desde el análisis del producto</p>
+        </div>
+    </div>
+    @endif
 
     <!-- Card: Formulario Principal -->
     <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl">
         <h3 class="text-yellow-500 font-bold mb-6 text-lg uppercase tracking-widest flex items-center">Cotizador LCL</h3>
-        <p class="text-gray-400 text-sm mb-6">Complete los datos de su envío para obtener una cotización instantánea.
-        </p>
+        <p class="text-gray-400 text-sm mb-6">Complete los datos de su envío para obtener una cotización instantánea.</p>
 
+        
+                <!-- Información del Cliente -->
+        <div class="mb-8 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl">
+            <h4 class="text-yellow-500 font-bold mb-4 text-xs uppercase tracking-widest flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Información del Cliente
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Nombre Completo / Empresa</label>
+                    <input type="text" wire:model.live="clienteNombre" placeholder="Ej: JAIME CARDONA"
+                        class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Email</label>
+                    <input type="email" wire:model.live="clienteEmail" placeholder="ejemplo@correo.com"
+                        class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Teléfono</label>
+                    <input type="text" wire:model.live="clienteTelefono" placeholder="72732422"
+                        class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Ciudad</label>
+                    <select wire:model.live="clienteCiudad"
+                        class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                        <option value="0" style="background-color:#1a170c; color: #fff;">-- Seleccionar Ciudad --</option>
+                        <option value="Cochabamba" style="background-color:#1a170c; color: #fff;">Cochabamba</option>
+                        <option value="La Paz" style="background-color:#1a170c; color: #fff;">La Paz</option>
+                        <option value="Santa Cruz" style="background-color:#1a170c; color: #fff;">Santa Cruz</option>
+                        <option value="Tarija" style="background-color:#1a170c; color: #fff;">Tarija</option>
+                        <option value="Potosi" style="background-color:#1a170c; color: #fff;">Potosi</option>
+                        <option value="Beni" style="background-color:#1a170c; color: #fff;">Beni</option>
+                        <option value="Oruro" style="background-color:#1a170c; color: #fff;">Oruro</option>
+                        <option value="Chuquisaca" style="background-color:#1a170c; color: #fff;">Chuquisaca</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Dirección</label>
+                    <input type="text" wire:model.live="clienteDireccion" placeholder="Dirección opcional"
+                        class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Agente de Carga</label>
+                    <select wire:model.live="agenteId"
+                        class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                        <option value="0" style="background-color:#1a170c; color: #fff;">-- Seleccionar Agente --</option>
+                        @foreach($agentes as $agente)
+                            <option value="{{ $agente['id'] }}" style="background-color:#1a170c; color: #fff;">{{ $agente['nombre'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
             <div>
@@ -165,7 +239,7 @@
                                 <input type="checkbox" wire:model.live="destinoFinal" value="otros" name="destinoFinal"
                                     class="w-5 h-5 border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
                                 <div class="flex-1">
-                                    <span class="text-white font-medium">¿Dónde se hara la entrega de la carga en Bolivia?</span>
+                                    <span class="text-white font-medium">¿Dónde se hará la entrega de la carga en Bolivia?</span>
                                 </div>
                             </div>
                         </label>
@@ -296,6 +370,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <!-- Buttons -->

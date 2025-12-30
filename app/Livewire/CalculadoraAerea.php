@@ -7,17 +7,35 @@ use Livewire\Component;
 use Livewire\Attributes\Layout;
 
 
+use Livewire\Attributes\Url;
+
 #[Layout('layouts.app')]
 class CalculadoraAerea extends Component
 {
+    #[Url]
+    public $q;
+
+    #[Url]
+    #[Url]
+    public $producto = '';
 
     // Datos de entrada
+    #[Url]
     public $peso = '';
+    
     public $largo = '';
     public $ancho = '';
     public $alto = '';
+
+    #[Url]
     public $valorMercancia = '';
+
+    #[Url]
     public $cantidad = 1;
+
+    #[Url]
+    #[Url]
+    public $dimensiones = '';
     public $urgente = false;
     public $diasAlmacen = 7;
 
@@ -45,35 +63,41 @@ class CalculadoraAerea extends Component
 
     public function mount()
     {
-        $q = request()->query('q');
-        if ($q) {
+        // Capturar parámetros directamente del request
+        $this->producto = request()->input('producto') ?? $this->producto;
+        $this->peso = request()->input('peso') ?? $this->peso;
+        $this->valorMercancia = request()->input('valorMercancia') ?? $this->valorMercancia;
+        $this->cantidad = request()->input('cantidad') ?? $this->cantidad;
+        $this->dimensiones = request()->input('dimensiones') ?? $this->dimensiones;
+
+        if ($this->q) {
             try {
-                $data = json_decode(base64_decode($q), true);
+                $data = json_decode(base64_decode($this->q), true);
                 if ($data) {
-                    if (isset($data['peso'])) {
-                        $this->peso = $data['peso'];
-                    }
-                    if (isset($data['valorMercancia'])) {
-                        $this->valorMercancia = $data['valorMercancia'];
-                    }
-                    if (isset($data['cantidad'])) {
-                        $this->cantidad = $data['cantidad'];
-                    }
+                    $this->peso = $data['peso'] ?? $this->peso;
+                    $this->valorMercancia = $data['valorMercancia'] ?? $this->valorMercancia;
+                    $this->cantidad = $data['cantidad'] ?? $this->cantidad;
+                    $this->producto = $data['producto'] ?? $this->producto;
                     if (isset($data['dimensiones'])) {
-                        $dims = explode('x', str_replace(' ', '', strtolower($data['dimensiones'])));
-                        if (count($dims) === 3) {
-                            $this->largo = $dims[0];
-                            $this->ancho = $dims[1];
-                            $this->alto = $dims[2];
-                        }
-                    }
-                    if ($this->peso || ($this->largo && $this->ancho && $this->alto)) {
-                        $this->calcular();
+                        $this->dimensiones = $data['dimensiones'];
                     }
                 }
             } catch (\Exception $e) {
                 Log::error("Error decoding air calculator params: " . $e->getMessage());
             }
+        }
+
+        if ($this->dimensiones) {
+            $dims = explode('x', str_replace(' ', '', strtolower($this->dimensiones)));
+            if (count($dims) === 3) {
+                $this->largo = $dims[0];
+                $this->ancho = $dims[1];
+                $this->alto = $dims[2];
+            }
+        }
+
+        if ($this->peso || ($this->largo && $this->ancho && $this->alto)) {
+            $this->calcular();
         }
     }
 

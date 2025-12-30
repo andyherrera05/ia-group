@@ -3,529 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cotización {{ strtoupper($tipoCarga) }} - IA GROUPS</title>
+    <title>Cotización LCL - IA GROUPS</title>
     <style>
-        * {
+        @page {
+            margin: 50px;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            color: #000;
         }
-        
-        body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
-            background: #fff;
-            color: #374151;
-            padding: 30px;
-        }
-        
         .container {
-            max-width: 800px;
+            width: 100%;
             margin: 0 auto;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            overflow: hidden;
         }
-        
-        .header {
-            background: #f59e0b;
-            padding: 25px;
-            color: white;
-            text-align: center;
-        }
-        
-        .header-content {
-            margin-bottom: 10px;
-        }
-        
-        .header-logo {
-            height: 45px;
-            vertical-align: middle;
-            margin-right: 12px;
-            display: inline-block;
-        }
-        
-        .logo {
-            display: inline-block;
-            vertical-align: middle;
-            font-size: 32px;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-        
-        .subtitle {
-            font-size: 12px;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-        
-        .title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .date {
-            text-align: right;
-            padding: 10px 30px;
-            font-size: 11px;
-            color: #6b7280;
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .info-section {
-            margin-bottom: 25px;
-        }
-        
-        .info-title {
-            font-size: 13px;
-            font-weight: bold;
-            color: #b45309;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-            padding-bottom: 6px;
-            border-bottom: 2px solid #fef3c7;
-        }
-        
-        .info-grid {
-            width: 100%;
-            margin-bottom: 15px;
-        }
-        
-        .info-row {
-            display: table;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        
-        .info-cell {
-            display: table-cell;
-            width: 50%;
-            padding: 0 10px;
-        }
-        
-        .info-item {
-            background: #f9fafb;
-            padding: 12px;
-            border-radius: 6px;
-            border-left: 3px solid #f59e0b;
-        }
-        
-        .info-label {
-            font-size: 10px;
-            color: #6b7280;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-        
-        .info-value {
-            font-size: 14px;
-            font-weight: bold;
-            color: #111827;
-        }
-        
-        .calc-summary {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 25px;
-        }
-        
-        .calc-title {
-            font-size: 11px;
-            font-weight: bold;
-            color: #92400e;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        
-        .calc-detail {
-            font-size: 13px;
-            color: #4b5563;
-        }
-
-        .result-box {
-            background: #f59e0b;
-            border-radius: 8px;
-            padding: 25px;
-            text-align: center;
-            margin: 25px 0;
-            color: white;
-        }
-        
-        .result-label {
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-        
-        .result-value {
-            font-size: 40px;
-            font-weight: bold;
-            margin: 5px 0;
-        }
-        
-        .result-currency {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-        
-        .desglose-table {
+        .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            border-bottom: 2px solid #000;
         }
-        
-        .desglose-table th {
-            background: #f3f4f6;
-            color: #374151;
+        .logo-cell {
             padding: 10px;
-            text-align: left;
-            font-size: 11px;
-            text-transform: uppercase;
-            border-bottom: 2px solid #e5e7eb;
-        }
-        
-        .desglose-table td {
-            padding: 10px;
-            border-bottom: 1px solid #f3f4f6;
-            font-size: 13px;
-        }
-        
-        .row-section {
-            background: #f9fafb;
-            font-weight: bold;
-            color: #1f2937;
-            font-size: 12px !important;
-            padding-top: 15px !important;
-            padding-bottom: 5px !important;
-            text-transform: uppercase;
-        }
-        
-        .row-subtotal {
-            font-weight: bold;
-            color: #b45309;
-            background: #fffbeb;
-            border-top: 1px solid #fde68a;
-        }
-        
-        .indent-1 { padding-left: 20px !important; font-size: 12px; color: #4b5563; }
-        .indent-2 { padding-left: 40px !important; font-size: 11px; color: #6b7280; }
-        
-        .footer {
-            background: #111827;
-            color: white;
-            padding: 25px 30px;
+            width: 15%;
             text-align: center;
         }
-        
-        .footer-title {
-            font-size: 14px;
+        .logo-cell img {
+            width: 80px;
+        }
+        .header-info-cell {
+            padding: 10px;
+            vertical-align: top;
+        }
+        .header-title {
+            font-size: 22px;
             font-weight: bold;
-            margin-bottom: 10px;
-            color: #f59e0b;
-        }
-        
-        .footer-text {
-            font-size: 11px;
-            line-height: 1.5;
-            color: #9ca3af;
-            margin-bottom: 15px;
-        }
-        
-        .contact-grid {
-            display: table;
-            width: 100%;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 15px;
-        }
-        
-        .contact-cell {
-            display: table-cell;
-            width: 50%;
-            font-size: 10px;
-            padding: 5px;
-            color: #9ca3af;
-        }
-        
-        .contact-value {
-            color: #fca311;
-            font-weight: bold;
-        }
-        
-        .disclaimer {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 6px;
-            font-size: 9px;
-            color: #6b7280;
-            line-height: 1.4;
-            text-align: justify;
-        }
-
-        .note-box {
-            background-color: #fffbeb;
-            border: 1px dashed #f59e0b;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 6px;
-        }
-        
-        .note-box p {
-            font-size: 11px;
-            font-weight: bold;
-            color: #b45309;
+            text-align: center;
             margin-bottom: 5px;
         }
-        
-        .note-box ul {
-            margin-left: 20px;
-            margin-top: 8px;
-        }
-        
-        .note-box li {
-            font-size: 10px;
-            color: #92400e;
+        .address-line {
+            font-size: 16px;
+            font-weight: bold;
             margin-bottom: 3px;
+        }
+        .contact-line {
+            font-size: 12px;
+            color: #000;
+            margin-bottom: 3px;
+        }
+        .agent-line {
+            font-size: 12px;
+            color: #000;
+            font-weight: bold;
+        }
+        .client-info-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-bottom: 1px solid #000;
+        }
+        .client-info-table td {
+            border: 1px solid #000;
+            padding: 5px 10px;
+            font-size: 13px;
+        }
+        .label-cell {
+            width: 15%;
+            font-weight: bold;
+        }
+        .value-cell {
+            width: 85%;
+        }
+        .order-date-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #f0f0f0;
+        }
+        .order-date-table td {
+            border: 1px solid #000;
+            padding: 5px 10px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .product-table th {
+            border: 1px solid #000;
+            background-color: #d9e1f2;
+            padding: 10px 5px;
+            font-size: 12px;
+            text-align: center;
+        }
+        .product-table td {
+            border: 1px solid #000;
+            padding: 10px 5px;
+            font-size: 12px;
+            text-align: center;
+            vertical-align: middle;
+            height: 200px;
+        }
+        .ref-cell { width: 10%; }
+        .foto-cell { width: 30%; }
+        .desc-cell { width: 15%; }
+        .qty-cell { width: 10%; }
+        .unit-cell { width: 10%; }
+        .price-cell { width: 10%; }
+        .empty-cell { width: 5%; }
+        .total-cell { width: 10%; font-weight: bold; }
+        
+        .footer-note {
+            margin-top: 20px;
+            padding: 20px;
+            font-weight: bold;
+            color: #ff0000;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-content">
-                <img src="{{ public_path('images/bg_pdf.png') }}" class="header-logo">
-                <div class="logo">IA GROUPS</div>
-            </div>
-            <div class="subtitle">Logística Internacional</div>
-            <div class="title">COTIZACIÓN DE ENVÍO {{ strtoupper($tipoCarga) }}</div>
-        </div>
-        
-        <!-- Fecha -->
-        <div class="date">
-            Generado: {{ $fecha }}
-        </div>
-        
-        <!-- Contenido -->
-        <div class="content">
-            <!-- Información del Envío -->
-            <div class="info-section">
-                <div class="info-title">Detalles del Envío</div>
-                <div class="info-grid">
-                    <div class="info-row">
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Peso Total</div>
-                                <div class="info-value">{{ number_format($peso, 2) }} KG</div>
-                            </div>
-                        </div>
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Volumen Total</div>
-                                <div class="info-value">{{ number_format($volumen, 3) }} M³</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Puerto Origen</div>
-                                <div class="info-value">{{ $origen ?: 'Puerto de Ningbo-Zhoushan' }}</div>
-                            </div>
-                        </div>
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Puerto Destino</div>
-                                <div class="info-value">{{ $destino ?: 'Puerto de Iquique' }}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Dimensiones</div>
-                                <div class="info-value">{{ $largo ?? '0' }}x{{ $ancho ?? '0' }}x{{ $alto ?? '0' }} cm</div>
-                            </div>
-                        </div>
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Cantidad</div>
-                                <div class="info-value">{{ $cantidad ?? '1' }} unid.</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                @if($valorMercancia > 0)
-                <div class="info-item" style="width: 100%;">
-                    <div class="info-label">Valor de Mercancía Declarado</div>
-                    <div class="info-value">${{ number_format($valorMercancia, 2) }} USD</div>
-                </div>
+        <table class="header-table">
+            <tr>
+                <td class="logo-cell">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo_amarillo.png'))) }}" alt="Logo">
+                </td>
+                <td class="header-info-cell">
+                    <div class="header-title">COTIZACION IA GROUPS</div>
+                    <div class="address-line">Direccion Internacional: Wrigley Building, Magnificent Mile, Chicago, IL 60611, USA, Phone: +1 312 665 6656</div>
+                    <div class="address-line">Direccion Bolivia: Tarija colon y bolivar 820</div>
+                    <div class="contact-line">pagina: https://ia-groups.com/ &nbsp;&nbsp; correo: {{ $agente['email'] ?? 'info@iagroups.com' }} &nbsp;&nbsp; telefono: {{ $agente['telefono'] ?? '+591 702693251' }}</div>
+                    <div class="agent-line">AGENTE DE CARGA: {{ $agente['nombre'] ?? 'IA GROUPS' }}</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="client-info-table">
+            <tr>
+                <td class="label-cell">Cliente</td>
+                <td class="value-cell">{{ $clienteNombre ?: 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Ciudad</td>
+                <td class="value-cell">{{ $clienteCiudad ?: 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Contacto</td>
+                <td class="value-cell">{{ $clienteTelefono ?: 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Email:</td>
+                <td class="value-cell">{{ $clienteEmail ?: 'N/A' }}</td>
+            </tr>
+        </table>
+
+        <table class="order-date-table">
+            <tr>
+                <td style="width: 50%;">ORDER NO.:</td>
+                <td style="width: 25%;">FECHA:</td>
+                <td style="width: 25%;">{{ \Carbon\Carbon::now()->format('d/m/Y') }}</td>
+            </tr>
+        </table>
+
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th class="ref-cell">REF.</th>
+                    <th class="foto-cell">FOTO</th>
+                    <th class="desc-cell">DESCRIPCION</th>
+                    <th class="qty-cell">CANTIDAD</th>
+                    <th class="unit-cell">UNIDAD</th>
+                    <th class="price-cell">EXW PRICE(USD)</th>
+                    <th class="total-cell">MONTO TOTAL COMPRA</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(!empty($desglose_reporte))
+                <tr>
+                    <td>{{ $desglose_reporte['ref'] }}</td>
+                    <td>
+                        @if(!empty($desglose_reporte['imagen']))
+                        <img src="{{ $desglose_reporte['imagen'] }}" style="max-width: 150px; max-height: 150px; object-fit: contain;">
+                        @endif
+                    </td>
+                    <td>{{ $desglose_reporte['descripcion'] }}</td>
+                    <td>{{ $desglose_reporte['cantidad'] }}</td>
+                    <td>{{ $desglose_reporte['unidad'] }}</td>
+                    <td>$ {{ number_format($desglose_reporte['precio'], 2) }}</td>
+                    <td>${{ number_format($desglose_reporte['total'], 2) }}</td>
+                </tr>
+                @else
+                <tr>
+                    <td colspan="8" style="height: 50px;">No hay información disponible</td>
+                </tr>
                 @endif
-            </div>
+            </tbody>
+        </table>
 
-            <!-- Resumen de Cálculo -->
-            @if($tipoCobro == 'CBM')
-            <div class="calc-summary">
-                <div class="calc-title">Base de Cotización</div>
-                <div class="calc-detail">
-                    Carga cobrada por <strong>{{ $tipoCobro }}</strong>. 
-                    Concepto: {{ $tipoCobro == 'CBM' ? 'Volumen facturado' : 'Peso facturado' }}: 
-                    <strong>{{ is_numeric($cbmFacturado) ? number_format($cbmFacturado, 2) : number_format($peso, 2) }} {{ $unidad ?: 'kg' }}</strong>.
-                </div>
-            </div>
-            @endif          
-            <!-- Resultado Total -->
-            <div class="result-box">
-                <div class="result-label">Total Estimado desde China</div>
-                <div class="result-value">${{ $resultado }}</div>
-                <div class="result-currency">USD - Dólares Americanos</div>
-            </div>
-            
-            <!-- Desglose de Costos -->
-            @if(count($desglose) > 0)
-                @php
-                    $principales = [];
-                    $detalles = [];
-                    
-                    // Definición de conceptos que siempre van al resumen principal
-                    $conceptosPrincipales = [
-                        'Valor de Mercancía', 
-                        'Costo de Envío de Paquete', 
-                        'Agencia Despachante', 
-                        'Recojo desde Almacén',
-                        'Verificación'
-                    ];
-
-                    foreach($desglose as $concepto => $valor) {
-                        $isMain = false;
-                        foreach($conceptosPrincipales as $main) {
-                            if (str_contains($concepto, $main)) { $isMain = true; break; }
-                        }
-                        if (str_contains($concepto, 'Entrega a')) { $isMain = true; }
-
-                        if ($isMain && !is_null($valor)) {
-                            $principales[$concepto] = $valor;
-                        } else {
-                            $detalles[$concepto] = $valor;
-                        }
-                    }
-                @endphp
-
-                <!-- Tabla 1: Resumen de Inversión -->
-                <div class="info-section">
-                    <div class="info-title">Resumen de Inversión</div>
-                    <table class="desglose-table">
-                        <thead>
-                            <tr>
-                                <th>Concepto</th>
-                                <th style="text-align: right;">Monto (USD)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($principales as $concepto => $valor)
-                                <tr>
-                                    <td style="font-weight: bold; color: #111827;">{{ $concepto }}</td>
-                                    <td style="text-align: right; font-weight: bold; color: #b45309;">
-                                        {{ is_numeric($valor) ? '$' . number_format($valor, 2) : $valor }}
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Tabla 2: Detalle Operativo (Opcional) -->
-                @if(count($detalles) > 0)
-                <div class="info-section" style="margin-top: 20px;">
-                    <div class="info-title" style="font-size: 11px; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Detalle Operativo del Flete (Referencial)</div>
-                    <table class="desglose-table" style="background: #fdfdfd;">
-                        <thead>
-                            <tr>
-                                <th style="font-size: 10px; color: #6b7280;">Componente logístico</th>
-                                <th style="text-align: right; font-size: 10px; color: #6b7280;">Desglose Unitario</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($detalles as $concepto => $valor)
-                                @php
-                                    $isSection = is_null($valor);
-                                    $isSubtotal = str_contains(strtolower($concepto), 'subtotal');
-                                    $isSubItem = str_contains($concepto, '├─') || str_contains($concepto, '└─');
-                                    // Limpieza agresiva para el PDF
-                                    $cleanConcepto = preg_replace('/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\(\)\$.,\-:%]/u', '', $concepto);
-                                    $cleanConcepto = trim($cleanConcepto);
-                                @endphp
-                                <tr class="{{ $isSection ? 'row-section' : ($isSubtotal ? 'row-subtotal' : '') }}">
-                                    <td class="{{ $isSubItem ? 'indent-1' : '' }}" style="font-size: 11px;">
-                                        {{ $cleanConcepto }}
-                                    </td>
-                                    <td style="text-align: right; font-size: 11px;">
-                                        @if(!$isSection)
-                                            {{ is_numeric($valor) ? '$' . number_format($valor, 2) : $valor }}
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                @endif
-            @endif
-        </div>
-
-        <div class="note-box">
-            <p>AGRADECEMOS SU CONSULTA</p>
-            <p style="font-weight: normal; color: #d97706;">CONSIDERE QUE TAMBIÉN TENDRÁ OTROS CARGOS ADICIONALES:</p>
-            <ul>
-                <li>NACIONALIZACIÓN E IMPUESTOS</li>
-                <li>SERVICIOS DE AGENCIA DESPACHANTE</li>
-                <li>DESPACHO</li>
-            </ul>
-        </div>  
-        
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-title">¡Gracias por confiar en IA GROUPS!</div>
-            <div class="footer-text">
-                IA GROUPS es su aliado estratégico en logística internacional, conectando mercados con eficiencia y seguridad.
-                Esta propuesta de servicios es válida por 7 días calendario.
-            </div>
-            
-            <div class="contact-grid">
-                <div class="contact-cell">
-                    Email: <span class="contact-value">info@iagroups.com</span>
-                </div>
-                <div class="contact-cell">
-                    WhatsApp: <span class="contact-value">+591 72976032</span>
-                </div>
-                <div class="contact-cell">
-                    Web: <span class="contact-value">https://ia-groups.com/</span>
-                </div>
-                <div class="contact-cell">
-                    Oficina: <span class="contact-value">Calle Bolivar esq. Colón, Tarija, Bolivia</span>
-                </div>
-            </div>
-            
-            <div class="disclaimer">
-                <strong>TÉRMINOS Y CONDICIONES:</strong> Esta cotización es referencial y está sujeta a revisión al momento del embarque. 
-                El flete marítimo no incluye impuestos de importación, aranceles aduaneros en destino, demoras por inspecciones 
-                gubernamentales o servicios de almacenaje extraordinarios. Los tiempos de tránsito son estimados y dependen 
-                exclusivamente de las navieras. IA GROUPS no se hace responsable por retrasos derivados de causas de fuerza mayor.
-            </div>
+        <div class="footer-note">
+            * ESTA COTIZACIÓN TIENE UNA VALIDEZ DE 7 DÍAS<br>
+            * LOS PRECIOS NO INCLUYEN IMPUESTOS DE ADUANA EN DESTINO
         </div>
     </div>
 </body>

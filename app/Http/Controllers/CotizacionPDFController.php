@@ -9,6 +9,22 @@ class CotizacionPDFController extends Controller
 {
     public function generarPDF(Request $request)
     {
+        $desglose_reporte = json_decode($request->desglose_reporte, true) ?? [];
+
+        // Convertir imagen remota a base64 para mayor fiabilidad en el PDF
+        if (!empty($desglose_reporte['imagen'])) {
+            try {
+                $imageData = file_get_contents($desglose_reporte['imagen']);
+                if ($imageData !== false) {
+                    $type = pathinfo($desglose_reporte['imagen'], PATHINFO_EXTENSION) ?: 'jpg';
+                    $base64 = 'data:image/' . $type . ';base64,' . base64_encode($imageData);
+                    $desglose_reporte['imagen'] = $base64;
+                }
+            } catch (\Exception $e) {
+                // Si falla, mantenemos la URL original
+            }
+        }
+
         $data = [
             'tipoCarga' => $request->tipoCarga ?? 'LCL',
             'fecha' => now()->format('d/m/Y H:i'),
@@ -27,10 +43,19 @@ class CotizacionPDFController extends Controller
             'unidad' => $request->unidad,
             'valorFacturado' => $request->valorFacturado,
             'cbmFacturado' => $request->cbmFacturado,
+            'desglose_reporte' => $desglose_reporte,
+
+            // Nuevos campos de personalización
+            'clienteNombre' => $request->clienteNombre,
+            'clienteEmail' => $request->clienteEmail,
+            'clienteTelefono' => $request->clienteTelefono,
+            'clienteDireccion' => $request->clienteDireccion,
+            'clienteCiudad' => $request->clienteCiudad,
+            'agente' => json_decode($request->agente, true) ?? [],
         ];
 
         $view = (strtolower($data['tipoCarga']) === 'fcl') ? 'pdf.cotizacion-fcl' : 'pdf.cotizacion-lcl';
-        $pdf = Pdf::loadView($view, $data);
+        $pdf = Pdf::loadView($view, $data)->setOptions(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true]);
 
         return $pdf->download('cotizacion-' . strtolower($data['tipoCarga']) . '-' . date('Ymd-His') . '.pdf');
     }

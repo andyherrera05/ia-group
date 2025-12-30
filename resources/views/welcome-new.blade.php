@@ -381,6 +381,7 @@
                                             <h2 id="scraped-title" class="text-yellow-500 text-2xs md:text-xl font-black text-center uppercase tracking-tighter leading-tight line-clamp-2 px-4 italic">
                                                 Cargando nombre del producto...
                                             </h2>
+                                            <p id="scraped-product-id" class="text-yellow-500 text-2xs md:text-xl font-black text-center uppercase tracking-tighter leading-tight line-clamp-2 px-4 italic"></p>
 
                                             <!-- Centered Image Container -->
                                             <div class="flex justify-center">
@@ -1465,10 +1466,15 @@
 
             const img = document.getElementById('scraped-image');
             const placeholder = document.getElementById('placeholder-image');
-            const titleElem = document.getElementById('scraped-title');
+            const titleElem = document.getElementById('scraped-title'); 
+            const productIdElem = document.getElementById('scraped-product-id');
 
             if (titleElem) {
                 titleElem.textContent = data.title || 'Producto Sin Nombre';
+            }
+
+            if (productIdElem) {
+                productIdElem.textContent = data.productId || 'ID del Producto';
             }
 
             if (data.image) {
@@ -1699,39 +1705,39 @@
             if (maritimeBtn) {
                 const packageSizeText = document.getElementById('scraped-package-size').textContent.replace(' m³', '');
                 const packageWeightText = document.getElementById('data-package-weight').textContent.replace(' Kg', '');
+                const titleProduct = document.getElementById('scraped-title').innerText.trim();
+                const productId = document.getElementById('scraped-product-id').innerText.trim();
+                const imageProduct = document.getElementById('scraped-image').src;
 
-                const payload = {};
-
-                const cbm = parseFloat(packageSizeText);
-                const weight = parseFloat(packageWeightText);
-
-                if (!isNaN(cbm)) payload.cbm = cbm;
-                if (!isNaN(weight)) payload.peso = weight;
-
-                payload.cantidad = moq;
-                if (priceProduct > 0) payload.valorMercancia = priceProduct;
-
-                payload.cbm_directo = "cbm_directo";
-
-                const encoded = btoa(JSON.stringify(payload));
-                maritimeBtn.href = `/maritimo?q=${encoded}`;
+                const payload = {
+                    cbm: parseFloat(packageSizeText) || '',
+                    peso: parseFloat(packageWeightText) || '',
+                    cantidad: moq || 1,
+                    valorMercancia: priceProduct || 0,
+                    cbm_directo: "cbm_directo",
+                    producto: titleProduct,
+                    id_producto: productId,
+                    imagen: imageProduct
+                };
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+                maritimeBtn.href = `/maritimo?q=${encodeURIComponent(encoded)}`;
             }
 
             const airBtn = document.getElementById('btn-quote-air');
             if (airBtn) {
                 const packageSizeTexto = document.getElementById('data-package-size').textContent;
                 const packageWeightText = document.getElementById('data-package-weight').textContent;
-
-                const payload = {};
-                const weight = parseFloat(packageWeightText);
-
-                if (!isNaN(weight)) payload.peso = weight;
-                payload.dimensiones = packageSizeTexto;
-                payload.cantidad = moq;
-                if (priceProduct > 0) payload.valorMercancia = priceProduct;
-
-                const encoded = btoa(JSON.stringify(payload));
-                airBtn.href = `/aereo?q=${encoded}`;
+                const titleAir = document.getElementById('scraped-title').innerText.trim();
+                
+                const payload = {
+                    peso: parseFloat(packageWeightText) || '',
+                    dimensiones: packageSizeTexto,
+                    cantidad: moq || 1,
+                    valorMercancia: priceProduct || 0,
+                    producto: titleAir
+                };
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+                airBtn.href = `/aereo?q=${encodeURIComponent(encoded)}`;
             }
         }
 

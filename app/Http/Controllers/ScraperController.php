@@ -175,6 +175,7 @@ class ScraperController extends Controller
         $peso_origen = $bestWeight ? $bestWeight['origen'] : 'ninguno';
 
         return [
+            'productId' => $data['productId'] ?? 'Sin ID',
             'title' => $data['title'] ?? 'Sin título',
             'price' => $data['priceTiers'][0]['dollarPrice'] ?? $data['priceRange'] ?? 'No disponible',
             'moq' => $data['moq'] ?? 'N/A',
