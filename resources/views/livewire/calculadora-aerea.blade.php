@@ -87,42 +87,43 @@
 
                 <div
                     class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl transition-all duration-300 hover:border-yellow-500/30">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div class="space-y-2">
-                            <label class="block text-yellow-500 font-bold mb-2 text-xs uppercase tracking-widest">Valor
-                                Mercancía (USD)</label>
-                            <input type="number" wire:model="valorMercancia" step="1" placeholder="2000"
+                            <label class="block text-yellow-500 font-bold mb-2 text-xs uppercase tracking-widest">Valor del paquete (USD)</label>
+                            <input type="number" wire:model.live="valorMercancia" step="0.01" placeholder="6.80"
                                 class="w-full bg-black/30 border-2 border-white/10 text-white px-4 py-3.5 rounded-xl focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all">
                         </div>
                         <div class="space-y-2">
-                            <label class="block text-yellow-500 font-bold text-xs uppercase tracking-widest">Peso (kg)
-                                *</label>
-                            <input type="number" wire:model="peso" step="1" placeholder="100"
+                            <label class="block text-yellow-500 font-bold mb-2 text-xs uppercase tracking-widest">Cantidad de paquetes</label>
+                            <input type="number" wire:model.live="cantidad" step="1" placeholder="1"
+                                class="w-full bg-black/30 border-2 border-white/10 text-white px-4 py-3.5 rounded-xl focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-yellow-500 font-bold text-xs uppercase tracking-widest">Peso de envío (kg)</label>
+                            <input type="number" wire:model.live="peso" step="0.01" placeholder="0.45"
                                 class="w-full bg-black/30 border-2 border-white/10 text-white px-4 py-3.5 rounded-xl focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all">
                         </div>
                     </div>
-                    <p class="text-yellow-500/70 text-xs mt-4 pl-1">* Se cobrará por peso volumétrico si es mayor
-                        (factor 166 kg/m³)</p>
                 </div>
 
                 <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl transition-all duration-300 hover:border-yellow-500/30"
                     x-data="{ tab: 'dimensiones' }">
-                    <h3 class="text-yellow-500 font-bold mb-4 text-xs uppercase tracking-widest">Calculadora Volumen
+                    <h3 class="text-yellow-500 font-bold mb-4 text-xs uppercase tracking-widest">Dimensiones Unitarias (cm)
                     </h3>
                     <div class="grid grid-cols-3 gap-4">
                         <div class="space-y-2">
-                            <label class="block text-gray-400 text-xs">Largo (cm)</label>
-                            <input type="number" wire:model.live="largo" placeholder="50"
+                            <label class="block text-gray-400 text-xs">Largo</label>
+                            <input type="number" wire:model.live="largo" placeholder="25"
                                 class="w-full bg-black/30 border-2 border-white/10 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-yellow-500 transition-all">
                         </div>
                         <div class="space-y-2">
-                            <label class="block text-gray-400 text-xs">Ancho (cm)</label>
-                            <input type="number" wire:model.live="ancho" placeholder="40"
+                            <label class="block text-gray-400 text-xs">Ancho</label>
+                            <input type="number" wire:model.live="ancho" placeholder="7.5"
                                 class="w-full bg-black/30 border-2 border-white/10 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-yellow-500 transition-all">
                         </div>
                         <div class="space-y-2">
-                            <label class="block text-gray-400 text-xs">Alto (cm)</label>
-                            <input type="number" wire:model.live="alto" placeholder="30"
+                            <label class="block text-gray-400 text-xs">Alto</label>
+                            <input type="number" wire:model.live="alto" placeholder="7.5"
                                 class="w-full bg-black/30 border-2 border-white/10 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-yellow-500 transition-all">
                         </div>
                     </div>
@@ -151,7 +152,7 @@
                         <p class="text-sm font-bold text-yellow-400 mb-2 uppercase tracking-widest">Total Estimado
                         </p>
                         <p class="text-5xl font-black text-yellow-400">${{ $resultado }}</p>
-                        <p class="text-xs text-gray-400 mt-2">USD</p>
+                        <p class="text-xs text-gray-400 mt-2">USD - No incluye impuestos</p>
                     </div>
 
                     @if (count($desglose) > 0)

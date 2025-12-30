@@ -442,6 +442,8 @@
                                             <p class="text-xs text-gray-500 mb-1">CBM(m³)</p>
                                             <p id="scraped-package-size" class="text-sm font-bold text-yellow-400">--
                                             </p>
+                                            <p id="data-package-size" class="hidden text-sm font-bold text-yellow-400">--
+                                            </p>
                                         </div>
 
                                         <div class="bg-black/40 border border-yellow-500/20 rounded-lg p-3">
@@ -535,7 +537,7 @@
                                     </a>
 
                                     <!-- Cotización Aérea -->
-                                    <a href="/aereo"
+                                    <a href="/aereo" id="btn-quote-air"
                                         class="block bg-gradient-to-br from-amber-900/30 to-orange-800/20 border-2 border-amber-500/40 hover:border-amber-500 rounded-xl p-5 transition-all group hover:shadow-lg hover:shadow-amber-500/20">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center space-x-4">
@@ -1499,6 +1501,7 @@
             document.getElementById('scraped-package-size').textContent = `${packageSize} m³`;
             document.getElementById('scraped-package-weight').textContent = `${finalWeight.toFixed(2)} Kg`;
             document.getElementById('data-package-weight').textContent = `${pesoAlto}`;
+            document.getElementById('data-package-size').textContent = `${packageSizeTexto}`;
 
             const charList = document.getElementById('scraped-characteristics-list');
             charList.innerHTML = '';
@@ -1712,6 +1715,23 @@
 
                 const encoded = btoa(JSON.stringify(payload));
                 maritimeBtn.href = `/maritimo?q=${encoded}`;
+            }
+
+            const airBtn = document.getElementById('btn-quote-air');
+            if (airBtn) {
+                const packageSizeTexto = document.getElementById('data-package-size').textContent;
+                const packageWeightText = document.getElementById('data-package-weight').textContent;
+
+                const payload = {};
+                const weight = parseFloat(packageWeightText);
+
+                if (!isNaN(weight)) payload.peso = weight;
+                payload.dimensiones = packageSizeTexto;
+                payload.cantidad = moq;
+                if (priceProduct > 0) payload.valorMercancia = priceProduct;
+
+                const encoded = btoa(JSON.stringify(payload));
+                airBtn.href = `/aereo?q=${encoded}`;
             }
         }
 

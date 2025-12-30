@@ -17,6 +17,7 @@ class CalculadoraAerea extends Component
     public $ancho = '';
     public $alto = '';
     public $valorMercancia = '';
+    public $cantidad = 1;
     public $urgente = false;
     public $diasAlmacen = 7;
 
@@ -28,10 +29,53 @@ class CalculadoraAerea extends Component
     // Resultado
     public $resultado = null;
     public $desglose = [];
+    public $pesoTotalCalculado = 0;
+    public $pesoDimensionalTotalCalculado = 0;
 
     // Estado de interacción con precio
     public $mostrarPregunta = false;
     public $respuestaUsuario = null;
+
+    public function updated($propertyName)
+    {
+        if (in_array($propertyName, ['peso', 'cantidad', 'largo', 'ancho', 'alto', 'valorMercancia'])) {
+            $this->calcular();
+        }
+    }
+
+    public function mount()
+    {
+        $q = request()->query('q');
+        if ($q) {
+            try {
+                $data = json_decode(base64_decode($q), true);
+                if ($data) {
+                    if (isset($data['peso'])) {
+                        $this->peso = $data['peso'];
+                    }
+                    if (isset($data['valorMercancia'])) {
+                        $this->valorMercancia = $data['valorMercancia'];
+                    }
+                    if (isset($data['cantidad'])) {
+                        $this->cantidad = $data['cantidad'];
+                    }
+                    if (isset($data['dimensiones'])) {
+                        $dims = explode('x', str_replace(' ', '', strtolower($data['dimensiones'])));
+                        if (count($dims) === 3) {
+                            $this->largo = $dims[0];
+                            $this->ancho = $dims[1];
+                            $this->alto = $dims[2];
+                        }
+                    }
+                    if ($this->peso || ($this->largo && $this->ancho && $this->alto)) {
+                        $this->calcular();
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error("Error decoding air calculator params: " . $e->getMessage());
+            }
+        }
+    }
 
     /**
      * Método principal de cálculo
@@ -47,30 +91,40 @@ class CalculadoraAerea extends Component
         $this->mostrarPregunta = false;
         $this->respuestaUsuario = null;
 
-        $peso = floatval($this->peso);
+        $cantidad = intval($this->cantidad) ?: 1;
+        $margen = 1.08; // 8% margen de empaque
+
+        $pesoUnitario = floatval($this->peso);
         $largo = floatval($this->largo);
         $ancho = floatval($this->ancho);
         $alto = floatval($this->alto);
-        $valorMercancia = floatval($this->valorMercancia);
+        
+        // Peso Total con margen
+        $pesoTotal = ($pesoUnitario * $cantidad) * $margen;
+        
+        // Peso Volumétrico Total con margen
+        $pesoDimensionalTotal = 0;
+        if ($largo > 0 && $ancho > 0 && $alto > 0) {
+            $volumenUnitario = ($largo * $ancho * $alto);
+            $volumenTotal = ($volumenUnitario * $cantidad) * $margen;
+            $pesoDimensionalTotal = $volumenTotal / 5000;
+        }
 
-        $resultado = $this->calcularCostoAereo($valorMercancia, $peso, $largo, $ancho, $alto);
+        $valorMercanciaUnidad = floatval($this->valorMercancia);
+        $valorMercanciaTotal = $valorMercanciaUnidad * $cantidad;
+
+        $this->pesoTotalCalculado = number_format($pesoTotal, 2);
+        $this->pesoDimensionalTotalCalculado = number_format($pesoDimensionalTotal, 2);
+
+        $resultado = $this->calcularCostoAereo($valorMercanciaTotal, $pesoTotal, $pesoDimensionalTotal);
 
         $this->resultado = number_format($resultado['costo'], 2, '.', ',');
         $this->mostrarPregunta = true;
-        session()->flash('success', 'Cálculo completado exitosamente.');
-    }
-    /**
-     * Cálculo para peso volumetrico
-     */
-    private function calcularPesoVolumetrico($longitudCm, $anchoCm, $alturaCm)
-    {
-        $volumen = ($longitudCm * $anchoCm * $alturaCm) / 5000;
-
-        return $volumen;
+        session()->flash('success', 'Cálculo completado considerando cantidad y margen de empaque.');
     }
 
 
-    function calcularCostoAereo(float $valorMercancia, ?float $pesoKg, ?float $longitudCm, ?float $anchoCm, ?float $alturaCm): array
+    function calcularCostoAereo(float $valorMercancia, ?float $pesoTotalKg, ?float $pesoDimensionalTotal): array
     {
         $tarifas = [
             ['maxKg' => 1,   'tarifa' => 14.5],
@@ -99,40 +153,27 @@ class CalculadoraAerea extends Component
         $errores = [];
         $advertencias = [];
 
-        $pesoDimensional = null;
-        $volumenCm3 = null;
-
-        if (
-            $longitudCm !== null && $anchoCm !== null && $alturaCm !== null &&
-            $longitudCm > 0 && $anchoCm > 0 && $alturaCm > 0
-        ) {
-            $pesoDimensional = $this->calcularPesoVolumetrico($longitudCm, $anchoCm, $alturaCm);
-        } else if ($longitudCm !== null || $anchoCm !== null || $alturaCm !== null) {
-            $errores[] = "Faltan una o más dimensiones para calcular el peso dimensional.";
-        }
-
-        if ($pesoKg !== null && $pesoDimensional !== null) {
-            $pesoCobrable = max($pesoKg, $pesoDimensional);
+        if ($pesoTotalKg !== null && $pesoDimensionalTotal > 0) {
+            $pesoCobrable = max($pesoTotalKg, $pesoDimensionalTotal);
             $pesoRedondeado = ceil($pesoCobrable);
-            $tipoCobro = ($pesoKg >= $pesoDimensional) ? 'Peso real' : 'Peso dimensional';
-        } else if ($pesoKg === null && $pesoDimensional !== null) {
-            $pesoCobrable = $pesoDimensional;
-            $pesoRedondeado = ceil($pesoDimensional);
-            $tipoCobro = 'Peso dimensional (estimado)';
-            $advertencias[] = "No se ingresó peso real. Se cobra por volumen como mínimo. El costo final podría ser mayor si el paquete pesa más.";
+            $tipoCobro = ($pesoTotalKg >= $pesoDimensionalTotal) ? 'Peso real total' : 'Peso dimensional total';
+        } else if ($pesoTotalKg === null && $pesoDimensionalTotal > 0) {
+            $pesoCobrable = $pesoDimensionalTotal;
+            $pesoRedondeado = ceil($pesoDimensionalTotal);
+            $tipoCobro = 'Peso dimensional total (estimado)';
+            $advertencias[] = "No se ingresó peso real. Se cobra por volumen como mínimo.";
         }
-        // Caso 3: Solo peso → usar peso real, pero advertir
-        else if ($pesoKg !== null && $pesoDimensional === null) {
-            $pesoRedondeado = ceil($pesoKg);
-            $tipoCobro = 'Peso real';
-            $advertencias[] = "No se ingresaron dimensiones. Si el paquete es voluminoso, el costo final será mayor (se cobrará peso dimensional).";
+        else if ($pesoTotalKg !== null && ($pesoDimensionalTotal === null || $pesoDimensionalTotal == 0)) {
+            $pesoRedondeado = ceil($pesoTotalKg);
+            $tipoCobro = 'Peso real total';
+            $advertencias[] = "No se ingresaron dimensiones. Si los paquetes son voluminosos, el costo final será mayor.";
         } else {
             return [
                 'costo' => null,
                 'tipo' => 'Datos insuficientes',
                 'pesoCobrable' => null,
                 'unidad' => 'kg',
-                'errores' => ["Debe ingresar al menos el peso o las tres dimensiones del paquete."],
+                'errores' => ["Debe ingresar al menos el peso o las dimensiones."],
                 'advertencias' => [],
                 'detalle' => []
             ];
@@ -232,11 +273,6 @@ class CalculadoraAerea extends Component
             'unidad' => 'kg',
             'errores' => $errores,
             'advertencias' => $advertencias,
-            'detalle' => [
-                'pesoReal' => $pesoKg !== null ? number_format($pesoKg, 2) : null,
-                'pesoDimensional' => $pesoDimensional !== null ? number_format($pesoDimensional, 2) : null,
-                'volumenCm3' => $volumenCm3
-            ]
         ];
     }
 
