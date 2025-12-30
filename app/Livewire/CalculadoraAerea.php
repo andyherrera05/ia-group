@@ -224,22 +224,11 @@ class CalculadoraAerea extends Component
             $impuestos     = 25;
         }
 
-        // Grupo 1: Servicios en Origen (China)
-        $subtotalOrigen = $comision + $factura;
-        
-        // Grupo 2: Eje Logístico Internacional
-        $subtotalFlete = $costoFinal;
-        
-        // Grupo 3: Gestión y Protección
-        $subtotalGestion = $seguro + $consolidacion + $almacen + $impuestos;
-
-        // Cálculo de subtotales para el resumen
-        $subtotalFleteAereo = $costoFinal;
         $subtotalGestionChina = $comision + $factura + $seguro + $consolidacion + $almacen + $impuestos;
 
         $this->desglose = [
             'Valor de la mercancía' => number_format($valorMercancia, 2),
-            'Flete Aéreo Internacional' => number_format($subtotalFleteAereo, 2),
+            'Flete Aéreo Internacional' => number_format($costoFinal, 2),
             'Gestión Logística en China' => number_format($subtotalGestionChina, 2),
             
             '─ DETALLE DE SERVICIOS EN ORIGEN' => null,
@@ -259,7 +248,7 @@ class CalculadoraAerea extends Component
         // Cálculo del total general
         $totalAdicionalesPesados = $consolidacion + $almacen + $impuestos;
         $costoFlete = $costoFinal;
-        $totalGeneral = $comision + $factura + $seguro + $totalAdicionalesPesados + $costoFlete;
+        $totalGeneral = $valorMercancia + $comision + $factura + $seguro + $totalAdicionalesPesados + $costoFlete;
 
         if (!$aplicarAdicionales) {
             $this->desglose['Nota'] = 'Costos de consolidación, almacén e impuestos no aplican para envíos ≤ 5 kg cobrables.';
