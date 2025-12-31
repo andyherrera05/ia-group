@@ -1474,17 +1474,32 @@ class CalculadoraMaritima extends Component
 
     public function limpiar()
     {
-        $this->reset(['peso', 'volumen', 'cantidad', 'largo', 'ancho', 'alto', 'valorMercancia', 'resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario']);
+        // 1. Reset Comunes (Inputs, Resultados, Flags)
+        $this->reset([
+            'peso', 'volumen', 'cantidad', 'largo', 'ancho', 'alto', 'valorMercancia', 
+            'resultado', 'desglose', 'desglose_reporte', 'mostrarPregunta', 'respuestaUsuario',
+            'clienteNombre', 'clienteEmail', 'clienteTelefono', 'clienteDireccion', 'clienteCiudad', 
+            'agenteId', 'gastosAdicionales', 'peso', 'cbm_directo', 'q', 'producto', 'id_producto', 'imagen', 'manualImagen'
+        ]);
 
-        // Limpiar también datos FCL
-        if ($this->tipoCarga === 'fcl') {
-            $this->reset(['searchPOL', 'searchPOD', 'polCode', 'podCode', 'fclRates', 'polSuggestions', 'podSuggestions', 'showPOLDropdown', 'showPODDropdown']);
-        }
-        if ($this->tipoCarga === 'lcl') {
-            $this->recojoAlmacen = false;
-            $this->destinoFinal = 'tarija';
-            $this->departamentoDestino = '';
-        }
+        // 2. Reset FCL
+        $this->reset([
+            'searchPOL', 'searchPOD', 'polCode', 'podCode', 'fclRates', 
+            'polSuggestions', 'podSuggestions', 'showPOLDropdown', 'showPODDropdown',
+            'rates', 'loadingRates', 'message', 'currentRunId'
+        ]);
+
+        // 3. Reset LCL
+        $this->reset([
+            'recojoAlmacen', 'departamentoDestino', 
+            'verificacionProducto', 'verificacionCalidad', 
+            'verificacionEmpresaDigital', 'verificacionEmpresaPresencial'
+        ]);
+        
+        // Reset defaults manually if needed (though reset() usually handles this based on class property definition)
+        $this->destinoFinal = 'tarija';
+        
+        // Update query string parameters to reflect empty state (Livewire handles this via property updates)
     }
 
     public function render()

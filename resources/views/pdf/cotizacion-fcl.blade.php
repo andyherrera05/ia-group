@@ -68,7 +68,7 @@
             margin-top: 10px;
         }
         .items-table th {
-            background: #e5eef7;
+            background: #dc8f09;
             border: 1px solid #000;
             padding: 8px 4px;
             font-size: 10px;
