@@ -56,7 +56,7 @@ class CotizacionPDFController extends Controller
 
         $data = [
             'tipoCarga' => $request->tipoCarga ?? 'LCL',
-            'fecha' => now()->format('d/m/Y H:i'),
+            'fecha' => now()->toDateTimeString(),
             'peso' => $request->peso,
             'volumen' => $request->volumen,
             'largo' => $request->largo,

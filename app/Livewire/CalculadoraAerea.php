@@ -16,7 +16,6 @@ class CalculadoraAerea extends Component
     public $q;
 
     #[Url]
-    #[Url]
     public $producto = '';
 
     // Datos de entrada
@@ -33,7 +32,6 @@ class CalculadoraAerea extends Component
     #[Url]
     public $cantidad = 1;
 
-    #[Url]
     #[Url]
     public $dimensiones = '';
     public $urgente = false;

@@ -5,520 +5,331 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cotización {{ strtoupper($tipoCarga) }} - IA GROUPS</title>
     <style>
-        * {
+        @page {
             margin: 0;
-            padding: 0;
-            box-sizing: border-box;
         }
-        
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
             background: #fff;
-            color: #374151;
-            padding: 30px;
+            color: #000;
+            margin: 0;
+            padding: 20px;
         }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .header {
-            background: #f59e0b;
-            padding: 25px;
-            color: white;
-            text-align: center;
-        }
-        
-        .header-content {
-            margin-bottom: 10px;
-        }
-        
-        .header-logo {
-            height: 45px;
-            vertical-align: middle;
-            margin-right: 12px;
-            display: inline-block;
-        }
-        
-        .logo {
-            display: inline-block;
-            vertical-align: middle;
-            font-size: 32px;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-        
-        .subtitle {
-            font-size: 12px;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-        
-        .title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .date {
-            text-align: right;
-            padding: 10px 30px;
-            font-size: 11px;
-            color: #6b7280;
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .info-section {
-            margin-bottom: 25px;
-        }
-        
-        .info-title {
-            font-size: 13px;
-            font-weight: bold;
-            color: #b45309;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-            padding-bottom: 6px;
-            border-bottom: 2px solid #fef3c7;
-        }
-        
-        .info-grid {
-            width: 100%;
-            margin-bottom: 15px;
-        }
-        
-        .info-row {
-            display: table;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        
-        .info-cell {
-            display: table-cell;
-            width: 50%;
-            padding: 0 10px;
-        }
-        
-        .info-item {
-            background: #f9fafb;
-            padding: 12px;
-            border-radius: 6px;
-            border-left: 3px solid #f59e0b;
-        }
-        
-        .info-label {
-            font-size: 10px;
-            color: #6b7280;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-        
-        .info-value {
-            font-size: 14px;
-            font-weight: bold;
-            color: #111827;
-        }
-        
-        .calc-summary {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 25px;
-        }
-        
-        .calc-title {
-            font-size: 11px;
-            font-weight: bold;
-            color: #92400e;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        
-        .calc-detail {
-            font-size: 13px;
-            color: #4b5563;
-        }
- 
-        .result-box {
-            background: #f59e0b;
-            border-radius: 8px;
-            padding: 25px;
-            text-align: center;
-            margin: 25px 0;
-            color: white;
-        }
-        
-        .result-label {
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-        
-        .result-value {
-            font-size: 40px;
-            font-weight: bold;
-            margin: 5px 0;
-        }
-        
-        .result-currency {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-        
-        .desglose-table {
+        .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-bottom: 5px;
         }
-        
-        .desglose-table th {
-            background: #f3f4f6;
-            color: #374151;
-            padding: 10px;
-            text-align: left;
-            font-size: 11px;
+        .header-logo {
+            width: 80px;
+            vertical-align: top;
+        }
+        .header-title {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .header-title h1 {
+            font-size: 18px;
+            margin: 0;
             text-transform: uppercase;
-            border-bottom: 2px solid #e5e7eb;
+            letter-spacing: 1px;
         }
-        
-        .desglose-table td {
-            padding: 10px;
-            border-bottom: 1px solid #f3f4f6;
+        .client-info-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-bottom: 1px solid #000;
+        }
+        .client-info-table td {
+            border: 1px solid #000;
+            padding: 5px 10px;
             font-size: 13px;
         }
-        
-        .row-section {
-            background: #f9fafb;
+        .label-cell {
+            width: 15%;
             font-weight: bold;
-            color: #1f2937;
-            font-size: 12px !important;
-            padding-top: 15px !important;
-            padding-bottom: 5px !important;
+        }
+        .value-cell {
+            width: 85%;
+        }
+        .order-date-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #f0f0f0;
+        }
+        .order-date-table td {
+            border: 1px solid #000;
+            padding: 5px 10px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .items-table th {
+            background: #e5eef7;
+            border: 1px solid #000;
+            padding: 8px 4px;
+            font-size: 10px;
+            text-align: center;
             text-transform: uppercase;
         }
-        
-        .row-subtotal {
-            font-weight: bold;
-            color: #b45309;
-            background: #fffbeb;
-            border-top: 1px solid #fde68a;
-        }
-        
-        .indent-1 { padding-left: 20px !important; font-size: 12px; color: #4b5563; }
-        .indent-2 { padding-left: 40px !important; font-size: 11px; color: #6b7280; }
-        
-        .footer {
-            background: #111827;
-            color: white;
-            padding: 25px 30px;
+        .items-table td {
+            border: 1px solid #000;
+            padding: 10px 5px;
+            font-size: 11px;
+            vertical-align: middle;
             text-align: center;
         }
-        
-        .footer-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #f59e0b;
+        .col-ref { width: 8%; font-weight: bold; text-transform: uppercase; }
+        .col-foto { width: 30%; }
+        .col-desc { width: 20%; font-weight: bold; }
+        .col-cant { width: 8%; font-weight: bold; }
+        .col-unid { width: 8%; font-weight: bold; }
+        .col-price { width: 12%; font-weight: bold; }
+        .col-empty { width: 8%; }
+        .col-total { width: 12%; font-weight: bold; }
+
+        .product-img {
+            max-width: 150px;
+            max-height: 100px;
         }
-        
-        .footer-text {
-            font-size: 11px;
-            line-height: 1.5;
-            color: #9ca3af;
-            margin-bottom: 15px;
-        }
-        
-        .contact-grid {
-            display: table;
+        .price-val {
+            display: inline-block;
             width: 100%;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 15px;
+            text-align: center;
         }
-        
-        .contact-cell {
-            display: table-cell;
-            width: 50%;
-            font-size: 10px;
-            padding: 5px;
-            color: #9ca3af;
+        .currency-prefix {
+            float: left;
+            margin-left: 5px;
         }
-        
-        .contact-value {
-            color: #fca311;
+        .amount-val {
+            float: right;
+            margin-right: 5px;
+        }
+        .header-info-cell {
+            padding: 10px;
+            vertical-align: top;
+        }
+        .logo-cell img {
+            width: 80px;
+        }
+        .header-title {
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .address-line {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .contact-line {
+            font-size: 12px;
+            color: #000;
+            margin-bottom: 3px;
+        }
+        .agent-line {
+            font-size: 12px;
+            color: #000;
             font-weight: bold;
         }
         
-        .disclaimer {
+        .clear { clear: both; }
+
+        .footer-note {
             margin-top: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 6px;
-            font-size: 9px;
-            color: #6b7280;
+            font-size: 10px;
             line-height: 1.4;
-            text-align: justify;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-content">
-                @if(!empty($logoBase64))
-                    <img src="{{ $logoBase64 }}" class="header-logo">
-                @else
-                    <div class="logo">IA GROUPS</div>
-                @endif
-            </div>
-            <div class="subtitle">Logística Internacional</div>
-            <div class="title">COTIZACIÓN DE ENVÍO {{ strtoupper($tipoCarga) }}</div>
-        </div>
-        
-        <!-- Fecha -->
-        <div class="date" style="display: table; width: 100%;">
-            <div style="display: table-cell; text-align: left;">
-                Agente: <strong>{{ $agente['nombre'] ?? 'IA GROUPS' }}</strong> | Tel: {{ $agente['telefono'] ?? 'N/A' }} | Email: {{ $agente['email'] ?? 'N/A' }}
-            </div>
-            <div style="display: table-cell; text-align: right;">
-                Generado: {{ $fecha }}
-            </div>
-        </div>
-        
-        <!-- Contenido -->
-        <div class="content">
-            <!-- Información del Cliente -->
-            <div class="info-section">
-                <div class="info-title">Información del Cliente</div>
-                <div class="info-grid">
-                    <div class="info-row">
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Nombre / Empresa</div>
-                                <div class="info-value">{{ $clienteNombre ?: 'Consignatario' }}</div>
-                            </div>
-                        </div>
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Ciudad</div>
-                                <div class="info-value">{{ $clienteCiudad ?: 'N/A' }}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Email</div>
-                                <div class="info-value">{{ $clienteEmail ?: 'N/A' }}</div>
-                            </div>
-                        </div>
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Teléfono</div>
-                                <div class="info-value">{{ $clienteTelefono ?: 'N/A' }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Header Section -->
+    <table class="header-table">
+            <tr>
+                <td class="logo-cell">
+                    @if(!empty($logoBase64))
+                        <img src="{{ $logoBase64 }}" alt="Logo">
+                    @else
+                        <div style="color: #f59e0b; font-weight: bold; font-size: 24px;">IA GROUPS</div>
+                    @endif
+                </td>
+                <td class="header-info-cell">
+                    <div class="header-title">COTIZACION IA GROUPS</div>
+                    <div class="address-line">Direccion Internacional: Wrigley Building, Magnificent Mile, Chicago, IL 60611, USA, Phone: +1 312 665 6656</div>
+                    <div class="address-line">Direccion Bolivia: Tarija colon y bolivar 820</div>
+                    <div class="agent-line">AGENTE DE CARGA: {{ $agente['nombre'] ?? 'IA GROUPS' }}</div>
+                    <div class="contact-line">pagina: https://ia-groups.com &nbsp;&nbsp; correo: {{ $agente['email'] ?? 'info@iagroups.com' }} &nbsp;&nbsp; telefono: {{ $agente['telefono'] ?? '+591 702693251' }}</div>
+                </td>
+            </tr>
+        </table>
+    
 
-            <!-- Información del Envío -->
-            <div class="info-section">
-                <div class="info-title">Detalles de la Ruta y Carga</div>
-                <div class="info-grid">
-                    <div class="info-row">
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Puerto Origen</div>
-                                <div class="info-value">{{ $origen ?: 'No especificado' }}</div>
-                            </div>
-                        </div>
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Puerto Destino</div>
-                                <div class="info-value">{{ $destino ?: 'No especificado' }}</div>
-                            </div>
-                        </div>
+    <!-- Client & Order Info -->
+   <table class="client-info-table">
+            <tr>
+                <td class="label-cell">Cliente</td>
+                <td class="value-cell">{{ $clienteNombre ?: 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Ciudad</td>
+                <td class="value-cell">{{ $clienteCiudad ?: 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Contacto</td>
+                <td class="value-cell">{{ $clienteTelefono ?: 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Email:</td>
+                <td class="value-cell">{{ $clienteEmail ?: 'N/A' }}</td>
+            </tr>
+        </table>
+
+        <table class="order-date-table">
+            <tr>
+                <td style="width: 50%;">ORDER NO.:</td>
+                <td style="width: 25%;">FECHA:</td>
+                <td style="width: 25%;">{{ \Carbon\Carbon::now()->format('d/m/Y') }}</td>
+            </tr>
+        </table>
+
+    <!-- Main Items Table -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th class="col-ref">REF.</th>
+                <th class="col-foto">FOTO</th>
+                <th class="col-desc">DESCRIPCION</th>
+                <th class="col-cant">CANTIDAD</th>
+                <th class="col-unid">UNIDAD</th>
+                <th class="col-price">EXW PRICE(USD)</th>
+                <th class="col-total">MONTO TOTAL COMPRA</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php
+                $item = $desglose_reporte;
+            @endphp
+            <tr>
+                <td class="col-ref">{{ $item['ref'] ?? 'JULIO' }}</td>
+                <td class="col-foto">
+                    @if(!empty($item['imagen']))
+                        <img src="{{ $item['imagen'] }}" class="product-img">
+                    @endif
+                </td>
+                <td class="col-desc">
+                    {{ $item['descripcion'] ?? 'Flete Marítimo (COSCO - 40\' Standard)' }}
+                </td>
+                <td class="col-cant">{{ $item['cantidad'] ?? '1' }}</td>
+                <td class="col-unid">{{ $item['unidad'] ?? 'PCS' }}</td>
+                <td class="col-price">
+                    <div class="price-val">
+                        <span class="currency-prefix">$</span>
+                        <span class="amount-val">{{ number_format($item['precio'] ?? 0, 2) }}</span>
+                        <div class="clear"></div>
                     </div>
-                    <div class="info-row">
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Tipo de Envío</div>
-                                <div class="info-value">Contenedor Completo (FCL)</div>
-                            </div>
-                        </div>
-                        <div class="info-cell">
-                            <div class="info-item">
-                                <div class="info-label">Cantidad</div>
-                                <div class="info-value">{{ $cantidad ?? '1' }} unid.</div>
-                            </div>
-                        </div>
+                </td>
+                <td class="col-total">
+                    <div class="price-val">
+                        <span class="currency-prefix">$</span>
+                        <span class="amount-val">{{ number_format($item['total'] ?? 0, 2) }}</span>
+                        <div class="clear"></div>
                     </div>
-                </div>
-                
-                @if($valorMercancia > 0)
-                <div class="info-item" style="width: 100%;">
-                    <div class="info-label">Valor de Mercancía Declarado</div>
-                    <div class="info-value">${{ number_format($valorMercancia, 2) }} USD</div>
-                </div>
-                @endif
-            </div>
- 
-            <!-- Resumen de Cálculo -->
-            <div class="calc-summary">
-                <div class="calc-title">Base de Cotización</div>
-                <div class="calc-detail">
-                    Carga cotizada bajo la modalidad de <strong>{{ $tipoCobro }}</strong>. 
-                    Unidad de medida: <strong>{{ $unidad }}</strong>.
-                </div>
-            </div>
-            
-            <!-- Resultado Total -->
-            <div class="result-box">
-                <div class="result-label">Total Estimado desde China</div>
-                <div class="result-value">${{ $resultado }}</div>
-                <div class="result-currency">USD - Dólares Americanos</div>
-            </div>
-            
-            <!-- Desglose de Costos -->
-            @if(count($desglose) > 0)
-                @php
-                    $principales = [];
-                    $detalles = [];
-                    
-                    // Definición de conceptos que siempre van al resumen principal
-                    $conceptosPrincipales = [
-                        'Valor de Mercancía', 
-                        'Costo de Envío de Paquete', 
-                        'Gestión Portuaria',
-                        'Flete Marítimo',
-                        'Agencia Despachante', 
-                        'Recojo desde Almacén'
-                    ];
- 
-                    foreach($desglose as $concepto => $valor) {
-                        $isMain = false;
-                        foreach($conceptosPrincipales as $main) {
-                            if (str_contains($concepto, $main)) { $isMain = true; break; }
-                        }
-                        if (str_contains($concepto, 'Entrega a')) { $isMain = true; }
- 
-                        if ($isMain && !is_null($valor)) {
-                            $principales[$concepto] = $valor;
-                        } else {
-                            $detalles[$concepto] = $valor;
-                        }
-                    }
-                @endphp
- 
-                <!-- Tabla 1: Resumen de Inversión -->
-                <div class="info-section">
-                    <div class="info-title">Resumen de Inversión</div>
-                    <table class="desglose-table">
-                        <thead>
-                            <tr>
-                                <th>Concepto</th>
-                                <th style="text-align: right;">Monto (USD)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($principales as $concepto => $valor)
-                                <tr>
-                                    <td style="font-weight: bold; color: #111827;">{{ trim($concepto) }}</td>
-                                    <td style="text-align: right; font-weight: bold; color: #b45309;">
-                                        {{ is_numeric($valor) ? '$' . number_format($valor, 2) : $valor }}
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
- 
-                <!-- Tabla 2: Detalle Operativo (Opcional) -->
-                @if(count($detalles) > 0)
-                <div class="info-section" style="margin-top: 20px;">
-                    <div class="info-title" style="font-size: 11px; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Detalle Operativo del Flete (Referencial)</div>
-                    <table class="desglose-table" style="background: #fdfdfd;">
-                        <thead>
-                            <tr>
-                                <th style="font-size: 10px; color: #6b7280;">Componente logístico</th>
-                                <th style="text-align: right; font-size: 10px; color: #6b7280;">Desglose Unitario</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($detalles as $concepto => $valor)
-                                @php
-                                    $isSection = is_null($valor);
-                                    $isSubtotal = str_contains(strtolower($concepto), 'subtotal');
-                                    $isSubItem = str_contains($concepto, '├─') || str_contains($concepto, '└─');
-                                    // Limpieza agresiva para el PDF
-                                    $cleanConcepto = preg_replace('/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\(\)\$.,\-:%]/u', '', $concepto);
-                                    $cleanConcepto = trim($cleanConcepto);
-                                @endphp
-                                <tr class="{{ $isSection ? 'row-section' : ($isSubtotal ? 'row-subtotal' : '') }}">
-                                    <td class="{{ $isSubItem ? 'indent-1' : '' }}" style="font-size: 11px;">
-                                        {{ $cleanConcepto }}
-                                    </td>
-                                    <td style="text-align: right; font-size: 11px;">
-                                        @if(!$isSection)
-                                            {{ is_numeric($valor) ? '$' . number_format($valor, 2) : $valor }}
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                @endif
-            @endif
-        </div>
+                </td>
+            </tr>           
+        </tbody>
+    </table>
+
+    <!-- Detailed Cost Summary Table -->
+    <table style="width: 70%; border-collapse: collapse; margin-top: 20px; font-size: 11px;">
+        @php
+            $item = $desglose_reporte;
+            $valorCarga = $item['valorMercancia'] ?? 0;
+            $fleteMaritimo = $item['precio'] ?? 0;
+            // Costos fijos/hardcoded
+            $seguroComisiones = ($fleteMaritimo + $valorCarga) * 0.07; // Aproximación basada en Booking 50%
+            $costoAdicionalCargaPeligrosa = 250;
+            $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoAdicionalCargaPeligrosa;
+        @endphp
         
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-title">¡Gracias por confiar en IA GROUPS!</div>
-            <div class="footer-text">
-                IA GROUPS es su aliado estratégico en logística internacional, conectando mercados con eficiencia y seguridad.
-                Esta propuesta de servicios es válida por 7 días calendario.
-            </div>
-            
-            <div class="contact-grid">
-                <div class="contact-cell">
-                    Email: <span class="contact-value">info@iagroups.com</span>
-                </div>
-                <div class="contact-cell">
-                    WhatsApp: <span class="contact-value">+591 72976032</span>
-                </div>
-                <div class="contact-cell">
-                    Web: <span class="contact-value">https://ia-groups.com/</span>
-                </div>
-                <div class="contact-cell">
-                    Oficina: <span class="contact-value">Calle Bolivar esq. Colón, Tarija, Bolivia</span>
-                </div>
-            </div>
-            
-            <div class="disclaimer">
-                <strong>TÉRMINOS Y CONDICIONES:</strong> Esta cotización es referencial y está sujeta a revisión al momento del embarque. 
-                El flete marítimo no incluye impuestos de importación, aranceles aduaneros en destino, demoras por inspecciones 
-                gubernamentales o servicios de almacenaje extraordinarios. Los tiempos de tránsito son estimados y dependen 
-                exclusivamente de las navieras. IA GROUPS no se hace responsable por retrasos derivados de causas de fuerza mayor.
-            </div>
-        </div>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold; width: 80%;">VALOR DE CARGA</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; width: 20%;">${{ number_format($valorCarga, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO DE RECOGIDA DESDE LA FABRICA A NUESTRO ALMACEN</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE BUSQUEDA DE PRODUCTOS</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE INSPECCION DE CALIDAD</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE ENVIO MARITIMO {{ $origen }} - {{ $destino }}</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">${{ number_format($fleteMaritimo, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO ADICIONAL DE ENVIO POR CARGA PELIGROSA CON CERTIFICACION</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO ADICIONAL DE ENVIO POR CARGA PELIGROSA SIN CERTIFICACION</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoAdicionalCargaPeligrosa, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">DESCONSOLIDACION</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">GESTION PORTUARIA</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($item['gestionPortuaria'] ?? 0, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">BOOKING Y CUPO DE CARGA</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($item['booking'] ?? 0, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SEGURO, GIRO INTERNACIONAL Y COMISIONES</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($seguroComisiones, 2) }}</td>
+        </tr>
+        @php
+            // Update total to include port fees and booking
+            $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoAdicionalCargaPeligrosa + ($item['gestionPortuaria'] ?? 0) + ($item['booking'] ?? 0);
+        @endphp
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TOTAL</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">${{ number_format($totalGeneral, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TOTAL T/C 9,62 Bs</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Bs {{ number_format($totalGeneral * 9.62, 2) }}</td>
+        </tr>
+        <tr>
+            <td colspan="2" style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Shipping Date: {{ \Carbon\Carbon::parse($fecha)->format('d/m/Y') }}</td>
+        </tr>
+    </table>
+
+    <div class="footer-note" style="margin-top: 40px;">
+        <strong>NOTAS:</strong><br>
+        <ul class="footer-note-list">
+            <li>La presente cotizacion tiene un plazo limite esteblecido.</li>
+            <li>El pago expresado es dolares puede ser pagado en bolivianos al tipo de cambio del dia.</li>
+            <li>Esta cotizacion podria sufrir alteraciones en caso de alguna revaloracion por parte de la aduana.</li>
+            <li>Se aplica a carga regular, no peligrosos</li>
+            <li>Asume que el consignatario  que tiene cualquier permiso que sea requerido por autoridades en el país de destino</li>
+            <li>Está sujeto a verificación de peso y medidas</li>
+            <li>Requisitos de embarque: Factura comercial, Packing List.</li>
+            <li>Contamos con nuestra Propia Agencia Despachante de manera opcional.</li>
+            <li>El PAGO DE ADUANAS es una ves llegue la carga a Almacenes Aduaneros de Bolivia.</li>
+            <li>Cotización en base a datos enviados por el cliente, al llegar a almacén, se verificarán peso y dimensiones.</li>
+        </ul>
     </div>
 </body>
 </html>

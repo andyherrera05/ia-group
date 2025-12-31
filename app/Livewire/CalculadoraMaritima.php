@@ -370,6 +370,12 @@ class CalculadoraMaritima extends Component
         }
 
         $this->desglose['   Gestión Portuaria'] = number_format($subtotalPortuaria, 2);
+        $this->desglose['   Booking y Cupo de Carga'] = number_format($precioBase * 0.05, 2);
+
+        $valorMercancia = floatval($this->valorMercancia);
+        if ($valorMercancia > 0) {
+            $this->desglose['Valor de la Mercancía'] = number_format($valorMercancia, 2, '.', '');
+        }
 
         // Información adicional (no numérica)
         $this->desglose['Tiempo de Tránsito'] = ($rate['transit_time'] ?? 'N/A') . ' días';
@@ -379,7 +385,21 @@ class CalculadoraMaritima extends Component
         $this->desglose['Cierre (cutoff)'] = ($rate['closing'] ?? 'N/A') . ' días';
 
         // Calcular total final
-        $this->resultado = $precioBase + $subtotalPortuaria;
+        $this->resultado = $precioBase + $subtotalPortuaria + ($precioBase * 0.05) + $valorMercancia;
+
+        // Metadatos para el reporte PDF (FCL)
+        $this->desglose_reporte = [
+            'ref' => $this->id_producto ?: 'FCL-' . strtoupper($container),
+            'descripcion' => "Flete Marítimo ({$shippingLine} - {$containerName})",
+            'cantidad' => 1,
+            'unidad' => 'PCS',
+            'precio' => $precioBase,
+            'total' => $precioBase,
+            'imagen' => $this->imagen ?: null,
+            'valorMercancia' => $valorMercancia,
+            'gestionPortuaria' => $subtotalPortuaria,
+            'booking' => $precioBase * 0.05
+        ];
 
         // Metadatos para el PDF
         $this->tipoCobroActual = 'Contenedor Completo (FCL)';
@@ -505,7 +525,7 @@ class CalculadoraMaritima extends Component
         $this->mostrarPregunta = false;
         $this->respuestaUsuario = null;
 
-        $this->fecha = now()->format('d/m/Y H:i');
+        $this->fecha = now()->toDateTimeString();
 
         $peso = floatval($this->peso);
         $largo = floatval($this->largo);

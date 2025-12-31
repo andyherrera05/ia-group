@@ -150,7 +150,7 @@
                     <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
                         Cantidad (Unidades)
                     </label>
-                    <input type="number" wire:model.live="cantidad" value="1" step="1" required
+                    <input type="number" wire:model.live="cantidad" placeholder="Ej: 1" value="1" step="1" required
                         class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                 </div>
 

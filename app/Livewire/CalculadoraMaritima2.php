@@ -447,7 +447,7 @@ class CalculadoraMaritima extends Component
             // Grupo 1: Costos Naviera y Documentación
             $desgloseFleteMaritimo['─ EJE LOGÍSTICO INTERNACIONAL'] = null;
             $desgloseFleteMaritimo['   ├─ Flete Marítimo (Puerto a Puerto)'] = number_format($grupo1 * 0.85, 2); // Aumentamos flete
-            $desgloseFleteMaritimo['   ├─ Booking & Space Guarantee'] = number_format($grupo1 * 0.10, 2); // Suena a "asegurar espacio"
+            $desgloseFleteMaritimo['   ├─ Booking y Cupo de Carga'] = number_format($grupo1 * 0.10, 2); // Suena a "asegurar espacio"
             $desgloseFleteMaritimo['   └─ Protección de Carga (Standard)'] = number_format($grupo1 * 0.05, 2); // En lugar de solo "seguro"
             $desgloseFleteMaritimo['   Subtotal Eje Logístico Internacional'] = number_format($grupo1, 2);
 
