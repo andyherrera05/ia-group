@@ -214,10 +214,11 @@
                 $item = $desglose_reporte;
             @endphp
             <tr>
-                <td class="col-ref">{{ $item['ref'] ?? 'JULIO' }}</td>
-                <td class="col-foto">
-                    @if(!empty($item['imagen']))
-                        <img src="{{ $item['imagen'] }}" class="product-img">
+                <td class="col-ref">{{ $item['ref'] ?? 'CONTAINER' }}</td>
+                <td>@if(!empty($containerBase64))
+                        <img src="{{ $containerBase64 }}" alt="Container" style="max-width: 100px; max-height: 100px; object-fit: contain;">
+                    @else
+                        <div style="color: #9ca3af; font-size: 10px; font-style: italic;">Sin imagen</div>
                     @endif
                 </td>
                 <td class="col-desc">

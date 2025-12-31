@@ -29,6 +29,21 @@ class CotizacionPDFController extends Controller
             }
         }
 
+        $containerBase64 = null;
+        $containerPaths = [
+            public_path('images/container.png'),
+        ];
+
+        foreach ($containerPaths as $containerPath) {
+            if (file_exists($containerPath)) {
+                try {
+                    $containerData = file_get_contents($containerPath);
+                    $containerBase64 = 'data:image/png;base64,' . base64_encode($containerData);
+                    break;
+                } catch (\Exception $e) {}
+            }
+        }
+
         // 2. Convertir imagen del producto a base64 (solo si no es local)
         if (!empty($desglose_reporte['imagen'])) {
             $url = $desglose_reporte['imagen'];
@@ -83,6 +98,7 @@ class CotizacionPDFController extends Controller
             'agente' => json_decode($request->agente, true) ?? [],
             'gastosAdicionales' => json_decode($request->gastosAdicionales, true) ?? [],
             'logoBase64' => $logoBase64,
+            'containerBase64' => $containerBase64,
         ];
 
         $view = (strtolower($data['tipoCarga']) === 'fcl') ? 'pdf.cotizacion-fcl' : 'pdf.cotizacion-lcl';

@@ -139,7 +139,7 @@
                 <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
                     Valor de Mercancía (USD)
                 </label>
-                <input type="number" wire:model.live="valorMercancia" step="1" required placeholder="Ej: 10,000"
+                <input type="number" wire:model="valorMercancia" step="1" required placeholder="Ej: 10,000"
                     class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
             </div>
 
@@ -150,7 +150,7 @@
                     <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
                         Cantidad (Unidades)
                     </label>
-                    <input type="number" wire:model.live="cantidad" placeholder="Ej: 1" value="1" step="1" required
+                    <input type="number" wire:model="cantidad" placeholder="Ej: 1" value="1" step="1" required
                         class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                 </div>
 
@@ -158,7 +158,7 @@
                     <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
                         Peso Total (KG)
                     </label>
-                    <input type="number" wire:model.live="peso" step="1" placeholder="Ej: 500"
+                    <input type="number" wire:model="peso" step="1" placeholder="Ej: 500"
                         class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                     <p class="text-xs text-gray-500 mt-1">Peso bruto incluyendo embalaje</p>
                 </div>
@@ -186,19 +186,19 @@
 
                     <div>
                         <label class="block text-xs font-medium text-gray-400 mb-2">Largo (cm)</label>
-                        <input type="number" wire:model.live="largo" placeholder="120"
+                        <input type="number" wire:model="largo" placeholder="Ej: 120"
                             class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
                     </div>
 
                     <div>
                         <label class="block text-xs font-medium text-gray-400 mb-2">Ancho (cm)</label>
-                        <input type="number" wire:model.live="ancho" placeholder="80"
+                        <input type="number" wire:model="ancho" placeholder="Ej: 80"
                             class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
                     </div>
 
                     <div>
                         <label class="block text-xs font-medium text-gray-400 mb-2">Alto (cm)</label>
-                        <input type="number" wire:model.live="alto" placeholder="100"
+                        <input type="number" wire:model="alto" placeholder="Ej: 100"
                             class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
                     </div>
 
@@ -211,7 +211,7 @@
                 <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
                     CBM Total (M³)
                 </label>
-                <input type="number" wire:model.live="volumen" step="0.5" min="0.5" placeholder="Ej: 2.5"
+                <input type="number" wire:model="volumen" step="0.5" min="0.5" placeholder="Ej: 2.5"
                     class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                 <p class="text-xs text-gray-500 mt-1">Este será el volumen utilizado para la cotización.</p>
             </div>
@@ -233,7 +233,7 @@
                 <!-- Recojo de Almacén -->
                 <div class="bg-black/20 border border-yellow-500/20 rounded-xl p-5">
                     <div class="flex items-start space-x-4">
-                        <input type="checkbox" wire:model.live="recojoAlmacen" id="recojoAlmacen"
+                        <input type="checkbox" wire:model="recojoAlmacen" id="recojoAlmacen"
                             class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
                         <div class="flex-1">
                             <label for="recojoAlmacen" class="flex items-center justify-between cursor-pointer">
@@ -281,7 +281,7 @@
                             <label for="departamentoDestino" class="block text-xs font-medium text-gray-400 mb-2">
                                 Seleccionar Departamento:
                             </label>
-                            <select id="departamentoDestino" wire:model.live="departamentoDestino"
+                            <select id="departamentoDestino" wire:model="departamentoDestino"
                                 class="w-full px-4 py-3 bg-black/60 border border-yellow-500/40 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
 
                                 <option value="" style="background-color: #0f0e0d">
@@ -336,7 +336,7 @@
                     <!-- Verificación de Producto -->
                     <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
                         <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model.live="verificacionProducto" id="verificacionProducto"
+                            <input type="checkbox" wire:model="verificacionProducto" id="verificacionProducto"
                                 class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
                             <div class="flex-1">
                                 <label for="verificacionProducto" class="flex items-center justify-between cursor-pointer">
@@ -353,7 +353,7 @@
                     <!-- Verificación de Calidad -->
                     <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
                         <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model.live="verificacionCalidad" id="verificacionCalidad"
+                            <input type="checkbox" wire:model="verificacionCalidad" id="verificacionCalidad"
                                 class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
                             <div class="flex-1">
                                 <label for="verificacionCalidad" class="flex items-center justify-between cursor-pointer">
@@ -370,7 +370,7 @@
                     <!-- Verificación de Empresa Digital -->
                     <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
                         <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model.live="verificacionEmpresaDigital" id="verificacionEmpresaDigital"
+                            <input type="checkbox" wire:model="verificacionEmpresaDigital" id="verificacionEmpresaDigital"
                                 class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
                             <div class="flex-1">
                                 <label for="verificacionEmpresaDigital" class="flex items-center justify-between cursor-pointer">
@@ -387,7 +387,7 @@
                     <!-- Verificación Presencial de Empresa -->
                     <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
                         <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model.live="verificacionEmpresaPresencial" id="verificacionEmpresaPresencial"
+                            <input type="checkbox" wire:model="verificacionEmpresaPresencial" id="verificacionEmpresaPresencial"
                                 class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
                             <div class="flex-1">
                                 <label for="verificacionEmpresaPresencial" class="flex items-center justify-between cursor-pointer">

@@ -256,11 +256,20 @@
         </table>
 
 
+    <div class="footer-note" style="margin-top: 40px;">
+        <strong>NOTAS:</strong><br>
+        <ul class="footer-note-list">
+            <li>ESTA COTIZACIÓN TIENE UNA VALIDEZ DE 7 DÍAS</li>
+            <li>LOS PRECIOS NO INCLUYEN IMPUESTOS DE ADUANA EN DESTINO</li>
+            <li>Esta cotizacion podria sufrir alteraciones en caso de alguna revaloracion por parte de la aduana.</li>
+            <li>Asume que el consignatario  que tiene cualquier permiso que sea requerido por autoridades en el país de destino</li>
+            <li>Requisitos de embarque: Factura comercial, Packing List.</li>
+            <li>Contamos con nuestra Propia Agencia Despachante de manera opcional.</li>
+            <li>El PAGO DE ADUANAS es una ves llegue la carga a Almacenes Aduaneros de Bolivia.</li>
+            <li>Cotización en base a datos enviados por el cliente, al llegar a almacén, se verificarán peso y dimensiones.</li>
+        </ul>
+    </div>
 
-        <div class="footer-note">
-            * ESTA COTIZACIÓN TIENE UNA VALIDEZ DE 7 DÍAS<br>
-            * LOS PRECIOS NO INCLUYEN IMPUESTOS DE ADUANA EN DESTINO
-        </div>
     </div>
 </body>
 </html>
