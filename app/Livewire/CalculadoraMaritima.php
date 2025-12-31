@@ -360,6 +360,11 @@ class CalculadoraMaritima extends Component
 
         $subtotalPortuaria = array_sum($gastosLocales);
 
+        $valorMercancia = floatval($this->valorMercancia);
+        if ($valorMercancia > 0) {
+            $this->desglose['Valor de la Mercancía'] = number_format($valorMercancia, 2, '.', '');
+        }
+
         $this->desglose = [
             "Flete Marítimo ({$shippingLine} - {$containerName})" => $precioBase,
             '─ GESTIÓN PORTUARIA Y LOGÍSTICA' => null,
@@ -372,10 +377,7 @@ class CalculadoraMaritima extends Component
         $this->desglose['   Gestión Portuaria'] = number_format($subtotalPortuaria, 2);
         $this->desglose['   Booking y Cupo de Carga'] = number_format($precioBase * 0.05, 2);
 
-        $valorMercancia = floatval($this->valorMercancia);
-        if ($valorMercancia > 0) {
-            $this->desglose['Valor de la Mercancía'] = number_format($valorMercancia, 2, '.', '');
-        }
+        
 
         // Información adicional (no numérica)
         $this->desglose['Tiempo de Tránsito'] = ($rate['transit_time'] ?? 'N/A') . ' días';

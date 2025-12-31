@@ -90,7 +90,7 @@
         }
         .product-table th {
             border: 1px solid #000;
-            background-color: #dc8f09;
+            background-color: #fb9e00;
             padding: 10px 5px;
             font-size: 12px;
             text-align: center;
@@ -244,11 +244,11 @@
                 @php 
                     $granTotal = $valorMercancia + $fleteInternacional + $subtotalGastos;
                 @endphp
-                <tr style="background-color: #dc8f09; font-weight: bold;">
+                <tr style="background-color: #fb9e00; font-weight: bold;">
                     <td style="text-align: right;">TOTAL GENERAL ESTIMADO (USD)</td>
                     <td style="text-align: right; font-size: 16px;">$ {{ number_format($granTotal, 2) }}</td>
                 </tr>
-                <tr style="background-color: #dc8f09; font-weight: bold;">
+                <tr style="background-color: #fb9e00; font-weight: bold;">
                     <td style="text-align: right;">TOTAL GENERAL ESTIMADO (BS)</td>
                     <td style="text-align: right; font-size: 16px;">Bs {{ number_format($granTotal * 9.61, 2) }}</td>
                 </tr>
