@@ -25,7 +25,8 @@ class CotizacionPDFController extends Controller
                     $logoData = file_get_contents($path);
                     $logoBase64 = 'data:image/png;base64,' . base64_encode($logoData);
                     break;
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                }
             }
         }
 
@@ -40,9 +41,13 @@ class CotizacionPDFController extends Controller
                     $containerData = file_get_contents($containerPath);
                     $containerBase64 = 'data:image/png;base64,' . base64_encode($containerData);
                     break;
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                }
             }
         }
+
+        // Contexto para timeout de 3 segundos
+        $ctx = stream_context_create(['http' => ['timeout' => 3]]);
 
         // 2. Convertir imagen del producto a base64 (solo si no es local)
         if (!empty($desglose_reporte['imagen'])) {
@@ -51,10 +56,13 @@ class CotizacionPDFController extends Controller
 
             if (!$isLocal) {
                 try {
-                    $imageData = @file_get_contents($url);
+                    $imageData = @file_get_contents($url, false, $ctx);
                     if ($imageData !== false && !empty($imageData)) {
                         $ext = strtolower(pathinfo($url, PATHINFO_EXTENSION));
-                        $mime = match($ext) {
+                        // limpieza básica de query params en extensión
+                        $ext = explode('?', $ext)[0];
+
+                        $mime = match ($ext) {
                             'png' => 'image/png',
                             'gif' => 'image/gif',
                             'svg' => 'image/svg+xml',
@@ -99,7 +107,41 @@ class CotizacionPDFController extends Controller
             'gastosAdicionales' => json_decode($request->gastosAdicionales, true) ?? [],
             'logoBase64' => $logoBase64,
             'containerBase64' => $containerBase64,
+            'productos' => [], // Default empty
         ];
+
+        // Procesar lista multiproducto
+        $productos = json_decode($request->productos, true);
+        if (is_array($productos)) {
+            // Reutilizamos contexto
+            $ctx = stream_context_create(['http' => ['timeout' => 3]]);
+
+            foreach ($productos as &$prod) {
+                if (!empty($prod['imagen'])) {
+                    $url = $prod['imagen'];
+                    $isLocal = str_contains($url, '127.0.0.1') || str_contains($url, 'localhost');
+                    if (!$isLocal) {
+                        try {
+                            $imageData = @file_get_contents($url, false, $ctx);
+                            if ($imageData !== false && !empty($imageData)) {
+                                $ext = strtolower(pathinfo($url, PATHINFO_EXTENSION));
+                                $ext = explode('?', $ext)[0]; // Limpieza
+                                $mime = match ($ext) {
+                                    'png' => 'image/png',
+                                    'gif' => 'image/gif',
+                                    'svg' => 'image/svg+xml',
+                                    'webp' => 'image/webp',
+                                    default => 'image/jpeg'
+                                };
+                                $prod['imagen'] = 'data:' . $mime . ';base64,' . base64_encode($imageData);
+                            }
+                        } catch (\Exception $e) {
+                        }
+                    }
+                }
+            }
+            $data['productos'] = $productos;
+        }
 
         $view = (strtolower($data['tipoCarga']) === 'fcl') ? 'pdf.cotizacion-fcl' : 'pdf.cotizacion-lcl';
         $pdf = Pdf::loadView($view, $data)->setOptions(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true]);

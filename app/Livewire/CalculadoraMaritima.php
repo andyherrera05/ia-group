@@ -1054,6 +1054,7 @@ class CalculadoraMaritima extends Component
             'clienteDireccion' => $this->clienteDireccion,
             'clienteCiudad' => $this->clienteCiudad,
             'agente' => json_encode($agenteSeleccionado),
+            'productos' => json_encode($this->productos),
         ]);
     }
     
