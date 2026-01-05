@@ -172,11 +172,36 @@
                             </label>
                         </div>
 
-                        <!-- Name Input -->
-                        <div class="flex-1">
+                        <!-- Name Input & Extra Fields -->
+                        <div class="flex-1 flex flex-col gap-2">
                             <input type="text" wire:model="temp_producto" placeholder="Nombre del Producto (Ej: Zapatillas)"
-                                class="w-full h-[150px] px-4 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-lg">
+                                class="w-full h-[105px] px-4 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-lg">
                             @error('temp_producto') <span class="text-red-400 text-[10px] ml-1">{{ $message }}</span> @enderror
+                            
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="relative">
+                                    <input type="text" wire:model.live="temp_hs_code" placeholder="HS Code"
+                                        class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
+                                    
+                                    @if(!empty($arancelSuggestions))
+                                        <div class="absolute top-full left-0 w-full z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto mt-1" @click.away="$wire.limpiarArancelSearch()" style="background-color: rgba(0, 0, 0, 0.9);">
+                                            @foreach($arancelSuggestions as $suggestion)
+                                                <div wire:click="selectArancel('{{ $suggestion['codigo_hs'] }}', {{ $suggestion['arancel'] }})" 
+                                                     class="p-2 hover:bg-gray-800 cursor-pointer text-xs border-b border-gray-800 last:border-0">
+                                                    <div class="font-bold text-yellow-500">{{ $suggestion['codigo_hs'] }}</div>
+                                                    <div class="text-gray-300">{{ $suggestion['descripcion'] }}</div>
+                                                    <div class="text-gray-500 text-[10px]">Arancel: {{ $suggestion['arancel'] }}%</div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="relative">
+                                    <input type="number" wire:model="temp_arancel" placeholder="Arancel %"
+                                        class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">%</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

@@ -159,7 +159,7 @@
                 </td>
                 <td class="header-info-cell">
                     <div class="header-title">COTIZACION IA GROUPS</div>
-                    <div class="address-line">Direccion Internacional: Wrigley Building, Magnificent Mile, Chicago, IL 60611, USA, Phone: +1 312 665 6656</div>
+                    <div class="address-line">Direccion Internacional: 1209 Mountain Road PL NE STE N, Albuquerque, NM 87110, USA</div>
                     <div class="address-line">Direccion Bolivia: Tarija colon y bolivar 820</div>
                     <div class="agent-line">AGENTE DE CARGA: {{ $agente['nombre'] ?? 'IA GROUPS' }}</div>
                     <div class="contact-line">pagina: https://ia-groups.com &nbsp;&nbsp; correo: {{ $agente['email'] ?? 'info@iagroups.com' }} &nbsp;&nbsp; telefono: {{ $agente['telefono'] ?? '+591 702693251' }}</div>

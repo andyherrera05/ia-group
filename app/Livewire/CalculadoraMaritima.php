@@ -96,6 +96,63 @@ class CalculadoraMaritima extends Component
     public $temp_cbm = 0;
     public $temp_valor_unitario = 0;
     public $volumenTotal = 0;
+    public $temp_hs_code = '';
+    public $temp_arancel = 0;
+    public $arancelSuggestions = [];
+
+    public function updatedTempHsCode()
+    {
+        if (strlen($this->temp_hs_code) < 3) {
+            $this->arancelSuggestions = [];
+            return;
+        }
+
+        $jsonPath = base_path('database/mockup/aranceles.json');
+        if (!File::exists($jsonPath)) {
+            Log::error("JSON de aranceles no encontrado en: " . $jsonPath);
+            return;
+        }
+
+        try {
+            $jsonContent = File::get($jsonPath);
+            $data = json_decode($jsonContent, true);
+            $items = [];
+
+            // Aplanar estructura: Capitulos -> Items
+            foreach ($data['capitulos'] as $capitulo) {
+                if (isset($capitulo['items'])) {
+                    foreach ($capitulo['items'] as $item) {
+                        $items[] = $item;
+                    }
+                }
+            }
+
+            $search = strtolower($this->temp_hs_code);
+            $this->arancelSuggestions = array_filter($items, function ($item) use ($search) {
+                return str_contains(strtolower($item['codigo_hs']), $search) || 
+                       str_contains(strtolower($item['descripcion']), $search);
+            });
+
+            // Limitar a 10 resultados
+            $this->arancelSuggestions = array_slice($this->arancelSuggestions, 0, 10);
+
+        } catch (\Exception $e) {
+            Log::error("Error buscando aranceles: " . $e->getMessage());
+            $this->arancelSuggestions = [];
+        }
+    }
+
+    public function selectArancel($codigo, $arancel)
+    {
+        $this->temp_hs_code = $codigo;
+        $this->temp_arancel = $arancel;
+        $this->arancelSuggestions = [];
+    }
+
+    public function limpiarArancelSearch()
+    {
+        $this->arancelSuggestions = [];
+    }
 
     public function agregarProducto()
     {
@@ -155,7 +212,9 @@ class CalculadoraMaritima extends Component
             'valor_unitario' => $this->temp_valor_unitario,
             'total_peso' => $pesoTotalItem,
             'total_volumen' => $volumenTotalItem,
-            'total_valor' => $valorTotalItem
+            'total_valor' => $valorTotalItem,
+            'hs_code' => $this->temp_hs_code,
+            'arancel' => $this->temp_arancel
         ];
 
         $this->temp_producto = '';
@@ -168,6 +227,8 @@ class CalculadoraMaritima extends Component
         $this->temp_alto = 0;
         $this->temp_cbm = 0;
         $this->temp_valor_unitario = 0;
+        $this->temp_hs_code = '';
+        $this->temp_arancel = 0;
 
         $this->calcularTotales();
     }
@@ -654,6 +715,29 @@ class CalculadoraMaritima extends Component
             $shippingPackage = $this->calculateShippingPackage($this->peso, $CBM);
         }
 
+        // Calcular Gravamen Arancelario (Suma de aranceles de todos los productos)
+        $totalArancel = 0;
+        $iva = 0;
+        foreach ($this->productos as $prod) {
+            $arancelPct = isset($prod['arancel']) ? floatval($prod['arancel']) : 0;
+            $flete = $prod['total_valor'] * 0.05;
+            $seguro = $prod['total_valor'] * 0.02;
+            $totalArancel += ($prod['total_valor'] + $flete + $seguro) * ($arancelPct / 100);
+            $iva += ($prod['total_valor'] + $flete + $seguro) * (14.94 / 100);
+        }
+
+        if ($totalArancel > 0) {
+            $this->desglose['Gravamen Arancelario'] = number_format($totalArancel, 2, '.', '');
+            $this->gastosAdicionales['Gravamen Arancelario'] = number_format($totalArancel, 2, '.', '');
+            $shippingPackage['costo'] += $totalArancel;
+        }
+
+        if ($iva > 0) {
+            $this->desglose['IVA'] = number_format($iva, 2, '.', '');
+            $this->gastosAdicionales['IVA'] = number_format($iva, 2, '.', '');
+            $shippingPackage['costo'] += $iva;
+        }
+
         $this->resultado = (float) $shippingPackage['costo'];
         $this->tipoCobroActual = $shippingPackage['tipo'] ?? '';
         $this->unidadActual = $shippingPackage['unidad'] ?? '';
@@ -837,7 +921,7 @@ class CalculadoraMaritima extends Component
 
         $addServices = 0;
         if ($this->recojoAlmacen) {
-            $this->desglose['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
+            $this->desglose['Trámite de Importación'] = number_format($total_tiered_charge, 2, '.', '');
             $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumenTotal, 2, '.', '');
             $addServices = number_format($costoRecojo * $this->volumenTotal, 2, '.', '') + number_format($total_tiered_charge, 2, '.', '');
         }
@@ -866,9 +950,10 @@ class CalculadoraMaritima extends Component
 
         $this->gastosAdicionales = [];
         if ($this->recojoAlmacen) {
-            $this->gastosAdicionales['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
+            $this->gastosAdicionales['Trámite de Importación'] = number_format($total_tiered_charge, 2, '.', '');
             $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $valorUsado, 2, '.', '');
         }
+
         if ($costoDestino > 0 && $nombreDestino) {
             $this->gastosAdicionales["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
         }
