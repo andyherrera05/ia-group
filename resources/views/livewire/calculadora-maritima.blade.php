@@ -146,9 +146,9 @@
                         Resultado
                     </h2>
 
-                    @if ($resultado !== null)
+                    @if ($resultado !== null && $mostrarDesglose)
                     <!-- Tarjeta principal del total -->
-                    <div
+                    <div id="resultado-final"
                         class="bg-gradient-to-br from-yellow-500/10 to-amber-500/10 border-2 border-yellow-500 rounded-xl p-6 mb-6 text-center hover:shadow-2xl hover:shadow-yellow-500/30 transition-all duration-500">
                         <p class="text-xs font-bold text-yellow-400 uppercase tracking-widest mb-2">Total
                             Estimado</p>
@@ -355,3 +355,20 @@
         </div>
     </div>
 </div>
+</div>
+
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.on('scroll-to-result', () => {
+            setTimeout(() => {
+                const element = document.getElementById('resultado-final');
+                if (element) {
+                    element.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }, 200);
+        });
+    });
+</script>

@@ -19,65 +19,14 @@
             </div>
         </div>
     </div>
-    @if($esAnalisis)
-    <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl flex items-center space-x-6 animate-fade-in relative group">
-        @if($imagen)
-        <div class="w-24 h-24 rounded-lg overflow-hidden border border-yellow-500/30 flex-shrink-0">
-            <img src="{{ $imagen }}" alt="{{ $producto }}" class="w-full h-full object-cover">
-        </div>
-        @endif
-        <div class="flex-1">
-            @if($producto)
-            <h4 class="text-yellow-500 font-bold text-lg leading-tight">{{ $producto }}</h4>
-            @endif
-            @if($id_producto)
-            <p class="text-gray-400 text-xs mt-1 font-mono uppercase tracking-tighter">ID: {{ $id_producto }}</p>
-            @endif
-            <p class="text-gray-500 text-[10px] mt-2 italic">* Información cargada desde el análisis del producto</p>
-        </div>
-        {{-- Botón para resetear y cargar manual si lo desean --}}
-        <button wire:click="$set('producto', ''); $set('imagen', ''); $set('id_producto', ''); $set('esAnalisis', false);" 
-            class="absolute top-4 right-4 text-gray-500 hover:text-red-400 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-        </button>
-    </div>
-    @else
-    <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl animate-fade-in">
-        <h4 class="text-yellow-500 font-bold text-sm mb-4 uppercase tracking-widest flex items-center">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Entrada Manual de Producto
-        </h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Nombre del Producto</label>
-                <input type="text" wire:model.live.debounce.500ms="producto" placeholder="Ej: Zapatillas Deportivas"
-                    class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Imagen del Producto (Opcional)</label>
-                <div class="flex items-center space-x-4">
-                    <input type="file" wire:model="manualImagen" class="text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-yellow-500/10 file:text-yellow-500 hover:file:bg-yellow-500/20 transition-all">
-                    <div wire:loading wire:target="manualImagen" class="text-yellow-500 italic text-[10px]">Cargando...</div>
-                </div>
-                @if ($manualImagen)
-                    <div class="mt-2 text-xs text-green-500">Imagen lista para la cotización</div>
-                @endif
-            </div>
-        </div>
-    </div>
-    @endif
 
     <!-- Card: Formulario Principal -->
     <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl">
         <h3 class="text-yellow-500 font-bold mb-6 text-lg uppercase tracking-widest flex items-center">Cotizador LCL</h3>
         <p class="text-gray-400 text-sm mb-6">Complete los datos de su envío para obtener una cotización instantánea.</p>
 
-        
-                <!-- Información del Cliente -->
+
+        <!-- Información del Cliente -->
         <div class="mb-8 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl">
             <h4 class="text-yellow-500 font-bold mb-4 text-xs uppercase tracking-widest flex items-center">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,98 +76,187 @@
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
                         <option value="0" style="background-color:#1a170c; color: #fff;">-- Seleccionar Agente --</option>
                         @foreach($agentes as $agente)
-                            <option value="{{ $agente['id'] }}" style="background-color:#1a170c; color: #fff;">{{ $agente['nombre'] }}</option>
+                        <option value="{{ $agente['id'] }}" style="background-color:#1a170c; color: #fff;">{{ $agente['nombre'] }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Multi-Product System -->
+        <div class="space-y-4">
 
-            <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-                    Valor de Mercancía (USD)
-                </label>
-                <input type="number" wire:model="valorMercancia" step="1" required placeholder="Ej: 10,000"
-                    class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
-            </div>
+            <!-- Product List -->
+            @if(count($productos) > 0)
+            <div class="bg-white/5 border border-white/10 rounded-xl p-4 animate-fade-in">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex justify-between items-center">
+                    Lista de Productos
+                    <span class="bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded text-[10px]">{{ count($productos) }} items</span>
+                </h4>
+                <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
+                    @foreach($productos as $index => $prod)
+                    <div class="flex items-center bg-black/30 p-2 rounded-lg border border-white/5 hover:border-yellow-500/30 transition-colors group">
+                        <!-- Image -->
+                        <div class="w-10 h-10 rounded border border-white/10 overflow-hidden flex-shrink-0 mr-3">
+                            @if($prod['imagen'])
+                            <img src="{{ $prod['imagen'] }}" class="w-full h-full object-cover">
+                            @else
+                            <div class="w-full h-full bg-white/5 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            @endif
+                        </div>
 
+                        <!-- Info -->
+                        <div class="flex-1 min-w-0 mr-2">
+                            <h5 class="text-white text-sm font-medium truncate">{{ $prod['producto'] }}</h5>
+                            <div class="flex flex-wrap gap-2 text-[10px] text-gray-400 mt-0.5">
+                                <span class="text-yellow-500/80">{{ $prod['cantidad'] }} uds</span>
+                                <span>•</span>
+                                <span>${{ number_format($prod['valor_unitario'], 2) }} c/u</span>
+                                <span>•</span>
+                                <span>{{ $prod['peso_unitario'] }} kg</span>
+                            </div>
+                        </div>
 
+                        <!-- Totals & Actions -->
+                        <div class="text-right flex flex-col justify-center">
+                            <span class="text-white font-mono text-xs font-bold">${{ number_format($prod['total_valor'], 2) }}</span>
+                            <span class="text-[9px] text-gray-500">{{ $prod['total_peso'] }}kg total</span>
+                        </div>
 
-            <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-                        Cantidad (Unidades)
-                    </label>
-                    <input type="number" wire:model="cantidad" placeholder="Ej: 1" value="1" step="1" required
-                        class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-                        Peso Total (KG)
-                    </label>
-                    <input type="number" wire:model="peso" step="1" placeholder="Ej: 500"
-                        class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
-                    <p class="text-xs text-gray-500 mt-1">Peso bruto incluyendo embalaje</p>
-                </div>
-            </div>
-
-            <div class="sm:col-span-2 mb-4">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Seleccione el Método de Cálculo de
-                    Volumen:</label>
-                <div class="flex space-x-4">
-                    <button type="button" wire:click="$set('metodoVolumen', 'dimensiones')"
-                        class="px-4 py-2 text-sm rounded-lg transition-all {{ $metodoVolumen == 'dimensiones' ? 'bg-yellow-500 text-black font-bold' : 'bg-black/40 text-gray-400 border border-yellow-500/30 hover:bg-yellow-500/20' }}">
-                        Dimensiones (L x A x H)
-                    </button>
-                    <button type="button" wire:click="$set('metodoVolumen', 'cbm_directo')"
-                        class="px-4 py-2 text-sm rounded-lg transition-all {{ $metodoVolumen == 'cbm_directo' ? 'bg-yellow-500 text-black font-bold' : 'bg-black/40 text-gray-400 border border-yellow-500/30 hover:bg-yellow-500/20' }}">
-                        CBM Directo (M³)
-                    </button>
-                </div>
-            </div>
-            @if ($metodoVolumen == 'dimensiones')
-            <div class="sm:col-span-2">
-                <h4 class="text-sm font-bold text-gray-300 mb-3">Dimensiones de la Carga (Cm)</h4>
-
-                <div class="grid grid-cols-3 gap-4">
-
-                    <div>
-                        <label class="block text-xs font-medium text-gray-400 mb-2">Largo (cm)</label>
-                        <input type="number" wire:model="largo" placeholder="Ej: 120"
-                            class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
+                        <button wire:click="eliminarProducto({{ $index }})" class="ml-3 p-1.5 text-gray-500 hover:text-red-400 bg-white/5 rounded-lg hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
                     </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-gray-400 mb-2">Ancho (cm)</label>
-                        <input type="number" wire:model="ancho" placeholder="Ej: 80"
-                            class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-gray-400 mb-2">Alto (cm)</label>
-                        <input type="number" wire:model="alto" placeholder="Ej: 100"
-                            class="w-full px-3 py-2 bg-black/30 border border-purple-500/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm">
-                    </div>
-
+                    @endforeach
                 </div>
             </div>
             @endif
 
-            @if ($metodoVolumen == 'cbm_directo')
-            <div class="sm:col-span-2">
-                <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center">
-                    CBM Total (M³)
-                </label>
-                <input type="number" wire:model="volumen" step="0.5" min="0.5" placeholder="Ej: 2.5"
-                    class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
-                <p class="text-xs text-gray-500 mt-1">Este será el volumen utilizado para la cotización.</p>
+            <!-- Compact Add Form -->
+            <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-5 shadow-xl">
+                <h4 class="text-yellow-500 font-bold text-sm mb-4 uppercase tracking-widest flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Agregar Producto a Cotizar
+                </h4>
+
+                <div class="space-y-3">
+                    <!-- Row 1: Image & Name -->
+                    <div class="flex gap-3" style="align-items: center;">
+                        <!-- Image Upload (Square with Preview) -->
+                        <div style="width: 150px; height: 150px; min-width: 150px; min-height: 150px;" class="shrink-0 relative group">
+                            <label class="block w-full h-full rounded-lg border-2 border-dashed border-yellow-500/30 hover:border-yellow-500 bg-black/20 cursor-pointer overflow-hidden transition-all relative">
+                                <input type="file" wire:model="temp_manualImagen" class="hidden">
+                                @if ($temp_manualImagen)
+                                <img src="{{ $temp_manualImagen->temporaryUrl() }}" class="absolute inset-0 w-full h-full object-cover">
+                                @elseif ($temp_imagen)
+                                <img src="{{ $temp_imagen }}" class="absolute inset-0 w-full h-full object-cover">
+                                @else
+                                <div class="w-full h-full flex flex-col items-center justify-center text-gray-500 group-hover:text-yellow-500">
+                                    <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span class="text-[10px] uppercase font-bold">Foto</span>
+                                </div>
+                                @endif
+                                <!-- Loading State -->
+                                <div wire:loading wire:target="temp_manualImagen" class="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+                                    <div class="w-6 h-6 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Name Input -->
+                        <div class="flex-1">
+                            <input type="text" wire:model="temp_producto" placeholder="Nombre del Producto (Ej: Zapatillas)"
+                                class="w-full h-[150px] px-4 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-lg">
+                            @error('temp_producto') <span class="text-red-400 text-[10px] ml-1">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Basic Metrics -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1">Cantidad</label>
+                            <input type="number" wire:model="temp_cantidad" placeholder="1" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                            @error('temp_cantidad') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1">Valor Unit. ($)</label>
+                            <input type="number" wire:model="temp_valor_unitario" placeholder="0.00" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                            @error('temp_valor_unitario') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1">Peso Unit. (Kg)</label>
+                            <input type="number" wire:model="temp_peso_unitario" placeholder="0.00" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                            @error('temp_peso_unitario') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Dimensions & Action -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+                        <!-- Dimensions -->
+                        <div class="bg-black/20 rounded-lg p-2 border border-white/5 relative">
+                            <label class="text-[10px] text-gray-500 block mb-2 text-center">Dimensiones (cm) o CBM Directo</label>
+                            <div class="grid grid-cols-4 gap-2">
+                                <div>
+                                    <label class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Largo</label>
+                                    <input type="number" wire:model="temp_largo" placeholder="0" class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" title="Largo (cm)">
+                                </div>
+                                <div>
+                                    <label class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Ancho</label>
+                                    <input type="number" wire:model="temp_ancho" placeholder="0" class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" title="Ancho (cm)">
+                                </div>
+                                <div>
+                                    <label class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Alto</label>
+                                    <input type="number" wire:model="temp_alto" placeholder="0" class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" title="Alto (cm)">
+                                </div>
+                                <div>
+                                    <label class="block text-[4px] text-blue-300/70 text-center mb-1 uppercase">CBM</label>
+                                    <input type="number" step="0.01" wire:model="temp_cbm" placeholder="0.00" class="w-full bg-transparent border-b border-blue-500/50 text-center text-xs text-blue-300 focus:border-blue-500 outline-none pb-1" title="CBM Directo">
+                                </div>
+                            </div>
+                            @error('temp_dimensiones') <div class="absolute -bottom-4 left-0 w-full text-center"><span class="text-red-400 text-xs bg-black/80 px-1 rounded">{{ $message }}</span></div> @enderror
+                        </div>
+
+                        <!-- Action Button -->
+                        <button wire:click="agregarProducto" class="w-fit px-6 h-[52px] p-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-bold text-xs rounded-lg shadow-lg hover:shadow-yellow-500/20 transition-all flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            AGREGAR A LA COTIZACIÓN
+                        </button>
+                    </div>
+                </div>
             </div>
-            @endif
 
-
+            <!-- Consolidated Totals Display (Read Only) -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="bg-black/40 p-3 rounded-xl border border-white/5">
+                    <div class="text-[10px] text-gray-500 uppercase">Valor Total</div>
+                    <div class="text-lg font-bold text-green-400">${{ number_format($valorMercancia, 2) }}</div>
+                </div>
+                <div class="bg-black/40 p-3 rounded-xl border border-white/5">
+                    <div class="text-[10px] text-gray-500 uppercase">Peso Total</div>
+                    <div class="text-lg font-bold text-white">{{ $peso }} <span class="text-xs text-gray-600">kg</span></div>
+                </div>
+                <div class="bg-black/40 p-3 rounded-xl border border-white/5">
+                    <div class="text-[10px] text-gray-500 uppercase">Volumen Total</div>
+                    <div class="text-lg font-bold text-white">{{ $volumen }} <span class="text-xs text-gray-600">m³</span></div>
+                </div>
+                <div class="bg-black/40 p-3 rounded-xl border border-white/5">
+                    <div class="text-[10px] text-gray-500 uppercase">Items</div>
+                    <div class="text-lg font-bold text-yellow-500">{{ $cantidad }} <span class="text-xs text-gray-600">uds</span></div>
+                </div>
+            </div>
         </div>
+
         <div class="p-6 shadow-xl">
             <h3 class="text-yellow-500 font-bold mb-6 text-lg uppercase tracking-widest flex items-center">
                 <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
@@ -245,10 +283,6 @@
                                         La carga será recogida desde un almacén antes de ser enviada al puerto
                                     </p>
                                 </div>
-                                <span class="text-yellow-400 font-bold text-lg ml-4">
-                                    +$26.91
-                                    <span class="text-sm font-normal text-gray-300 ml-1">($/CBM)</span>
-                                </span>
                             </label>
                             @if ($recojoAlmacen)
                             <div class="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
@@ -344,7 +378,6 @@
                                         <h5 class="text-white font-semibold text-sm">Verificación de Producto</h5>
                                         <p class="text-gray-400 text-xs mt-0.5">Obtención de video real y fotos del producto real.</p>
                                     </div>
-                                    <span class="text-yellow-400 font-bold text-base ml-2">+$10</span>
                                 </label>
                             </div>
                         </div>
@@ -361,7 +394,6 @@
                                         <h5 class="text-white font-semibold text-sm">Verificación de la Calidad</h5>
                                         <p class="text-gray-400 text-xs mt-0.5">Recepción en almacén y pruebas de funcionamiento/uso.</p>
                                     </div>
-                                    <span class="text-yellow-400 font-bold text-base ml-2">+$50</span>
                                 </label>
                             </div>
                         </div>
@@ -378,7 +410,6 @@
                                         <h5 class="text-white font-semibold text-sm">Verificación de Empresa Digital</h5>
                                         <p class="text-gray-400 text-xs mt-0.5">Investigación de veracidad de licencias y establecimiento.</p>
                                     </div>
-                                    <span class="text-yellow-400 font-bold text-base ml-2">+$100</span>
                                 </label>
                             </div>
                         </div>
@@ -395,7 +426,6 @@
                                         <h5 class="text-white font-semibold text-sm">Verificación Presencial de Empresa</h5>
                                         <p class="text-gray-400 text-xs mt-0.5">Realización de viaje y visita técnica a la fábrica.</p>
                                     </div>
-                                    <span class="text-yellow-400 font-bold text-base ml-2">+$350</span>
                                 </label>
                             </div>
                         </div>
@@ -408,7 +438,7 @@
 
     <!-- Buttons -->
     <div class="flex flex-col sm:flex-row gap-4">
-        <button wire:click="calcular"
+        <button wire:click="calcularResultado"
             class="flex-1 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-black font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-yellow-500/30 flex items-center justify-center space-x-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
