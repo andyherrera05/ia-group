@@ -202,22 +202,22 @@
                     <!-- Row 3: Dimensions & Action -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
                         <!-- Dimensions -->
-                        <div class="bg-black/20 rounded-lg p-2 border border-white/5 relative">
+                        <div class="md:col-span-2 bg-black/20 rounded-lg p-2 border border-white/5 relative">
                             <label class="text-[10px] text-gray-500 block mb-2 text-center">Dimensiones (cm) o CBM Directo</label>
-                            <div class="grid grid-cols-4 gap-2">
-                                <div>
+                            <div class="flex gap-2">
+                                <div class="flex-1">
                                     <label class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Largo</label>
                                     <input type="number" wire:model="temp_largo" placeholder="0" class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" title="Largo (cm)">
                                 </div>
-                                <div>
+                                <div class="flex-1">
                                     <label class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Ancho</label>
                                     <input type="number" wire:model="temp_ancho" placeholder="0" class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" title="Ancho (cm)">
                                 </div>
-                                <div>
+                                <div class="flex-1">
                                     <label class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Alto</label>
                                     <input type="number" wire:model="temp_alto" placeholder="0" class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" title="Alto (cm)">
                                 </div>
-                                <div>
+                                <div class="flex-1">
                                     <label class="block text-[4px] text-blue-300/70 text-center mb-1 uppercase">CBM</label>
                                     <input type="number" step="0.01" wire:model="temp_cbm" placeholder="0.00" class="w-full bg-transparent border-b border-blue-500/50 text-center text-xs text-blue-300 focus:border-blue-500 outline-none pb-1" title="CBM Directo">
                                 </div>
@@ -226,7 +226,7 @@
                         </div>
 
                         <!-- Action Button -->
-                        <button wire:click="agregarProducto" class="w-fit px-6 h-[52px] p-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-bold text-xs rounded-lg shadow-lg hover:shadow-yellow-500/20 transition-all flex items-center justify-center">
+                        <button wire:click="agregarProducto" class="w-full px-6 h-[52px] p-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-bold text-xs rounded-lg shadow-lg hover:shadow-yellow-500/20 transition-all flex items-center justify-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
@@ -306,7 +306,7 @@
                                 <input type="checkbox" wire:model.live="destinoFinal" value="otros" name="destinoFinal"
                                     class="w-5 h-5 border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
                                 <div class="flex-1">
-                                    <span class="text-white font-medium">¿Dónde se hará la entrega de la carga en Bolivia?</span>
+                                    <span class="text-white font-medium">Requiere la recepción del producto en otro departamento?</span>
                                 </div>
                             </div>
                         </label>
@@ -375,7 +375,7 @@
                             <div class="flex-1">
                                 <label for="verificacionProducto" class="flex items-center justify-between cursor-pointer">
                                     <div>
-                                        <h5 class="text-white font-semibold text-sm">Verificación de Producto</h5>
+                                        <h5 class="text-white font-semibold text-sm">Verificación de Producto por modelo</h5>
                                         <p class="text-gray-400 text-xs mt-0.5">Obtención de video real y fotos del producto real.</p>
                                     </div>
                                 </label>
@@ -391,7 +391,7 @@
                             <div class="flex-1">
                                 <label for="verificacionCalidad" class="flex items-center justify-between cursor-pointer">
                                     <div>
-                                        <h5 class="text-white font-semibold text-sm">Verificación de la Calidad</h5>
+                                        <h5 class="text-white font-semibold text-sm">Verificación de la Calidad del producto por modelo</h5>
                                         <p class="text-gray-400 text-xs mt-0.5">Recepción en almacén y pruebas de funcionamiento/uso.</p>
                                     </div>
                                 </label>
@@ -423,7 +423,7 @@
                             <div class="flex-1">
                                 <label for="verificacionEmpresaPresencial" class="flex items-center justify-between cursor-pointer">
                                     <div>
-                                        <h5 class="text-white font-semibold text-sm">Verificación Presencial de Empresa</h5>
+                                        <h5 class="text-white font-semibold text-sm">Verificación in situ de la Empresa(Física/Digital)</h5>
                                         <p class="text-gray-400 text-xs mt-0.5">Realización de viaje y visita técnica a la fábrica.</p>
                                     </div>
                                 </label>

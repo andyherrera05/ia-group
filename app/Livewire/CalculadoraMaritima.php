@@ -841,10 +841,10 @@ class CalculadoraMaritima extends Component
         $costoVerificacion = 0;
         if ($this->verificacionProducto) {
             $costoVerificacion = $this->calculateVerificationCost();
-            $this->desglose['Verificación de Producto'] = number_format($costoVerificacion, 2, '.', '');
+            $this->desglose['Verificación del Producto'] = number_format($costoVerificacion, 2, '.', '');
         }
         if ($this->verificacionCalidad) {
-            $this->desglose['Verificación de Calidad'] = 50.00;
+            $this->desglose['Verificación de Calidad del Producto'] = 50.00;
             $costoVerificacion += 50.00;
         }
         if ($this->verificacionEmpresaDigital) {

@@ -240,7 +240,6 @@
                     </td>
                     <td>
                         <strong>{{ $prod['producto'] }}</strong><br>
-                        <span style="font-size: 10px;">{{ $prod['largo'] }}x{{ $prod['ancho'] }}x{{ $prod['alto'] }} cm / {{ number_format($prod['peso_unitario'], 2) }} kg</span>
                     </td>
                     <td>{{ $prod['cantidad'] }}</td>
                     <td>c/u</td>
