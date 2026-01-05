@@ -200,7 +200,7 @@
                     </div>
 
                     <!-- Row 3: Dimensions & Action -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-3 items-center">
                         <!-- Dimensions -->
                         <div class="md:col-span-2 bg-black/20 rounded-lg p-2 border border-white/5 relative">
                             <label class="text-[10px] text-gray-500 block mb-2 text-center">Dimensiones (cm) o CBM Directo</label>

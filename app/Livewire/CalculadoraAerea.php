@@ -149,27 +149,19 @@ class CalculadoraAerea extends Component
     function calcularCostoAereo(float $valorMercancia, ?float $pesoTotalKg, ?float $pesoDimensionalTotal): array
     {
         $tarifas = [
-            ['maxKg' => 1,   'tarifa' => 14.5],
-            ['maxKg' => 5,   'tarifa' => 14.5],
-            ['maxKg' => 10,  'tarifa' => 13.5],
-            ['maxKg' => 15,  'tarifa' => 13.5],
-            ['maxKg' => 20,  'tarifa' => 13.5],
-            ['maxKg' => 25,  'tarifa' => 13.0],
-            ['maxKg' => 26,  'tarifa' => 12.5],
-            ['maxKg' => 30,  'tarifa' => 12.5],
-            ['maxKg' => 35,  'tarifa' => 11.5],
-            ['maxKg' => 40,  'tarifa' => 11.5],
-            ['maxKg' => 45,  'tarifa' => 11.0],
-            ['maxKg' => 50,  'tarifa' => 10.5],
-            ['maxKg' => 55,  'tarifa' => 10.5],
-            ['maxKg' => 60,  'tarifa' => 10.5],
-            ['maxKg' => 70,  'tarifa' => 9.5],
-            ['maxKg' => 80,  'tarifa' => 9.5],
-            ['maxKg' => 90,  'tarifa' => 9.5],
-            ['maxKg' => 100, 'tarifa' => 9.5],
-            ['maxKg' => 150, 'tarifa' => 9.5],
-            ['maxKg' => 200, 'tarifa' => 9.5],
-            ['maxKg' => PHP_INT_MAX, 'tarifa' => 9.5]
+            ['maxKg' => 1,   'tarifa' => 88.5],
+            ['maxKg' => 5,   'tarifa' => 37.80],
+            ['maxKg' => 10,  'tarifa' => 26.35],
+            ['maxKg' => 15,  'tarifa' => 23.40],
+            ['maxKg' => 20,  'tarifa' => 22.93],
+            ['maxKg' => 25,  'tarifa' => 21.34],
+            ['maxKg' => 50,  'tarifa' => 21.00],
+            ['maxKg' => 70,  'tarifa' => 20.15],
+            ['maxKg' => 90,  'tarifa' => 18.67],
+            ['maxKg' => 100, 'tarifa' => 18.16],
+            ['maxKg' => 150, 'tarifa' => 15.77],
+            ['maxKg' => 200, 'tarifa' => 14.80],
+            ['maxKg' => PHP_INT_MAX, 'tarifa' => 14.80]
         ];
 
         $errores = [];
@@ -209,7 +201,6 @@ class CalculadoraAerea extends Component
                 break;
             }
         }
-
         $costoFinal = $tarifaPorKg * $pesoRedondeado;
 
         $comision = $valorMercancia * 0.06;
