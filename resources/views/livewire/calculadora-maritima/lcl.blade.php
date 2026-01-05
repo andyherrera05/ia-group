@@ -391,7 +391,7 @@
                             <div class="flex-1">
                                 <label for="verificacionCalidad" class="flex items-center justify-between cursor-pointer">
                                     <div>
-                                        <h5 class="text-white font-semibold text-sm">Verificación de la Calidad del producto por modelo</h5>
+                                        <h5 class="text-white font-semibold text-sm">Verificación de la Calidad del producto</h5>
                                         <p class="text-gray-400 text-xs mt-0.5">Recepción en almacén y pruebas de funcionamiento/uso.</p>
                                     </div>
                                 </label>
