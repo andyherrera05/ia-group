@@ -184,7 +184,7 @@ class CalculadoraMaritima extends Component
     public function calcularTotales()
     {
         $pesoTotal = 0;
-
+        $this->volumenTotal = 0; // Resetear acumulador
         $valorTotal = 0;
         $cantidadTotal = 0;
 
@@ -194,7 +194,6 @@ class CalculadoraMaritima extends Component
             $valorTotal += $prod['total_valor'];
             $cantidadTotal += $prod['cantidad'];
         }
-
         $this->peso = $pesoTotal;
         $this->volumen = number_format($this->volumenTotal, 4);
         $this->valorMercancia = $valorTotal;
@@ -738,14 +737,19 @@ class CalculadoraMaritima extends Component
             $tipoCobro  = 'CBM';
             $valorUsado = $cbmReal;
 
-            foreach ($TARIFA_POR_CBM as $tramo) {
-                if ($cbmReal >= $tramo['min']) {
+            // Ordenamos ascendente para aplicar lógica "Up To" (Hasta X CBM)
+            // Array original es descendente (20 -> 0.25). Reverse = (0.25 -> 20).
+            $tarifasAsc = array_reverse($TARIFA_POR_CBM);
+            
+            // Valor por defecto: el precio del tramo más alto (para > 20 CBM)
+            // El primer elemento original [0] es el de 20 CBM ($129).
+            $costoFinal = $TARIFA_POR_CBM[0]['precio']; 
+
+            foreach ($tarifasAsc as $tramo) {
+                if ($cbmReal <= $tramo['min']) {
                     $costoFinal = $tramo['precio'];
                     break;
                 }
-            }
-            if ($costoFinal === 0) {
-                $costoFinal = 60;
             }
         }
 
