@@ -422,11 +422,11 @@ class CalculadoraAerea extends Component
             'Gestión Logística en China' => number_format($totalLogisticaChina, 2, '.', ''),
             '─ DETALLE DE SERVICIOS EN ORIGEN' => null,
             '   ├─ Gestión Administrativa en China' => number_format($comision, 2),
-            '   └─ Documentación y Packing List' => number_format($factura, 2),
-
-            '─ DETALLE DE FLETE Y SEGURO' => null,
+            '   ├─ Recepción de Documentación' => number_format($factura, 2),
             '   ├─ Pago Internacional' => number_format($pagoInternacional, 2),
             '   ├─ Costo de Envío Interno' => number_format($costoEnvioInterno, 2),
+
+            '─ DETALLE DE FLETE Y SEGURO' => null,
             '   └─ Seguro y Protección de Carga' => number_format($seguro, 2),
 
             '─ DETALLE DE OPERACIÓN Y LOGÍSTICA' => null,
