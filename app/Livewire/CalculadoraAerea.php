@@ -256,6 +256,7 @@ class CalculadoraAerea extends Component
      */
     public function calcular($forzarMostrar = true)
     {
+    if ($forzarMostrar) {
         $this->validate([
             'clienteNombre' => 'required|string|min:3',
             'clienteCiudad' => 'required|not_in:0',
@@ -279,6 +280,7 @@ class CalculadoraAerea extends Component
             'clienteDireccion' => $this->clienteDireccion,
             'clienteCiudad'    => $this->clienteCiudad,
         ]);
+    }
         if (empty($this->items)) {
              $this->resultado = null;
              $this->desglose = [];

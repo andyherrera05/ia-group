@@ -700,8 +700,9 @@ class CalculadoraMaritima extends Component
     // =======================================================
     //              CALCULAR COTIZACIÓN PRINCIPAL
     // =======================================================
-    public function calcular()
+    public function calcular($isFinal = true)
     {
+    if ($isFinal) {
         $this->validate([
             'peso' => 'nullable|numeric|min:0',
             'volumen' => 'nullable|numeric|min:0.000001',
@@ -720,6 +721,7 @@ class CalculadoraMaritima extends Component
             'clienteEmail.email' => 'El formato del email no es válido.',
             'clienteTelefono.required' => 'El teléfono es obligatorio.',
         ]);
+    }
 
         $this->mostrarPregunta = false;
         $this->respuestaUsuario = null;
@@ -798,13 +800,15 @@ class CalculadoraMaritima extends Component
                 'imagen' => $this->imagen
             ];
         }
-         $nuevoCliente = Cliente::create([
-            'clienteNombre'    => $this->clienteNombre,
-            'clienteEmail'     => $this->clienteEmail,
-            'clienteTelefono'  => $this->clienteTelefono,
-            'clienteDireccion' => $this->clienteDireccion,
-            'clienteCiudad'    => $this->clienteCiudad,
-        ]);
+        if ($isFinal) {
+             $nuevoCliente = Cliente::create([
+                'clienteNombre'    => $this->clienteNombre,
+                'clienteEmail'     => $this->clienteEmail,
+                'clienteTelefono'  => $this->clienteTelefono,
+                'clienteDireccion' => $this->clienteDireccion,
+                'clienteCiudad'    => $this->clienteCiudad,
+            ]);
+        }
 
         session()->flash('success', 'Cálculo completado exitosamente.');
     }
