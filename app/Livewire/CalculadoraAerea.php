@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
+use App\Models\Cliente;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
@@ -255,6 +256,29 @@ class CalculadoraAerea extends Component
      */
     public function calcular($forzarMostrar = true)
     {
+        $this->validate([
+            'clienteNombre' => 'required|string|min:3',
+            'clienteCiudad' => 'required|not_in:0',
+            'clienteDireccion' => 'required|string|min:5',
+            'clienteEmail' => 'required|email',
+            'clienteTelefono' => 'required|string|min:7',
+        ], [
+            'clienteNombre.required' => 'El nombre del cliente es obligatorio.',
+            'clienteCiudad.required' => 'Debe seleccionar una ciudad.',
+            'clienteCiudad.not_in' => 'Debe seleccionar una ciudad.',
+            'clienteDireccion.required' => 'La dirección es obligatoria.',
+            'clienteEmail.required' => 'El email es obligatorio.',
+            'clienteEmail.email' => 'El formato del email no es válido.',
+            'clienteTelefono.required' => 'El teléfono es obligatorio.',
+        ]);
+
+        $nuevoCliente = Cliente::create([
+            'clienteNombre'    => $this->clienteNombre,
+            'clienteEmail'     => $this->clienteEmail,
+            'clienteTelefono'  => $this->clienteTelefono,
+            'clienteDireccion' => $this->clienteDireccion,
+            'clienteCiudad'    => $this->clienteCiudad,
+        ]);
         if (empty($this->items)) {
              $this->resultado = null;
              $this->desglose = [];
@@ -593,7 +617,7 @@ class CalculadoraAerea extends Component
      */
     public function limpiar()
     {
-        $this->reset(['peso', 'largo', 'ancho', 'alto', 'valorMercancia', 'cantidad', 'dimensiones', 'resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario', 'items', 
+        $this->reset(['resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario', 'items', 
             'temp_producto', 'temp_imagen', 'temp_manualImagen', 'temp_cantidad', 'temp_valor_unitario', 'temp_peso_unitario', 'temp_largo', 'temp_ancho', 'temp_alto',
             'temp_hs_code', 'temp_arancel', 'arancelSuggestions',
             'clienteNombre', 'clienteEmail', 'clienteTelefono', 'clienteDireccion', 'clienteCiudad', 'gastosAdicionales']);

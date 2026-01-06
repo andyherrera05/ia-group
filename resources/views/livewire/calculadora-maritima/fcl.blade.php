@@ -23,16 +23,31 @@
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Nombre Completo / Empresa</label>
                     <input type="text" wire:model.live="clienteNombre" placeholder="Ej: JAIME CARDONA"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                    @error('clienteNombre') 
+                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                            {{ $message }}
+                        </div> 
+                    @enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Email</label>
                     <input type="email" wire:model.live="clienteEmail" placeholder="ejemplo@correo.com"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                    @error('clienteEmail') 
+                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                            {{ $message }}
+                        </div> 
+                    @enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Teléfono</label>
                     <input type="text" wire:model.live="clienteTelefono" placeholder="72732422"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                    @error('clienteTelefono') 
+                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                            {{ $message }}
+                        </div> 
+                    @enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Ciudad</label>
@@ -48,11 +63,21 @@
                         <option value="Oruro" style="background-color:#1a170c; color: #fff;">Oruro</option>
                         <option value="Chuquisaca" style="background-color:#1a170c; color: #fff;">Chuquisaca</option>
                     </select>
+                    @error('clienteCiudad') 
+                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                            {{ $message }}
+                        </div> 
+                    @enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Dirección</label>
-                    <input type="text" wire:model.live="clienteDireccion" placeholder="Dirección opcional"
+                    <input type="text" wire:model.live="clienteDireccion" placeholder="Dirección completa"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                    @error('clienteDireccion') 
+                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                            {{ $message }}
+                        </div> 
+                    @enderror
                 </div>
                 <div class="sm:col-span-2">
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Agente de Carga</label>
@@ -252,8 +277,8 @@
 
                 <div wire:loading wire:target="buscarTarifasFCL" class="flex items-center justify-center space-x-3">
                     <span class="font-medium">
-                        @if ($message && str_starts_with($message, 'Buscando'))
-                            {{ $message }}...
+                        @if ($statusMessage && str_starts_with($statusMessage, 'Buscando'))
+                            {{ $statusMessage }}...
                         @else
                             Buscando tarifas...
                         @endif

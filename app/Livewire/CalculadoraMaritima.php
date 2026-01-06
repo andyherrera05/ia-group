@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Rate;
 use App\Models\Search;
 use App\Models\ShippingLine;
+use App\Models\Cliente;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -298,7 +299,7 @@ class CalculadoraMaritima extends Component
     public $perPage = 5;
     public $currentPage = 1;
     public $loadingRates = false;
-    public $message = null;
+    public $statusMessage = null;
     public $rates = null;
     public $progress = null;
     public $currentRunId = null;
@@ -491,16 +492,37 @@ class CalculadoraMaritima extends Component
     {
         $this->calcular();
     }
-    public function selectRate($index, $container)
+    public function selectRate($rate, $container)
     {
-
-        $rate = $this->fclRates[$index];
+        $this->validate([
+            'clienteNombre' => 'required|string|min:3',
+            'clienteCiudad' => 'required|not_in:0',
+            'clienteDireccion' => 'required|string|min:5',
+            'clienteEmail' => 'required|email',
+            'clienteTelefono' => 'required|string|min:5',
+        ], [
+            'clienteNombre.required' => 'El nombre del cliente es obligatorio.',
+            'clienteCiudad.required' => 'Debe seleccionar una ciudad.',
+            'clienteCiudad.not_in' => 'Debe seleccionar una ciudad.',
+            'clienteDireccion.required' => 'La dirección es obligatoria.',
+            'clienteEmail.required' => 'El email es obligatorio.',
+            'clienteEmail.email' => 'El formato del email no es válido.',
+            'clienteTelefono.required' => 'El teléfono es obligatorio.',
+        ]);
 
         $this->mostrarPregunta = false;
         $this->respuestaUsuario = null;
 
         $this->selectedRate = $rate;
         $this->selectedContainer = $container;
+
+         $nuevoCliente = Cliente::create([
+            'clienteNombre'    => $this->clienteNombre,
+            'clienteEmail'     => $this->clienteEmail,
+            'clienteTelefono'  => $this->clienteTelefono,
+            'clienteDireccion' => $this->clienteDireccion,
+            'clienteCiudad'    => $this->clienteCiudad,
+        ]);
 
         $containerName = match ($container) {
             'gp20' => "20' Standard",
@@ -684,6 +706,19 @@ class CalculadoraMaritima extends Component
             'peso' => 'nullable|numeric|min:0',
             'volumen' => 'nullable|numeric|min:0.000001',
             'valorMercancia' => 'required|numeric|min:0',
+            'clienteNombre' => 'required|string|min:3',
+            'clienteCiudad' => 'required|not_in:0',
+            'clienteDireccion' => 'required|string|min:5',
+            'clienteEmail' => 'required|email',
+            'clienteTelefono' => 'required|string|min:7',
+        ], [
+            'clienteNombre.required' => 'El nombre del cliente es obligatorio.',
+            'clienteCiudad.required' => 'Debe seleccionar una ciudad.',
+            'clienteCiudad.not_in' => 'Debe seleccionar una ciudad.',
+            'clienteDireccion.required' => 'La dirección es obligatoria.',
+            'clienteEmail.required' => 'El email es obligatorio.',
+            'clienteEmail.email' => 'El formato del email no es válido.',
+            'clienteTelefono.required' => 'El teléfono es obligatorio.',
         ]);
 
         $this->mostrarPregunta = false;
@@ -763,6 +798,13 @@ class CalculadoraMaritima extends Component
                 'imagen' => $this->imagen
             ];
         }
+         $nuevoCliente = Cliente::create([
+            'clienteNombre'    => $this->clienteNombre,
+            'clienteEmail'     => $this->clienteEmail,
+            'clienteTelefono'  => $this->clienteTelefono,
+            'clienteDireccion' => $this->clienteDireccion,
+            'clienteCiudad'    => $this->clienteCiudad,
+        ]);
 
         session()->flash('success', 'Cálculo completado exitosamente.');
     }
@@ -1428,17 +1470,17 @@ class CalculadoraMaritima extends Component
     public function buscarTarifasFCL()
     {
 
-        $this->reset(['rates', 'loadingRates', 'message', 'fclRates', 'currentPage']);
+        $this->reset(['rates', 'loadingRates', 'statusMessage', 'fclRates', 'currentPage']);
         $this->currentRunId = null;
 
 
         if (empty($this->polCode) || empty($this->podCode)) {
-            $this->message = 'Selecciona origen y destino';
+            $this->statusMessage = 'Selecciona origen y destino';
             return;
         }
 
         $this->loadingRates = true;
-        $this->message = 'Conectando con el proveedor de tarifas';
+        $this->statusMessage = 'Conectando con el proveedor de tarifas';
 
         $originCode = strtolower(substr($this->polCode, 0, 5));
         $destCode   = strtolower(substr($this->podCode, 0, 5));
@@ -1489,20 +1531,20 @@ class CalculadoraMaritima extends Component
             $data = $responseArray['data']['json']['rates'] ?? [];
 
             if (empty($data)) {
-                $this->message = 'No se encontraron tarifas para esta ruta en este momento.';
+                $this->statusMessage = 'No se encontraron tarifas para esta ruta en este momento.';
                 $this->fclRates = collect();
             } else {
                 $this->fclRates = collect($data);
 
                 $this->guardarTarifasEnBaseDeDatos($url, $data);
 
-                $this->message = '¡Tarifas actualizadas! Se encontraron ' . count($data) . ' opciones.';
+                $this->statusMessage = '¡Tarifas actualizadas! Se encontraron ' . count($data) . ' opciones.';
             }
             if (empty($data) || count($data) === 0) {
-                $this->message = 'No hay tarifas en tiempo real para esta ruta en este momento.';
+                $this->statusMessage = 'No hay tarifas en tiempo real para esta ruta en este momento.';
                 $this->cargarTarifasDesdeBaseDeDatos();
                 if ($this->fclRates->isNotEmpty()) {
-                    $this->message .= ' Mostrando tarifas guardadas anteriormente.';
+                    $this->statusMessage .= ' Mostrando tarifas guardadas anteriormente.';
                 }
             }
         } catch (\Exception $e) {
@@ -1514,9 +1556,9 @@ class CalculadoraMaritima extends Component
             $this->cargarTarifasDesdeBaseDeDatos();
 
             if ($this->fclRates->isEmpty()) {
-                $this->message = 'No se pudieron obtener tarifas en tiempo real. Inténtalo más tarde.';
+                $this->statusMessage = 'No se pudieron obtener tarifas en tiempo real. Inténtalo más tarde.';
             } else {
-                $this->message = 'Mostrando tarifas guardadas (conexión fallida).';
+                $this->statusMessage = 'Mostrando tarifas guardadas (conexión fallida).';
             }
         }
         $this->loadingRates = false;
@@ -1681,7 +1723,7 @@ class CalculadoraMaritima extends Component
             'showPODDropdown',
             'rates',
             'loadingRates',
-            'message',
+            'statusMessage',
             'currentRunId'
         ]);
 
