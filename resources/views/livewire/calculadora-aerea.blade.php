@@ -225,6 +225,38 @@
                                 <input type="text" wire:model="temp_producto" placeholder="Nombre del Producto (Ej: Zapatillas)"
                                     class="w-full h-[50px] p-4 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
                                 @error('temp_producto') <span class="text-red-400 text-[10px] ml-1">{{ $message }}</span> @enderror
+
+                                <!-- HS Code / Arancel -->
+                                <div class="grid grid-cols-2 gap-2 relative">
+                                    <div class="col-span-4 relative">
+                                        <input type="text" 
+                                            wire:model.live.debounce.300ms="temp_hs_code" 
+                                            placeholder="Buscador Arancelario (HS Code o Descripción)"
+                                            class="w-full h-[42px] p-3 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                                        
+                                        @if(!empty($arancelSuggestions))
+                                        <div class="absolute z-50 left-0 right-0 mt-1 bg-gray-900 border border-yellow-500/30 rounded-lg shadow-2xl max-h-48 overflow-y-auto custom-scrollbar" style="background-color: rgba(0, 0, 0, 0.9); z-index: 1000;">
+                                            @foreach($arancelSuggestions as $sug)
+                                            <div wire:click="selectArancel('{{ $sug['codigo_hs'] }}', {{ $sug['arancel'] }})" 
+                                                class="p-2 hover:bg-yellow-500/10 cursor-pointer border-b border-white/5 last:border-0 transition-colors">
+                                                <div class="flex justify-between items-start">
+                                                    <span class="text-yellow-500 text-[10px] font-bold">{{ $sug['codigo_hs'] }}</span>
+                                                    <span class="bg-yellow-500/20 text-yellow-500 text-[8px] px-1 rounded">{{ $sug['arancel'] }}%</span>
+                                                </div>
+                                                <p class="text-[10px] text-gray-400 truncate">{{ $sug['descripcion'] }}</p>
+                                            </div>
+                                            @endforeach
+                                        </div>
+                                        @endif
+                                    </div>
+                                    <div class="col-span-1">
+                                        <div class="relative">
+                                            <input type="number" wire:model="temp_arancel" placeholder="GA %" 
+                                                class="w-full h-[42px] p-3 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600 text-center">
+                                            <span class="absolute right-1 top-1/2 -translate-y-1/2 text-[10px] text-gray-600">%</span>
+                                        </div>
+                                    </div>
+                                </div>
                                 
                                 <div class="grid grid-cols-3 gap-2">
                                     <div>
@@ -478,7 +510,7 @@
                 </div>
             </div>
 
-            <div
+            <!-- <div
                 class="mt-16 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border-l-4 border-yellow-500 rounded-xl p-6 backdrop-blur-sm">
                 <div class="flex items-start space-x-4">
                     <div
@@ -498,6 +530,6 @@
                         </p>
                     </div>
                 </div>
-            </div>
+            </div> -->
     </div>
 </div>

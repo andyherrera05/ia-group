@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
@@ -31,6 +32,9 @@ class CalculadoraAerea extends Component
     public $temp_largo = '';
     public $temp_ancho = '';
     public $temp_alto = '';
+    public $temp_hs_code = '';
+    public $temp_arancel = 0;
+    public $arancelSuggestions = [];
 
     // Estado local
     public $urgente = false;
@@ -106,18 +110,13 @@ class CalculadoraAerea extends Component
                 $decoded = json_decode(base64_decode($this->encodedItems), true);
                 
                 if (is_array($decoded) && count($decoded) > 0) {
-                    // Si el primer elemento no es un array, asumimos que es un objeto único (ej. desde landing page)
                     $firstKey = array_key_first($decoded);
                     if (!is_array($decoded[$firstKey])) {
-                        // Transformar objeto único (desde Landing Page)
                         $item = $decoded;
                         
-                        // Mapear campos con fallbacks
                         $nombreProducto = $item['producto'] ?? ($item['id_producto'] ?? 'Producto');
-                        $imagenUrl = $item['imagen'] ?? ($item['image'] ?? ''); // Fallback de key 'image'
+                        $imagenUrl = $item['imagen'] ?? ($item['image'] ?? '');
                         
-                        // Poblar los campos temporales del formulario (Estilo Marítimo LCL)
-                        // NO agregamos a $this->items todavía para evitar el efecto "doble" en la UI
                         $this->temp_producto = $nombreProducto;
                         $this->temp_imagen = $imagenUrl;
                         $this->temp_cantidad = intval($item['cantidad'] ?? 1);
@@ -196,6 +195,8 @@ class CalculadoraAerea extends Component
             'alto' => $this->temp_alto,
             'total_valor' => $valorUnit * $cantidad,
             'total_peso' => $pesoUnit * $cantidad,
+            'hs_code' => $this->temp_hs_code,
+            'arancel' => $this->temp_arancel
         ];
 
         // Reset temps
@@ -208,6 +209,9 @@ class CalculadoraAerea extends Component
         $this->temp_largo = '';
         $this->temp_ancho = '';
         $this->temp_alto = '';
+        $this->temp_hs_code = '';
+        $this->temp_arancel = 0;
+        $this->arancelSuggestions = [];
 
         $this->recalcular(false);
     }
@@ -372,16 +376,33 @@ class CalculadoraAerea extends Component
             ];
         }
 
-        // Buscar tarifa (igual que antes)
-        $tarifaPorKg = end($tarifas)['tarifa'];
-        foreach ($tarifas as $rango) {
+
+        $peso1 = 0;
+        $tarifa1 = 0;
+        $indexActual = 0;
+
+        foreach ($tarifas as $index => $rango) {
             if ($pesoRedondeado <= $rango['maxKg']) {
-                $tarifaPorKg = $rango['tarifa'];
+                $indexActual = $index;
                 break;
             }
         }
-        $costoFinal = $tarifaPorKg * $pesoRedondeado;
-       
+
+        $rangoActual = $tarifas[$indexActual];
+        $tarifaPorKg = $rangoActual['tarifa'];
+        $maxKg = $rangoActual['maxKg'];
+
+        if ($indexActual > 0) {
+            $peso1 = $tarifas[$indexActual - 1]['maxKg'];
+            $tarifa1 = $tarifas[$indexActual - 1]['tarifa'];
+        }
+       $total_tarifa          = $tarifaPorKg - $tarifa1; 
+       $total_peso_tarifa     = $maxKg - $peso1;
+       $total_peso_redondeado = $pesoRedondeado - $peso1;
+
+       $precioUnitario = $tarifa1 + ($total_peso_redondeado * ($total_tarifa / $total_peso_tarifa));
+
+       $costoFinal = $precioUnitario * $pesoRedondeado;
 
         $comision = $valorMercancia * 0.06;
         $factura  = 70;
@@ -410,16 +431,30 @@ class CalculadoraAerea extends Component
 
             $impuestos     = 25;
         }
-        $totalLogisticaChina = $pagoInternacional + $costoEnvioInterno + $comision + $factura + $seguro + $almacen + $impuestos;
-        $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina ;
+        // Calcular Gravamen Arancelario e IVA (Basado en lógica marítima)
+        $totalArancel = 0;
+        $iva = 0;
+        foreach ($this->items as $prod) {
+            $arancelPct = isset($prod['arancel']) ? floatval($prod['arancel']) : 0;
+            // Base imponible (CIF estimado): Valor + 5% flete + 2% seguro
+            $valorItem = $prod['total_valor'];
+            $fleteEstimado = $valorItem * 0.05;
+            $seguroEstimado = $valorItem * 0.02;
+            $baseCIF = $valorItem + $fleteEstimado + $seguroEstimado;
+            
+            $totalArancel += $baseCIF * ($arancelPct / 100);
+            $iva += $baseCIF * (14.94 / 100);
+        }
 
-        Log::info('valorMercancia: ' . $valorMercancia);
-        Log::info('totalLogisticaChina: ' . $totalLogisticaChina);
+        $totalLogisticaChina = $pagoInternacional + $costoEnvioInterno + $comision + $factura + $seguro + $almacen + $impuestos;
+        $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina + $totalArancel + $iva;
        
         $this->desglose = [
             'Valor de Mercancía' => number_format($valorMercancia, 2, '.', ''),
             'Costo de Envío de Paquete' => number_format($costoFinal, 2, '.', ''),
             'Gestión Logística en China' => number_format($totalLogisticaChina, 2, '.', ''),
+            'Gravamen Arancelario' => number_format($totalArancel, 2, '.', ''),
+            'IVA' => number_format($iva, 2, '.', ''),
             '─ DETALLE DE SERVICIOS EN ORIGEN' => null,
             '   ├─ Gestión Administrativa en China' => number_format($comision, 2),
             '   ├─ Recepción de Documentación' => number_format($factura, 2),
@@ -436,7 +471,9 @@ class CalculadoraAerea extends Component
 
         // Poblar gastosAdicionales para el PDF (con todo el detalle)
         $this->gastosAdicionales = [
-            'Gestión Logística en China' => $totalLogisticaChina
+            'Gestión Logística en China' => $totalLogisticaChina,
+            'Gravamen Arancelario' => $totalArancel,
+            'IVA' => $iva
         ];
 
 
@@ -453,9 +490,63 @@ class CalculadoraAerea extends Component
     /**
      * Responder a la pregunta del precio
      */
-    public function responder($respuesta)
+    public function setRespuestaUsuario($respuesta)
     {
         $this->respuestaUsuario = $respuesta;
+    }
+
+    public function updatedTempHsCode()
+    {
+        if (strlen($this->temp_hs_code) < 3) {
+            $this->arancelSuggestions = [];
+            return;
+        }
+
+        $jsonPath = base_path('database/mockup/aranceles.json');
+        if (!File::exists($jsonPath)) {
+            Log::error("JSON de aranceles no encontrado en: " . $jsonPath);
+            return;
+        }
+
+        try {
+            $jsonContent = File::get($jsonPath);
+            $data = json_decode($jsonContent, true);
+            $items = [];
+
+            // Aplanar estructura: Capitulos -> Items
+            foreach ($data['capitulos'] as $capitulo) {
+                if (isset($capitulo['items'])) {
+                    foreach ($capitulo['items'] as $item) {
+                        $items[] = $item;
+                    }
+                }
+            }
+
+            $search = strtolower($this->temp_hs_code);
+            $this->arancelSuggestions = array_filter($items, function ($item) use ($search) {
+                return str_contains(strtolower($item['codigo_hs']), $search) || 
+                       str_contains(strtolower($item['descripcion']), $search);
+            });
+
+            // Limitar a 10 resultados
+            $this->arancelSuggestions = array_slice($this->arancelSuggestions, 0, 10);
+
+        } catch (\Exception $e) {
+            Log::error("Error buscando aranceles: " . $e->getMessage());
+            $this->arancelSuggestions = [];
+        }
+    }
+
+    public function selectArancel($codigo, $arancel)
+    {
+        $this->temp_hs_code = $codigo;
+        $this->temp_arancel = $arancel;
+        $this->arancelSuggestions = [];
+    }
+
+    public function limpiarArancelSearch()
+    {
+        $this->arancelSuggestions = [];
     }
 
     public function descargarPDF()
@@ -504,6 +595,7 @@ class CalculadoraAerea extends Component
     {
         $this->reset(['peso', 'largo', 'ancho', 'alto', 'valorMercancia', 'cantidad', 'dimensiones', 'resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario', 'items', 
             'temp_producto', 'temp_imagen', 'temp_manualImagen', 'temp_cantidad', 'temp_valor_unitario', 'temp_peso_unitario', 'temp_largo', 'temp_ancho', 'temp_alto',
+            'temp_hs_code', 'temp_arancel', 'arancelSuggestions',
             'clienteNombre', 'clienteEmail', 'clienteTelefono', 'clienteDireccion', 'clienteCiudad', 'gastosAdicionales']);
         
         $this->items = [];
