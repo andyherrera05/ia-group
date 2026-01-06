@@ -48,6 +48,7 @@ class CalculadoraAerea extends Component
 
     // Resultado
     public $resultado = null;
+    public $resultadoRebajado = null;
     public $desglose = [];
     public $pesoTotalCalculado = 0;
     public $pesoDimensionalTotalCalculado = 0;
@@ -344,6 +345,7 @@ class CalculadoraAerea extends Component
 
         if ($resultado['costo'] !== null) {
              $this->resultado = number_format($resultado['costo'], 2, '.', ',');
+             $this->resultadoRebajado = number_format($resultado['costoRebajado'], 2, '.', ',');
              
              if ($forzarMostrar) {
                  $this->mostrarPregunta = true;
@@ -351,6 +353,7 @@ class CalculadoraAerea extends Component
              }
         } else {
              $this->resultado = null;
+             $this->resultadoRebajado = null;
         }
     }
 
@@ -425,6 +428,7 @@ class CalculadoraAerea extends Component
        $total_tarifa          = $tarifaPorKg - $tarifa1; 
        $total_peso_tarifa     = $maxKg - $peso1;
        $total_peso_redondeado = $pesoRedondeado - $peso1;
+       $precio_rebajado       = $tarifaPorKg * $pesoRedondeado;
 
        $precioUnitario = $tarifa1 + ($total_peso_redondeado * ($total_tarifa / $total_peso_tarifa));
 
@@ -474,6 +478,7 @@ class CalculadoraAerea extends Component
 
         $totalLogisticaChina = $pagoInternacional + $costoEnvioInterno + $comision + $factura + $seguro + $almacen + $impuestos;
         $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina + $totalArancel + $iva;
+        $totalGeneralRebajado = $valorMercancia + $precio_rebajado + $totalLogisticaChina + $totalArancel + $iva;
        
         $this->desglose = [
             'Valor de Mercancía' => number_format($valorMercancia, 2, '.', ''),
@@ -505,6 +510,7 @@ class CalculadoraAerea extends Component
 
         return [
             'costo' => number_format($totalGeneral, 2, '.', ''),
+            'costoRebajado' => number_format($totalGeneralRebajado, 2, '.', ''),
             'tipo' => $tipoCobro,
             'pesoCobrable' => $pesoRedondeado,
             'unidad' => 'kg',
@@ -516,7 +522,7 @@ class CalculadoraAerea extends Component
     /**
      * Responder a la pregunta del precio
      */
-    public function setRespuestaUsuario($respuesta)
+    public function responder($respuesta)
     {
         $this->respuestaUsuario = $respuesta;
     }

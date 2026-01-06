@@ -501,8 +501,15 @@
                                 <div class="animate-bounce"><span class="text-green-400 text-5xl font-black italic">¡PERFECTO!</span></div>
                                 <p class="text-lg font-bold text-gray-200">Nuestros especialistas están listos para ayudarte:</p>
                                 @else
-                                <div class="animate-pulse"><span class="text-yellow-400 text-5xl font-black italic">TRANQUILO</span></div>
-                                <p class="text-lg font-bold text-gray-200">¡Podemos ajustarlo! Habla con un experto:</p>
+                                <div class="animate-pulse mb-2">
+                                    <span class="text-yellow-400 text-5xl font-black italic">TRANQUILO</span>
+                                </div>
+                                <div class="bg-yellow-500/20 border-2 border-dashed border-yellow-500 rounded-xl p-4 mb-4 transform hover:scale-105 transition-transform cursor-default">
+                                    <p class="text-[10px] font-bold text-yellow-500 uppercase tracking-widest mb-1">🔥 Precio Especial con Agente</p>
+                                    <p class="text-4xl font-black text-white">${{ $resultadoRebajado }}</p>
+                                    <p class="text-[10px] text-gray-400 mt-1 italic">Válido contactando ahora mismo</p>
+                                </div>
+                                <p class="text-base font-bold text-gray-200">¡Podemos ajustarlo! Habla con un experto para aplicar esta rebaja:</p>
                                 @endif
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-left">
@@ -520,7 +527,8 @@
 
                                     @foreach($contactos as $c)
                                     @php
-                                    $mensajeTexto = "Hola " . $c['area'] . "! Vengo de la cotización de $" . number_format($resultado, 2) . " USD";
+                                    $montoRef = ($respuestaUsuario === 'no') ? $resultadoRebajado : $resultado;
+                                    $mensajeTexto = "Hola " . $c['area'] . "! Vengo de la calculadora aérea. El sistema me dio un precio de $" . $montoRef . " USD" . ($respuestaUsuario === 'no' ? ". ¡Deseo aplicar al precio especial rebajado!" : "");
                                     $urlWebWa = "https://web.whatsapp.com/send?phone=" . $c['num'] . "&text=" . urlencode($mensajeTexto);
                                     @endphp
                                     <a href="{{ $urlWebWa }}"

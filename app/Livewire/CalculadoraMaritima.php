@@ -755,7 +755,6 @@ class CalculadoraMaritima extends Component
             $shippingPackage = $this->calculateShippingPackage($this->peso, $CBM);
         }
 
-        // Calcular Gravamen Arancelario (Suma de aranceles de todos los productos)
         $totalArancel = 0;
         $iva = 0;
         foreach ($this->productos as $prod) {
