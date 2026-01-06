@@ -543,7 +543,7 @@ class CalculadoraMaritima extends Component
         foreach ($gastosLocales as $concepto => $monto) {
             $this->desglose[$concepto] = number_format($monto, 2);
         }
-
+        $this->desglose['   Valor de la Mercancía'] = number_format($valorMercancia, 2, '.', '');
         $this->desglose['   Gestión Portuaria'] = number_format($subtotalPortuaria, 2);
         $this->desglose['   Booking y Cupo de Carga'] = number_format($precioBase * 0.05, 2);
 
@@ -574,7 +574,10 @@ class CalculadoraMaritima extends Component
         $this->cbmFacturadoActual = $containerName;
 
         $this->mostrarPregunta = true;
+        $this->mostrarDesglose = true;
         $this->respuestaUsuario = null;
+
+        $this->dispatch('scroll-to-result');
 
         session()->flash('success', 'Cotización generada correctamente.');
     }
@@ -1411,51 +1414,45 @@ class CalculadoraMaritima extends Component
         $url = "https://www.5688.com.cn/fcl/{$originCode}-{$destCode}";
 
         try {
-            // $response = Http::timeout(120)->withHeaders([
-            //     'Authorization' => 'Bearer ' . config('services.firecrawl.key'), // Recomendado: pon tu API key en .env
-            //     'Content-Type'  => 'application/json',
-            // ])->post('https://api.firecrawl.dev/v2/scrape', [
-            //     'url' => $url,
-            //     'formats' => [
-            //         [
-            //             'type' => 'json',
-            //             'prompt' => 'Extrae todas las tarifas FCL válidas de la tabla. Incluye solo filas completas con precios numéricos. Ignora filas de carga o incompletas.',
-            //             'schema' => [
-            //                 'type' => 'object',
-            //                 'properties' => [
-            //                     'rates' => [
-            //                         'type' => 'array',
-            //                         'items' => [
-            //                             'type' => 'object',
-            //                             'properties' => [
-            //                                 'shipping_line' => ['type' => 'string'],
-            //                                 'gp20'          => ['type' => ['integer', 'null']],
-            //                                 'gp40'          => ['type' => ['integer', 'null']],
-            //                                 'hq40'          => ['type' => ['integer', 'null']],
-            //                                 'transit_time'  => ['type' => ['string', 'null']],
-            //                                 'valid_until'   => ['type' => ['string', 'null']],
-            //                                 'closing'       => ['type' => ['integer', 'null']],
-            //                             ],
-            //                             'required' => ['shipping_line']
-            //                         ]
-            //                     ]
-            //                 ],
-            //                 'required' => ['rates']
-            //             ]
-            //         ]
-            //     ]
-            // ]);
-            $filePath = base_path('database/mockup/data.json');
+            $response = Http::timeout(120)->withHeaders([
+                'Authorization' => 'Bearer ' . config('services.firecrawl.key'), // Recomendado: pon tu API key en .env
+                'Content-Type'  => 'application/json',
+            ])->post('https://api.firecrawl.dev/v2/scrape', [
+                'url' => $url,
+                'formats' => [
+                    [
+                        'type' => 'json',
+                        'prompt' => 'Extrae todas las tarifas FCL válidas de la tabla. Incluye solo filas completas con precios numéricos. Ignora filas de carga o incompletas.',
+                        'schema' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'rates' => [
+                                    'type' => 'array',
+                                    'items' => [
+                                        'type' => 'object',
+                                        'properties' => [
+                                            'shipping_line' => ['type' => 'string'],
+                                            'gp20'          => ['type' => ['integer', 'null']],
+                                            'gp40'          => ['type' => ['integer', 'null']],
+                                            'hq40'          => ['type' => ['integer', 'null']],
+                                            'transit_time'  => ['type' => ['string', 'null']],
+                                            'valid_until'   => ['type' => ['string', 'null']],
+                                            'closing'       => ['type' => ['integer', 'null']],
+                                        ],
+                                        'required' => ['shipping_line']
+                                    ]
+                                ]
+                            ],
+                            'required' => ['rates']
+                        ]
+                    ]
+                ]
+            ]);
 
-            if (!File::exists($filePath)) {
-                throw new \Exception("Archivo mockup no encontrado en: {$filePath}");
-            }
-
-            $jsonContent = File::get($filePath);
-            $responseArray = json_decode($jsonContent, true);
+            $responseArray = json_decode($response->body(), true);
 
             if (!$responseArray || !($responseArray['success'] ?? false)) {
-                throw new \Exception('Error decodificando el archivo mockup o success es false');
+                throw new \Exception('Error al conectar con Firecrawl o respuesta no exitosa.');
             }
 
             $data = $responseArray['data']['json']['rates'] ?? [];

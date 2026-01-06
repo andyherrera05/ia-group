@@ -1728,15 +1728,20 @@
                 const packageSizeTexto = document.getElementById('data-package-size').textContent;
                 const packageWeightText = document.getElementById('data-package-weight').textContent;
                 const titleAir = document.getElementById('scraped-title').innerText.trim();
+                const imageProduct = document.getElementById('scraped-image').src;
+                const productId = document.getElementById('scraped-product-id').innerText.trim();
                 
                 const payload = {
                     peso: parseFloat(packageWeightText) || '',
                     dimensiones: packageSizeTexto,
                     cantidad: moq || 1,
                     valorMercancia: priceProduct || 0,
-                    producto: titleAir
+                    producto: titleAir,
+                    id_producto: productId,
+                    imagen: imageProduct
                 };
                 const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+                console.log("Air Payload:", payload); // Debug
                 airBtn.href = `/aereo?q=${encodeURIComponent(encoded)}`;
             }
         }

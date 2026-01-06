@@ -9,35 +9,34 @@ use Livewire\Attributes\Layout;
 
 use Livewire\Attributes\Url;
 
+use Livewire\WithFileUploads;
+
 #[Layout('layouts.app')]
 class CalculadoraAerea extends Component
 {
-    #[Url]
-    public $q;
+    use WithFileUploads;
 
-    #[Url]
-    public $producto = '';
+    #[Url(as: 'q')]
+    public $encodedItems = '';
 
-    // Datos de entrada
-    #[Url]
-    public $peso = '';
-    
-    public $largo = '';
-    public $ancho = '';
-    public $alto = '';
+    public $items = [];
 
-    #[Url]
-    public $valorMercancia = '';
+    // Propiedades temporales para el formulario de agregar (Estilo LCL)
+    public $temp_producto = '';
+    public $temp_imagen = '';
+    public $temp_manualImagen;
+    public $temp_cantidad = 1;
+    public $temp_valor_unitario = '';
+    public $temp_peso_unitario = '';
+    public $temp_largo = '';
+    public $temp_ancho = '';
+    public $temp_alto = '';
 
-    #[Url]
-    public $cantidad = 1;
-
-    #[Url]
-    public $dimensiones = '';
+    // Estado local
     public $urgente = false;
     public $diasAlmacen = 7;
 
-    // Tarifas configurables (más caras que marítimo)
+    // Tarifas configurables
     public $tarifaBase = 800;
     public $tarifaPorKg = 5;
     public $tarifaPorM3 = 150;
@@ -52,32 +51,103 @@ class CalculadoraAerea extends Component
     public $mostrarPregunta = false;
     public $respuestaUsuario = null;
 
-    public function updated($propertyName)
-    {
-        if (in_array($propertyName, ['peso', 'cantidad', 'largo', 'ancho', 'alto', 'valorMercancia'])) {
-            $this->calcular();
-        }
-    }
+    // Propiedades para PDF / Cliente
+    public $clienteNombre = '';
+    public $clienteEmail = '';
+    public $clienteTelefono = '';
+    public $clienteDireccion = '';
+    public $clienteCiudad = '';
+    public $agenteId = null;
+    public $gastosAdicionales = []; // Detalle para PDF
+    public $agentes = [
+        [
+            'id' => 1,
+            'nombre' => 'Alejandra Gonzales Soliz',
+            'email' => 'logistica@iagroups.com',
+            'telefono' => '702693251'
+        ],
+        [
+            'id' => 2,
+            'nombre' => 'Christian Quispe Tolaba',
+            'email' => 'auction@iagroups.com',
+            'telefono' => '64580634'
+        ],
+        [
+            'id' => 3,
+            'nombre' => 'Brenda Garcia Gonzales',
+            'email' => 'consultora@iagroups.com',
+            'telefono' => '64583783'
+        ],
+        [
+            'id' => 4,
+            'nombre' => 'Ivana Rodas Vasquez',
+            'email' => 'agentes@iagroups.com',
+            'telefono' => '64583783'
+        ],
+        [
+            'id' => 5,
+            'nombre' => 'Marcelo Veliz',
+            'email' => 'tarija@iagroups.com',
+            'telefono' => '72981315'
+        ],
+        // [
+        //     'id' => 6,
+        //     'nombre' => 'Alejandra Gonzales Soliz',
+        //     'email' => 'academy@iagroups.com',
+        //     'telefono' => '64700293'
+        // ],
+    ];
 
     public function mount()
     {
-        // Capturar parámetros directamente del request
-        $this->producto = request()->input('producto') ?? $this->producto;
-        $this->peso = request()->input('peso') ?? $this->peso;
-        $this->valorMercancia = request()->input('valorMercancia') ?? $this->valorMercancia;
-        $this->cantidad = request()->input('cantidad') ?? $this->cantidad;
-        $this->dimensiones = request()->input('dimensiones') ?? $this->dimensiones;
-
-        if ($this->q) {
+        // 1. Prioridad: Si hay items codificados en la URL
+        if ($this->encodedItems) {
             try {
-                $data = json_decode(base64_decode($this->q), true);
-                if ($data) {
-                    $this->peso = $data['peso'] ?? $this->peso;
-                    $this->valorMercancia = $data['valorMercancia'] ?? $this->valorMercancia;
-                    $this->cantidad = $data['cantidad'] ?? $this->cantidad;
-                    $this->producto = $data['producto'] ?? $this->producto;
-                    if (isset($data['dimensiones'])) {
-                        $this->dimensiones = $data['dimensiones'];
+                $decoded = json_decode(base64_decode($this->encodedItems), true);
+                
+                if (is_array($decoded) && count($decoded) > 0) {
+                    // Si el primer elemento no es un array, asumimos que es un objeto único (ej. desde landing page)
+                    $firstKey = array_key_first($decoded);
+                    if (!is_array($decoded[$firstKey])) {
+                        // Transformar objeto único (desde Landing Page)
+                        $item = $decoded;
+                        
+                        // Mapear campos con fallbacks
+                        $nombreProducto = $item['producto'] ?? ($item['id_producto'] ?? 'Producto');
+                        $imagenUrl = $item['imagen'] ?? ($item['image'] ?? ''); // Fallback de key 'image'
+                        
+                        // Poblar los campos temporales del formulario (Estilo Marítimo LCL)
+                        // NO agregamos a $this->items todavía para evitar el efecto "doble" en la UI
+                        $this->temp_producto = $nombreProducto;
+                        $this->temp_imagen = $imagenUrl;
+                        $this->temp_cantidad = intval($item['cantidad'] ?? 1);
+                        $this->temp_valor_unitario = floatval($item['valor_unitario'] ?? ($item['valorMercancia'] ?? 0));
+                        $this->temp_peso_unitario = floatval($item['peso_unitario'] ?? ($item['peso'] ?? 0));
+                        
+                        // Procesar dimensiones si vienen en string (ej. "10x20x30") o campos individuales
+                        $this->temp_largo = $item['largo'] ?? '';
+                        $this->temp_ancho = $item['ancho'] ?? '';
+                        $this->temp_alto = $item['alto'] ?? '';
+
+                        if (!empty($item['dimensiones']) && empty($this->temp_largo)) {
+                            $dims = explode('x', str_replace(' ', '', strtolower($item['dimensiones'])));
+                            if (count($dims) === 3) {
+                                $this->temp_largo = $dims[0];
+                                $this->temp_ancho = $dims[1];
+                                $this->temp_alto = $dims[2];
+                            }
+                        }
+
+                        // Log para depuración interna del desarrollador (invisible para el usuario final)
+                        Log::info("CalculadoraAerea: Cargado producto desde landing", [
+                            'producto' => $nombreProducto,
+                            'tiene_imagen' => !empty($imagenUrl),
+                            'imagen' => $imagenUrl
+                        ]);
+
+                    } else {
+                        // Es un array de arrays (ya es una lista de la calculadora aérea)
+                        $this->items = $decoded;
                     }
                 }
             } catch (\Exception $e) {
@@ -85,64 +155,173 @@ class CalculadoraAerea extends Component
             }
         }
 
-        if ($this->dimensiones) {
-            $dims = explode('x', str_replace(' ', '', strtolower($this->dimensiones)));
-            if (count($dims) === 3) {
-                $this->largo = $dims[0];
-                $this->ancho = $dims[1];
-                $this->alto = $dims[2];
-            }
+        if (count($this->items) > 0) {
+            $this->calcular(false);
+        }
+    }
+
+    public function agregarProducto()
+    {
+        $this->validate([
+            'temp_producto' => 'required|min:3',
+            'temp_cantidad' => 'required|numeric|min:1',
+            'temp_valor_unitario' => 'required|numeric|min:0',
+            'temp_peso_unitario' => 'required|numeric|min:0',
+        ], [
+            'temp_producto.required' => 'El nombre es obligatorio',
+            'temp_cantidad.required' => 'La cantidad es obligatoria',
+            'temp_valor_unitario.required' => 'El valor es obligatorio',
+            'temp_peso_unitario.required' => 'El peso es obligatorio',
+        ]);
+
+        $imagenUrl = '';
+        if ($this->temp_manualImagen) {
+            $imagenUrl = $this->temp_manualImagen->temporaryUrl();
+        } elseif ($this->temp_imagen) {
+            $imagenUrl = $this->temp_imagen;
         }
 
-        if ($this->peso || ($this->largo && $this->ancho && $this->alto)) {
-            $this->calcular();
-        }
+        $cantidad = intval($this->temp_cantidad);
+        $valorUnit = floatval($this->temp_valor_unitario);
+        $pesoUnit = floatval($this->temp_peso_unitario);
+        
+        $this->items[] = [
+            'producto' => $this->temp_producto,
+            'imagen' => $imagenUrl,
+            'cantidad' => $cantidad,
+            'valor_unitario' => $valorUnit,
+            'peso_unitario' => $pesoUnit,
+            'largo' => $this->temp_largo,
+            'ancho' => $this->temp_ancho,
+            'alto' => $this->temp_alto,
+            'total_valor' => $valorUnit * $cantidad,
+            'total_peso' => $pesoUnit * $cantidad,
+        ];
+
+        // Reset temps
+        $this->temp_producto = '';
+        $this->temp_imagen = '';
+        $this->temp_manualImagen = null;
+        $this->temp_cantidad = 1;
+        $this->temp_valor_unitario = '';
+        $this->temp_peso_unitario = '';
+        $this->temp_largo = '';
+        $this->temp_ancho = '';
+        $this->temp_alto = '';
+
+        $this->recalcular(false);
+    }
+
+    public function eliminarProducto($index)
+    {
+        unset($this->items[$index]);
+        $this->items = array_values($this->items); // Reindexar
+        $this->recalcular(false);
+    }
+
+    // Alias para compatibilidad si quedó algo colgado
+    public function removeItem($index) {
+        $this->eliminarProducto($index);
+    }
+
+    public function recalcular($mostrar = false)
+    {
+       // Si estamos modificando inputs o items, ocultamos el resultado anterior porque los datos han cambiado
+       // y el usuario pidió explícitamente solo mostrar con el botón CALCULAR.
+       if (!$mostrar) {
+           $this->mostrarPregunta = false;
+       }
+       
+       $this->calcular($mostrar); 
+       $this->syncUrl();
+    }
+
+    public function syncUrl()
+    {
+        $this->encodedItems = base64_encode(json_encode($this->items));
+    }
+
+    private function checkIfCanCalculate()
+    {
+        return count($this->items) > 0;
     }
 
     /**
      * Método principal de cálculo
      */
-    public function calcular()
+    public function calcular($forzarMostrar = true)
     {
-        if (empty($this->peso)) {
-            session()->flash('error', 'Por favor completa todos los campos requeridos.');
-            return;
+        if (empty($this->items)) {
+             $this->resultado = null;
+             $this->desglose = [];
+             return;
         }
 
-        // Reiniciar estado de pregunta
-        $this->mostrarPregunta = false;
-        $this->respuestaUsuario = null;
+        // Si forzamos mostrar (botón CALCULAR), reseteamos para preparar visualización
+        // Si NO forzamos (ej. recalculo interno), nos aseguramos que NO se muestre si así se pide
+        if ($forzarMostrar) {
+            $this->mostrarPregunta = false;
+            $this->respuestaUsuario = null;
+        } else {
+            // Aseguramos que se oculte si es un cálculo background (como al agregar item)
+            $this->mostrarPregunta = false;
+        }
 
-        $cantidad = intval($this->cantidad) ?: 1;
         $margen = 1.08; // 8% margen de empaque
 
-        $pesoUnitario = floatval($this->peso);
-        $largo = floatval($this->largo);
-        $ancho = floatval($this->ancho);
-        $alto = floatval($this->alto);
-        
-        // Peso Total con margen
-        $pesoTotal = ($pesoUnitario * $cantidad) * $margen;
-        
-        // Peso Volumétrico Total con margen
-        $pesoDimensionalTotal = 0;
-        if ($largo > 0 && $ancho > 0 && $alto > 0) {
-            $volumenUnitario = ($largo * $ancho * $alto);
-            $volumenTotal = ($volumenUnitario * $cantidad) * $margen;
-            $pesoDimensionalTotal = $volumenTotal / 5000;
+        $pesoTotalAcumulado = 0;
+        $pesoDimensionalTotalAcumulado = 0;
+        $valorMercanciaTotalAcumulado = 0;
+
+        foreach ($this->items as $item) {
+            // Defensa: Si por alguna razón un item no es array, lo saltamos para evitar el error "array offset on float"
+            if (!is_array($item)) {
+                Log::warning("CalculadoraAerea: Item detectado como " . gettype($item) . " en lugar de array.", ['item' => $item]);
+                continue;
+            }
+            
+            $cantidad = intval($item['cantidad'] ?? 1);
+            
+            // Usar keys nuevas (valor_unitario, peso_unitario)
+            // Fallback a keys viajas si existen por compatibilidad de URL decodificada vieja
+            $pesoUnitario = isset($item['peso_unitario']) ? floatval($item['peso_unitario']) : (floatval($item['peso'] ?? 0));
+            $valorUnitario = isset($item['valor_unitario']) ? floatval($item['valor_unitario']) : (floatval($item['valorMercancia'] ?? 0));
+
+            $largo = floatval($item['largo'] ?? 0);
+            $ancho = floatval($item['ancho'] ?? 0);
+            $alto = floatval($item['alto'] ?? 0);
+            
+            // Peso Total del item (con cantidad y margen)
+            $pesoTotalItem = ($pesoUnitario * $cantidad) * $margen;
+            $pesoTotalAcumulado += $pesoTotalItem;
+
+            // Peso Volumétrico del item
+            if ($largo > 0 && $ancho > 0 && $alto > 0) {
+                $volumenUnitario = ($largo * $ancho * $alto);
+                $volumenTotalItem = ($volumenUnitario * $cantidad) * $margen;
+                $pesoDimensionalItem = $volumenTotalItem / 5000;
+                $pesoDimensionalTotalAcumulado += $pesoDimensionalItem;
+            }
+
+            // Valor mercancía
+            $valorMercanciaTotalAcumulado += ($valorUnitario * $cantidad);
         }
 
-        $valorMercanciaUnidad = floatval($this->valorMercancia);
-        $valorMercanciaTotal = $valorMercanciaUnidad * $cantidad;
+        $this->pesoTotalCalculado = number_format($pesoTotalAcumulado, 2);
+        $this->pesoDimensionalTotalCalculado = number_format($pesoDimensionalTotalAcumulado, 2);
 
-        $this->pesoTotalCalculado = number_format($pesoTotal, 2);
-        $this->pesoDimensionalTotalCalculado = number_format($pesoDimensionalTotal, 2);
+        $resultado = $this->calcularCostoAereo($valorMercanciaTotalAcumulado, $pesoTotalAcumulado, $pesoDimensionalTotalAcumulado);
 
-        $resultado = $this->calcularCostoAereo($valorMercanciaTotal, $pesoTotal, $pesoDimensionalTotal);
-
-        $this->resultado = number_format($resultado['costo'], 2, '.', ',');
-        $this->mostrarPregunta = true;
-        session()->flash('success', 'Cálculo completado considerando cantidad y margen de empaque.');
+        if ($resultado['costo'] !== null) {
+             $this->resultado = number_format($resultado['costo'], 2, '.', ',');
+             
+             if ($forzarMostrar) {
+                 $this->mostrarPregunta = true;
+                 session()->flash('success', 'Cálculo completado para ' . count($this->items) . ' items.');
+             }
+        } else {
+             $this->resultado = null;
+        }
     }
 
 
@@ -240,9 +419,9 @@ class CalculadoraAerea extends Component
         $subtotalGestionChina = $comision + $factura + $seguro + $consolidacion + $almacen + $impuestos;
 
         $this->desglose = [
-            'Valor de la mercancía' => number_format($valorMercancia, 2),
-            'Flete Aéreo Internacional' => number_format($costoFinal, 2),
-            'Gestión Logística en China' => number_format($subtotalGestionChina, 2),
+            'Valor de Mercancía' => number_format($valorMercancia, 2, '.', ''),
+            'Costo de Envío de Paquete' => number_format($costoFinal, 2, '.', ''),
+            'Gestión Logística en China' => number_format($subtotalGestionChina, 2, '.', ''),
             
             '─ DETALLE DE SERVICIOS EN ORIGEN' => null,
             '   ├─ Gestión Administrativa en China' => number_format($comision, 2),
@@ -257,6 +436,19 @@ class CalculadoraAerea extends Component
             '   ├─ Almacenaje en China (' . ($tarifaAlmacen ?? 0.5) . ' USD/día x' . ($dias ?? 7) . ' días)' => $aplicarAdicionales ? number_format($almacen, 2) : 'No aplica (< 5 kg)',
             '   └─ Tasas de Exportación y Aduana' => $aplicarAdicionales ? number_format($impuestos, 2) : 'No aplica (< 5 kg)',
         ];
+
+        // Poblar gastosAdicionales para el PDF (formato LCL)
+        $this->gastosAdicionales = [
+            'Gestión Administrativa en China' => $comision,
+            'Documentación y Packing List' => $factura,
+            'Seguro y Protección de Carga' => $seguro,
+        ];
+
+        if ($aplicarAdicionales) {
+            $this->gastosAdicionales['Consolidación y Verificación'] = $consolidacion;
+            $this->gastosAdicionales['Almacenaje en China (' . $dias . ' días)'] = $almacen;
+            $this->gastosAdicionales['Tax Exportación y Aduana'] = $impuestos;
+        }
 
         // Cálculo del total general
         $totalAdicionalesPesados = $consolidacion + $almacen + $impuestos;
@@ -286,13 +478,62 @@ class CalculadoraAerea extends Component
         $this->respuestaUsuario = $respuesta;
     }
 
+    public function descargarPDF()
+    {
+        if (empty($this->items)) {
+            session()->flash('error', 'No hay productos para cotizar.');
+            return;
+        }
+         $agenteSeleccionado = collect($this->agentes)->firstWhere('id', $this->agenteId);
+
+        // Resumen simplificado solicitado por el usuario para el PDF
+        $resumenPDF = [
+            'Valor de Mercancía' => $this->desglose['Valor de Mercancía'] ?? 0,
+            'Costo de Envío de Paquete' => $this->desglose['Costo de Envío de Paquete'] ?? 0,
+            'Gestión Logística en China' => $this->desglose['Gestión Logística en China'] ?? 0,
+        ];
+
+        // Para que en el PDF el total cuadre y solo se vea el resumen, pasamos la Gestión como gasto adicional único
+        $gastosSimplificados = [
+            'Gestión Logística en China' => floatval($resumenPDF['Gestión Logística en China'])
+        ];
+
+        return redirect()->route('cotizacion.pdf', [
+            'tipoCarga' => 'AEREO',
+            'peso' => $this->pesoTotalCalculado,
+            'volumen' => $this->pesoDimensionalTotalCalculado,
+            'cantidad' => count($this->items),
+            'origen' => 'China',
+            'destino' => 'Bolivia',
+            'valorMercancia' => floatval($resumenPDF['Valor de Mercancía']),
+            'agente' => json_encode($agenteSeleccionado),
+            'resultado' => $this->resultado,
+            'desglose' => json_encode($resumenPDF),
+            'tipoCobro' => (floatval($this->pesoTotalCalculado) >= floatval($this->pesoDimensionalTotalCalculado)) ? 'Peso Real' : 'Peso Volumétrico',
+            'unidad' => 'kg',
+            'productos' => json_encode($this->items),
+            'gastosAdicionales' => json_encode($gastosSimplificados),
+            
+            // Info Cliente
+            'clienteNombre' => $this->clienteNombre,
+            'clienteEmail' => $this->clienteEmail,
+            'clienteTelefono' => $this->clienteTelefono,
+            'clienteDireccion' => $this->clienteDireccion,
+            'clienteCiudad' => $this->clienteCiudad,
+        ]);
+    }
+
     /**
      * Limpiar formulario
      */
     public function limpiar()
     {
-        $this->reset(['peso', 'largo', 'ancho', 'alto', 'valorMercancia', 'urgente', 'resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario', 'diasAlmacen']);
-        $this->diasAlmacen = 7; // Asegurar valor por defecto
+        $this->reset(['peso', 'largo', 'ancho', 'alto', 'valorMercancia', 'cantidad', 'dimensiones', 'resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario', 'items', 
+            'temp_producto', 'temp_imagen', 'temp_manualImagen', 'temp_cantidad', 'temp_valor_unitario', 'temp_peso_unitario', 'temp_largo', 'temp_ancho', 'temp_alto',
+            'clienteNombre', 'clienteEmail', 'clienteTelefono', 'clienteDireccion', 'clienteCiudad', 'gastosAdicionales']);
+        
+        $this->items = [];
+        $this->syncUrl();
         session()->flash('info', 'Formulario limpiado.');
     }
 
