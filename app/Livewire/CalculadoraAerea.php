@@ -381,26 +381,21 @@ class CalculadoraAerea extends Component
             }
         }
         $costoFinal = $tarifaPorKg * $pesoRedondeado;
+       
 
         $comision = $valorMercancia * 0.06;
         $factura  = 70;
         $seguro   = $valorMercancia * 0.02;
+        $pagoInternacional = $valorMercancia * 0.01;
+        $costoEnvioInterno = 15;
 
-        $consolidacion = 0;
+
         $almacen       = 0;
         $impuestos     = 0;
 
         $aplicarAdicionales = ($pesoRedondeado > 5);
 
         if ($aplicarAdicionales) {
-            // Tabla de consolidación dinámica
-            if ($pesoRedondeado <= 25) {
-                $consolidacion = 10;
-            } elseif ($pesoRedondeado <= 50) {
-                $consolidacion = 18;
-            } else {
-                $consolidacion = 24;
-            }
             
             // Almacén dinámico
             $dias = floatval($this->diasAlmacen) ?: 7;
@@ -415,49 +410,34 @@ class CalculadoraAerea extends Component
 
             $impuestos     = 25;
         }
+        $totalLogisticaChina = $pagoInternacional + $costoEnvioInterno + $comision + $factura + $seguro + $almacen + $impuestos;
+        $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina ;
 
-        $subtotalGestionChina = $comision + $factura + $seguro + $consolidacion + $almacen + $impuestos;
-
+        Log::info('valorMercancia: ' . $valorMercancia);
+        Log::info('totalLogisticaChina: ' . $totalLogisticaChina);
+       
         $this->desglose = [
             'Valor de Mercancía' => number_format($valorMercancia, 2, '.', ''),
             'Costo de Envío de Paquete' => number_format($costoFinal, 2, '.', ''),
-            'Gestión Logística en China' => number_format($subtotalGestionChina, 2, '.', ''),
-            
+            'Gestión Logística en China' => number_format($totalLogisticaChina, 2, '.', ''),
             '─ DETALLE DE SERVICIOS EN ORIGEN' => null,
             '   ├─ Gestión Administrativa en China' => number_format($comision, 2),
             '   └─ Documentación y Packing List' => number_format($factura, 2),
 
             '─ DETALLE DE FLETE Y SEGURO' => null,
-            '   ├─ Flete Internacional Aéreo Express' => number_format($tarifaPorKg, 2),
+            '   ├─ Pago Internacional' => number_format($pagoInternacional, 2),
+            '   ├─ Costo de Envío Interno' => number_format($costoEnvioInterno, 2),
             '   └─ Seguro y Protección de Carga' => number_format($seguro, 2),
 
             '─ DETALLE DE OPERACIÓN Y LOGÍSTICA' => null,
-            '   ├─ Consolidación y Verificación' => $aplicarAdicionales ? number_format($consolidacion, 2) : 'No aplica (< 5 kg)',
             '   ├─ Almacenaje en China (' . ($tarifaAlmacen ?? 0.5) . ' USD/día x' . ($dias ?? 7) . ' días)' => $aplicarAdicionales ? number_format($almacen, 2) : 'No aplica (< 5 kg)',
             '   └─ Tasas de Exportación y Aduana' => $aplicarAdicionales ? number_format($impuestos, 2) : 'No aplica (< 5 kg)',
         ];
 
-        // Poblar gastosAdicionales para el PDF (formato LCL)
+        // Poblar gastosAdicionales para el PDF (con todo el detalle)
         $this->gastosAdicionales = [
-            'Gestión Administrativa en China' => $comision,
-            'Documentación y Packing List' => $factura,
-            'Seguro y Protección de Carga' => $seguro,
+            'Gestión Logística en China' => $totalLogisticaChina
         ];
-
-        if ($aplicarAdicionales) {
-            $this->gastosAdicionales['Consolidación y Verificación'] = $consolidacion;
-            $this->gastosAdicionales['Almacenaje en China (' . $dias . ' días)'] = $almacen;
-            $this->gastosAdicionales['Tax Exportación y Aduana'] = $impuestos;
-        }
-
-        // Cálculo del total general
-        $totalAdicionalesPesados = $consolidacion + $almacen + $impuestos;
-        $costoFlete = $costoFinal;
-        $totalGeneral = $valorMercancia + $comision + $factura + $seguro + $totalAdicionalesPesados + $costoFlete;
-
-        if (!$aplicarAdicionales) {
-            $this->desglose['Nota'] = 'Costos de consolidación, almacén e impuestos no aplican para envíos ≤ 5 kg cobrables.';
-        }
 
 
         return [
@@ -486,16 +466,10 @@ class CalculadoraAerea extends Component
         }
          $agenteSeleccionado = collect($this->agentes)->firstWhere('id', $this->agenteId);
 
-        // Resumen simplificado solicitado por el usuario para el PDF
         $resumenPDF = [
             'Valor de Mercancía' => $this->desglose['Valor de Mercancía'] ?? 0,
             'Costo de Envío de Paquete' => $this->desglose['Costo de Envío de Paquete'] ?? 0,
             'Gestión Logística en China' => $this->desglose['Gestión Logística en China'] ?? 0,
-        ];
-
-        // Para que en el PDF el total cuadre y solo se vea el resumen, pasamos la Gestión como gasto adicional único
-        $gastosSimplificados = [
-            'Gestión Logística en China' => floatval($resumenPDF['Gestión Logística en China'])
         ];
 
         return redirect()->route('cotizacion.pdf', [
@@ -507,12 +481,12 @@ class CalculadoraAerea extends Component
             'destino' => 'Bolivia',
             'valorMercancia' => floatval($resumenPDF['Valor de Mercancía']),
             'agente' => json_encode($agenteSeleccionado),
-            'resultado' => $this->resultado,
+            'resultado' => str_replace(',', '', $this->resultado),
             'desglose' => json_encode($resumenPDF),
             'tipoCobro' => (floatval($this->pesoTotalCalculado) >= floatval($this->pesoDimensionalTotalCalculado)) ? 'Peso Real' : 'Peso Volumétrico',
             'unidad' => 'kg',
             'productos' => json_encode($this->items),
-            'gastosAdicionales' => json_encode($gastosSimplificados),
+            'gastosAdicionales' => json_encode($this->gastosAdicionales),
             
             // Info Cliente
             'clienteNombre' => $this->clienteNombre,

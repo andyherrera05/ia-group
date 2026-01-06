@@ -852,7 +852,16 @@ class CalculadoraMaritima extends Component
         } else {
             $valorFacturado = $costoFinal;
         }
-
+        $costo_envio_interno = 15;
+        $despacho = 0;
+        if ($this->volumenTotal <= 0.25) {
+            $despacho = 8.43;
+        }elseif ($this->volumenTotal <= 0.5){
+            $despacho = 16.85;
+        }else{
+            $despacho = $this->volumenTotal * 33.70;
+        }
+        
         $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
 
         // =====================================================
@@ -919,14 +928,16 @@ class CalculadoraMaritima extends Component
         $this->desglose = [
             'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
             'Costo de Envío de Paquete' => number_format($valorFacturado, 2, '.', ''),
+            'Costo de Envío Interno' => number_format($costo_envio_interno, 2, '.', ''),
+            'Despacho de importacion' => number_format($despacho, 2, '.', ''),
+            'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
         ];
         $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
 
         $addServices = 0;
         if ($this->recojoAlmacen) {
-            $this->desglose['Trámite de Importación'] = number_format($total_tiered_charge, 2, '.', '');
             $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumenTotal, 2, '.', '');
-            $addServices = number_format($costoRecojo * $this->volumenTotal, 2, '.', '') + number_format($total_tiered_charge, 2, '.', '');
+            $addServices = (float) number_format($costoRecojo * $this->volumenTotal, 2, '.', '');
         }
 
         $costoVerificacion = 0;
@@ -953,19 +964,22 @@ class CalculadoraMaritima extends Component
 
         $this->gastosAdicionales = [];
         if ($this->recojoAlmacen) {
-            $this->gastosAdicionales['Trámite de Importación'] = number_format($total_tiered_charge, 2, '.', '');
             $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $valorUsado, 2, '.', '');
         }
 
         if ($costoDestino > 0 && $nombreDestino) {
             $this->gastosAdicionales["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
         }
+
+        $this->gastosAdicionales['Costo de Envío Interno'] = number_format($costo_envio_interno, 2, '.', '');
+        $this->gastosAdicionales['Despacho de importacion'] = number_format($despacho, 2, '.', '');
+        $this->gastosAdicionales['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
         if ($this->verificacionProducto) $this->gastosAdicionales['Verificación de Producto'] = number_format($this->calculateVerificationCost(), 2, '.', '');
         if ($this->verificacionCalidad) $this->gastosAdicionales['Verificación de Calidad'] = 50.00;
         if ($this->verificacionEmpresaDigital) $this->gastosAdicionales['Verificación de Empresa Digital'] = 100.00;
         if ($this->verificacionEmpresaPresencial) $this->gastosAdicionales['Verificación Presencial de Empresa'] = 350.00;
 
-        $total = $this->valorMercancia + $valorFacturado + $addServices + $costoDestino + $costoVerificacion;
+        $total = $this->valorMercancia + $valorFacturado + $addServices + $costoDestino + $costoVerificacion + $total_tiered_charge + $despacho + $costo_envio_interno;
         return [
             'costo'  => number_format($total, 2, '.', ''),
             'tipo'   => $tipoCobro,
@@ -1062,12 +1076,10 @@ class CalculadoraMaritima extends Component
         $costoDestino = $resultadoDestino['costo'];
         $nombreDestino = $resultadoDestino['nombre'];
 
-        $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
         $additional_services = 0;
         if ($this->recojoAlmacen) {
-            $this->desglose['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
             $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumenTotal, 2, '.', ''); // ajustado por cantidad
-            $additional_services = $costoRecojo * $this->volumenTotal + $total_tiered_charge;
+            $additional_services = $costoRecojo * $this->volumenTotal;
         }
 
         if ($costoDestino > 0 && $nombreDestino) {
@@ -1079,7 +1091,6 @@ class CalculadoraMaritima extends Component
         // =====================================================
         $this->gastosAdicionales = [];
         if ($this->recojoAlmacen) {
-            $this->gastosAdicionales['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
             $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumenTotal, 2, '.', '');
         }
         if ($costoDestino > 0 && $nombreDestino) {
@@ -1090,7 +1101,27 @@ class CalculadoraMaritima extends Component
         if ($this->verificacionEmpresaDigital) $this->gastosAdicionales['Verificación de Empresa Digital'] = 100.00;
         if ($this->verificacionEmpresaPresencial) $this->gastosAdicionales['Verificación Presencial de Empresa'] = 350.00;
 
-        $total = $this->valorMercancia + $costoFleteTotal + $additional_services + $costoDestino;
+        $costo_envio_interno = 15;
+        $despacho = 0;
+        if ($this->volumenTotal <= 0.25) {
+            $despacho = 8.43;
+        } elseif ($this->volumenTotal <= 0.5) {
+            $despacho = 16.85;
+        } else {
+            $despacho = $this->volumenTotal * 33.70;
+        }
+
+        $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
+
+        $this->desglose['Costo de Envío Interno'] = number_format($costo_envio_interno, 2, '.', '');
+        $this->desglose['Despacho de importacion'] = number_format($despacho, 2, '.', '');
+        $this->desglose['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
+
+        $this->gastosAdicionales['Costo de Envío Interno'] = number_format($costo_envio_interno, 2, '.', '');
+        $this->gastosAdicionales['Despacho de importacion'] = number_format($despacho, 2, '.', '');
+        $this->gastosAdicionales['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
+
+        $total = $this->valorMercancia + $costoFleteTotal + $additional_services + $costoDestino + $costo_envio_interno + $despacho + $total_tiered_charge;
 
         return [
             'costo' => number_format($total, 2, '.', ''),

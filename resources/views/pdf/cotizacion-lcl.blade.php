@@ -308,7 +308,8 @@
                 @endforeach
 
                 @php
-                $granTotal = $valorMercancia + $fleteInternacional + $subtotalGastos;
+                // Usamos el resultado pre-calculado si está disponible, de lo contrario recalculamos
+                $granTotal = isset($resultado) && is_numeric($resultado) ? (float)$resultado : ($valorMercancia + $fleteInternacional + $subtotalGastos);
                 @endphp
                 <tr style="background-color: #fb9e00; font-weight: bold;">
                     <td style="text-align: right;">TOTAL GENERAL ESTIMADO (USD)</td>
