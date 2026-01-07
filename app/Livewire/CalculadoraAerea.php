@@ -35,6 +35,7 @@ class CalculadoraAerea extends Component
     public $temp_alto = '';
     public $temp_hs_code = '';
     public $temp_arancel = 0;
+    public $temp_costo_envio_interno = '';
     public $arancelSuggestions = [];
 
     // Estado local
@@ -101,6 +102,18 @@ class CalculadoraAerea extends Component
             'nombre' => 'Marcelo Veliz',
             'email' => 'tarija@iagroups.com',
             'telefono' => '72981315'
+        ],
+        [
+            'id' => 6,
+            'nombre' => 'Make ',
+            'email' => 'make@iagroups.com',
+            'telefono' => '64700457'
+        ],
+        [
+            'id' => 7,
+            'nombre' => 'Make ',
+            'email' => 'academy@iagroups.com',
+            'telefono' => '64700293'
         ],
         // [
         //     'id' => 6,
@@ -181,31 +194,33 @@ class CalculadoraAerea extends Component
             'temp_peso_unitario.required' => 'El peso es obligatorio',
         ]);
 
+        $cantidad = intval($this->temp_cantidad);
+        $valorUnit = floatval($this->temp_valor_unitario);
+        $pesoUnit = floatval($this->temp_peso_unitario);
+
         $imagenUrl = '';
         if ($this->temp_manualImagen) {
             $imagenUrl = $this->temp_manualImagen->temporaryUrl();
         } elseif ($this->temp_imagen) {
             $imagenUrl = $this->temp_imagen;
         }
-
-        $cantidad = intval($this->temp_cantidad);
-        $valorUnit = floatval($this->temp_valor_unitario);
-        $pesoUnit = floatval($this->temp_peso_unitario);
         
         $this->items[] = [
+            'id' => uniqid(),
             'producto' => $this->temp_producto,
             'imagen' => $imagenUrl,
             'cantidad' => $cantidad,
             'valor_unitario' => $valorUnit,
             'peso_unitario' => $pesoUnit,
-            'largo' => $this->temp_largo,
-            'ancho' => $this->temp_ancho,
-            'alto' => $this->temp_alto,
+            'largo' => floatval($this->temp_largo),
+            'ancho' => floatval($this->temp_ancho),
+            'alto' => floatval($this->temp_alto),
             'total_valor' => $valorUnit * $cantidad,
             'total_peso' => $pesoUnit * $cantidad,
             'hs_code' => $this->temp_hs_code,
             'arancel' => $this->temp_arancel
         ];
+
 
         // Reset temps
         $this->temp_producto = '';
@@ -444,7 +459,6 @@ class CalculadoraAerea extends Component
         
         $seguro   = 0.02;
         $pagoInternacional = 0.01;
-        $costoEnvioInterno = 15;
 
 
         $almacen       = 0;
@@ -489,17 +503,18 @@ class CalculadoraAerea extends Component
         $despacho_representacion = ceil($valorMercancia / 14.37) * 14.37;
         $total_tiered_charge = $this->calculate_tiered_charge($valorMercancia);
         $totalDespacho = $despacho_almacenamiento + $despacho_documentos + $despacho_formulario + $despacho_destibador + $despacho_representacion;
-
+        
+        $costo_envio_interno = floatval($this->temp_costo_envio_interno);
         $impuestoTotal =  $totalArancel + $iva;
-        $totalLogisticaChina = ($valorMercancia + $costoFinal  + $costoEnvioInterno) * ($comision+ $seguro+ $pagoInternacional);
+        $totalLogisticaChina = ($valorMercancia + $costoFinal  + $costo_envio_interno) * ($comision+ $seguro+ $pagoInternacional);
 
-        $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina + $impuestoTotal + $costoEnvioInterno + $totalDespacho + $total_tiered_charge;
-        $totalGeneralRebajado = $valorMercancia + $precio_rebajado + $totalLogisticaChina + $impuestoTotal + $costoEnvioInterno + $totalDespacho + $total_tiered_charge;
+        $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina + $impuestoTotal + $costo_envio_interno + $totalDespacho + $total_tiered_charge;
+        $totalGeneralRebajado = $valorMercancia + $precio_rebajado + $totalLogisticaChina + $impuestoTotal + $costo_envio_interno + $totalDespacho + $total_tiered_charge;
        
         $this->desglose = [
             'Valor de Mercancía' => number_format($valorMercancia, 2, '.', ''),
             'Costo de Envío de Paquete' => number_format($costoFinal, 2, '.', ''),
-            'Costo de Envío Interno' => number_format($costoEnvioInterno, 2, '.', ''),
+            'Costo de Envío Interno' => number_format($costo_envio_interno, 2, '.', ''),
             'Gestión Logística' => number_format($totalLogisticaChina, 2, '.', ''),
             'Despacho de importación' => number_format($totalDespacho, 2, '.', ''),
             'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
@@ -523,7 +538,7 @@ class CalculadoraAerea extends Component
         $this->gastosAdicionales = [
             'Valor de Mercancía' => $valorMercancia,
             'Costo de Envío de Paquete' => $costoFinal,
-            'Costo de Envío Interno' => $costoEnvioInterno,
+            'Costo de Envío Interno' => $costo_envio_interno,
             'Gestión Logística' => $totalLogisticaChina,
             'Despacho de importación' => $totalDespacho,
             'Agencia despachante' => $total_tiered_charge,
@@ -689,7 +704,7 @@ class CalculadoraAerea extends Component
     {
         $this->reset(['resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario', 'items', 
             'temp_producto', 'temp_imagen', 'temp_manualImagen', 'temp_cantidad', 'temp_valor_unitario', 'temp_peso_unitario', 'temp_largo', 'temp_ancho', 'temp_alto',
-            'temp_hs_code', 'temp_arancel', 'arancelSuggestions',
+            'temp_hs_code', 'temp_arancel', 'temp_costo_envio_interno', 'arancelSuggestions',
             'clienteNombre', 'clienteEmail', 'clienteTelefono', 'clienteDireccion', 'clienteCiudad', 'gastosAdicionales']);
         
         $this->items = [];

@@ -41,6 +41,7 @@
         .header-info-cell {
             padding: 10px;
             vertical-align: top;
+            text-align: center;
         }
 
         .header-title {
@@ -242,7 +243,7 @@
                         <strong>{{ $prod['producto'] }}</strong><br>
                     </td>
                     <td>{{ $prod['cantidad'] }}</td>
-                    <td>c/u</td>
+                    <td>unids</td>
                     <td>$ {{ number_format($prod['valor_unitario'], 2) }}</td>
                     <td>${{ number_format($prod['total_valor'], 2) }}</td>
                 </tr>
@@ -329,7 +330,6 @@
                 <li style="font-weight: bold; font-size: 12px;">Esta cotizacion tiene una validez de 7 dias.</li>
                 <li style="font-weight: bold; font-size: 12px;">Esta cotizacion podria sufrir alteraciones en caso de alguna revaloracion por parte de la aduana.</li>
                 <li style="font-weight: bold; font-size: 12px;">Asume que el consignatario que tiene cualquier permiso que sea requerido por autoridades en el país de destino</li>
-                <li style="font-weight: bold; font-size: 12px;">Requisitos de embarque: Factura comercial, Packing List.</li>
                 <li style="font-weight: bold; font-size: 12px;">Contamos con nuestra Propia Agencia Despachante de manera opcional.</li>
                 <li style="font-weight: bold; font-size: 12px;">El PAGO DE ADUANAS es una ves llegue la carga a Almacenes Aduaneros de Bolivia.</li>
                 <li style="font-weight: bold; font-size: 12px;">Cotización en base a datos enviados por el cliente, al llegar a almacén, se verificarán peso y dimensiones.</li>

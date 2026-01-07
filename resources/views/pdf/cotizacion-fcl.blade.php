@@ -111,6 +111,7 @@
         .header-info-cell {
             padding: 10px;
             vertical-align: top;
+            text-align: center;
         }
         .logo-cell img {
             width: 80px;

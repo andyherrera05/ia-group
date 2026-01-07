@@ -354,6 +354,12 @@ class CalculadoraMaritima extends Component
 
     public $agentes = [
         [
+            'id' => 0,
+            'nombre' => 'Ninguno',
+            'email' => 'info@iagroups.com',
+            'telefono' => '702693251'
+        ],
+        [
             'id' => 1,
             'nombre' => 'Alejandra Gonzales Soliz',
             'email' => 'logistica@iagroups.com',
@@ -382,6 +388,18 @@ class CalculadoraMaritima extends Component
             'nombre' => 'Marcelo Veliz',
             'email' => 'tarija@iagroups.com',
             'telefono' => '72981315'
+        ],
+        [
+            'id' => 6,
+            'nombre' => 'Make',
+            'email' => 'make@iagroups.com',
+            'telefono' => '64700457'
+        ],
+        [
+            'id' => 7,
+            'nombre' => 'Miguel Rios ',
+            'email' => 'miguel@iagroups.com',
+            'telefono' => '71897911'
         ],
         // [
         //     'id' => 6,
