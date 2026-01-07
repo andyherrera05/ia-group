@@ -34,6 +34,7 @@ class CalculadoraAerea extends Component
     public $temp_largo = '';
     public $temp_ancho = '';
     public $temp_alto = '';
+    public $temp_dimension_total = '';
     public $temp_medida_unidad = 'cm';
     public $temp_hs_code = '';
     public $temp_arancel = 0;
@@ -250,12 +251,46 @@ class CalculadoraAerea extends Component
         $this->temp_largo = '';
         $this->temp_ancho = '';
         $this->temp_alto = '';
+        $this->temp_dimension_total = '';
         $this->temp_medida_unidad = 'cm';
         $this->temp_hs_code = '';
         $this->temp_arancel = 0;
         $this->arancelSuggestions = [];
 
         $this->recalcular(false);
+    }
+
+    public function aplicarDimensiones($tipo)
+    {
+        $total = floatval($this->temp_dimension_total);
+        if ($total <= 0) return;
+        if ($total <= 0) return;
+
+        // Distribución según tipo de caja
+        // Square: L=W=H => 3x = total => x = total/3
+        // Rectangular: L=2x, W=x, H=x => 4x = total => x = total/4
+        // Flat: L=4x, W=4x, H=x => 9x = total => x = total/9 (Aproximación para caja plana baja)
+
+        switch ($tipo) {
+            case 'square':
+                $val = $total / 3;
+                $this->temp_largo = number_format($val, 2, '.', '');
+                $this->temp_ancho = number_format($val, 2, '.', '');
+                $this->temp_alto = number_format($val, 2, '.', '');
+                break;
+            case 'rectangular':
+                $unit = $total / 4;
+                $this->temp_largo = number_format($unit * 2, 2, '.', '');
+                $this->temp_ancho = number_format($unit, 2, '.', '');
+                $this->temp_alto = number_format($unit, 2, '.', '');
+                break;
+            case 'flat': // Baja y ancha
+                $unit = $total / 9;
+                $this->temp_largo = number_format($unit * 4, 2, '.', '');
+                $this->temp_ancho = number_format($unit * 4, 2, '.', '');
+                $this->temp_alto = number_format($unit, 2, '.', '');
+                break;
+        }
     }
 
     public function eliminarProducto($index)
@@ -723,7 +758,7 @@ class CalculadoraAerea extends Component
     public function limpiar()
     {
         $this->reset(['resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario', 'items', 
-            'temp_producto', 'temp_imagen', 'temp_manualImagen', 'temp_cantidad', 'temp_valor_unitario', 'temp_peso_unitario', 'temp_peso_unidad', 'temp_largo', 'temp_ancho', 'temp_alto', 'temp_medida_unidad',
+            'temp_producto', 'temp_imagen', 'temp_manualImagen', 'temp_cantidad', 'temp_valor_unitario', 'temp_peso_unitario', 'temp_peso_unidad', 'temp_largo', 'temp_ancho', 'temp_alto', 'temp_medida_unidad', 'temp_dimension_total',
             'temp_hs_code', 'temp_arancel', 'temp_costo_envio_interno', 'arancelSuggestions',
             'clienteNombre', 'clienteEmail', 'clienteTelefono', 'clienteDireccion', 'clienteCiudad', 'gastosAdicionales']);
         

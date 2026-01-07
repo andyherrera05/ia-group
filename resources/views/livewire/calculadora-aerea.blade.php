@@ -429,6 +429,30 @@
                                             <option value="in">in</option>
                                         </select>
                                     </div>
+
+                                    <!-- Auto-fill Helper -->
+                                    <div class="flex items-center gap-2 mb-3 border-b border-white/5 pb-3">
+                                        <div class="flex-1">
+                                            <label class="block text-[8px] text-gray-500 mb-1">Dimensión Única (Ref)</label>
+                                            <input type="number" wire:model.blur="temp_dimension_total" placeholder="Total L+A+A"
+                                                class="w-full bg-black/40 border border-yellow-500/10 rounded px-2 py-1 text-xs text-white focus:border-yellow-500/50 outline-none text-center">
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button type="button" wire:click="aplicarDimensiones('square')" title="Caja Cuadrada"
+                                                class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
+                                                <img src="{{ asset('images/cajas/caja_cuadrada.png') }}" alt="Square" class="w-full h-full object-contain opacity-70 hover:opacity-100">
+                                            </button>
+                                            <button type="button" wire:click="aplicarDimensiones('rectangular')" title="Caja Rectangular"
+                                                class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
+                                                <img src="{{ asset('images/cajas/caja_rectangular.png') }}" alt="Rectangular" class="w-full h-full object-contain opacity-70 hover:opacity-100">
+                                            </button>
+                                            <button type="button" wire:click="aplicarDimensiones('flat')" title="Caja Plana"
+                                                class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
+                                                <img src="{{ asset('images/cajas/caja_plana.png') }}" alt="Flat" class="w-full h-full object-contain opacity-70 hover:opacity-100">
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     <div class="flex gap-2">
                                         <div class="flex-1">
                                             <label
