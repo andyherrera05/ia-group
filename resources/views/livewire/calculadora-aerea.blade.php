@@ -369,7 +369,7 @@
                             <p class="text-sm font-bold text-yellow-400 mb-2 uppercase tracking-widest">Total Estimado
                             </p>
                             <p class="text-5xl font-black text-yellow-400">${{ $resultado }}</p>
-                            <p class="text-xs text-gray-400 mt-2">USD - No incluye impuestos</p>
+                            <p class="text-xs text-gray-400 mt-2">USD - Incluye impuestos</p>
                         </div>
 
                         @if (count($desglose) > 0)

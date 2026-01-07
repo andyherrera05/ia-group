@@ -67,6 +67,12 @@ class CalculadoraAerea extends Component
     public $gastosAdicionales = []; // Detalle para PDF
     public $agentes = [
         [
+            'id' => 0,
+            'nombre' => 'Ninguno',
+            'email' => 'info@iagroups.com',
+            'telefono' => '702693251'
+        ],
+        [
             'id' => 1,
             'nombre' => 'Alejandra Gonzales Soliz',
             'email' => 'logistica@iagroups.com',
@@ -82,7 +88,7 @@ class CalculadoraAerea extends Component
             'id' => 3,
             'nombre' => 'Brenda Garcia Gonzales',
             'email' => 'consultora@iagroups.com',
-            'telefono' => '64583783'
+            'telefono' => '64588678'
         ],
         [
             'id' => 4,
@@ -433,11 +439,11 @@ class CalculadoraAerea extends Component
        $precioUnitario = $tarifa1 + ($total_peso_redondeado * ($total_tarifa / $total_peso_tarifa));
 
        $costoFinal = $precioUnitario * $pesoRedondeado;
-
-        $comision = $valorMercancia * 0.06;
         $factura  = 70;
-        $seguro   = $valorMercancia * 0.02;
-        $pagoInternacional = $valorMercancia * 0.01;
+        $comision = 0.06;
+        
+        $seguro   = 0.02;
+        $pagoInternacional = 0.01;
         $costoEnvioInterno = 15;
 
 
@@ -476,35 +482,53 @@ class CalculadoraAerea extends Component
             $iva += $baseCIF * (14.94 / 100);
         }
 
-        $totalLogisticaChina = $pagoInternacional + $costoEnvioInterno + $comision + $factura + $seguro + $almacen + $impuestos;
-        $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina + $totalArancel + $iva;
-        $totalGeneralRebajado = $valorMercancia + $precio_rebajado + $totalLogisticaChina + $totalArancel + $iva;
+        $despacho_almacenamiento = 3.59;
+        $despacho_documentos = 17.24;
+        $despacho_formulario = 14.37;
+        $despacho_destibador = ceil($pesoRedondeado / 7.18) * 7.18;
+        $despacho_representacion = ceil($valorMercancia / 14.37) * 14.37;
+        $total_tiered_charge = $this->calculate_tiered_charge($valorMercancia);
+        $totalDespacho = $despacho_almacenamiento + $despacho_documentos + $despacho_formulario + $despacho_destibador + $despacho_representacion;
+
+        $impuestoTotal =  $totalArancel + $iva;
+        $totalLogisticaChina = ($valorMercancia + $costoFinal  + $costoEnvioInterno) * ($comision+ $seguro+ $pagoInternacional);
+
+        $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina + $impuestoTotal + $costoEnvioInterno + $totalDespacho + $total_tiered_charge;
+        $totalGeneralRebajado = $valorMercancia + $precio_rebajado + $totalLogisticaChina + $impuestoTotal + $costoEnvioInterno + $totalDespacho + $total_tiered_charge;
        
         $this->desglose = [
             'Valor de Mercancía' => number_format($valorMercancia, 2, '.', ''),
             'Costo de Envío de Paquete' => number_format($costoFinal, 2, '.', ''),
-            'Gestión Logística en China' => number_format($totalLogisticaChina, 2, '.', ''),
-            'Gravamen Arancelario' => number_format($totalArancel, 2, '.', ''),
-            'IVA' => number_format($iva, 2, '.', ''),
+            'Costo de Envío Interno' => number_format($costoEnvioInterno, 2, '.', ''),
+            'Gestión Logística' => number_format($totalLogisticaChina, 2, '.', ''),
+            'Despacho de importación' => number_format($totalDespacho, 2, '.', ''),
+            'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
+            'Impuesto' => number_format($impuestoTotal, 2, '.', ''),
+            
             '─ DETALLE DE SERVICIOS EN ORIGEN' => null,
-            '   ├─ Gestión Administrativa en China' => number_format($comision, 2),
-            '   ├─ Recepción de Documentación' => number_format($factura, 2),
+            '   ├─ Gestión Administrativa' => number_format($comision, 2),
+            '   ├─ Documentación' => number_format($factura, 2),
             '   ├─ Pago Internacional' => number_format($pagoInternacional, 2),
-            '   ├─ Costo de Envío Interno' => number_format($costoEnvioInterno, 2),
 
             '─ DETALLE DE FLETE Y SEGURO' => null,
-            '   └─ Seguro y Protección de Carga' => number_format($seguro, 2),
+            '   └─ Seguro' => number_format($seguro, 2),
 
             '─ DETALLE DE OPERACIÓN Y LOGÍSTICA' => null,
-            '   ├─ Almacenaje en China (' . ($tarifaAlmacen ?? 0.5) . ' USD/día x' . ($dias ?? 7) . ' días)' => $aplicarAdicionales ? number_format($almacen, 2) : 'No aplica (< 5 kg)',
-            '   └─ Tasas de Exportación y Aduana' => $aplicarAdicionales ? number_format($impuestos, 2) : 'No aplica (< 5 kg)',
+            '   ├─ Almacenaje (' . ($tarifaAlmacen ?? 0.5) . ' USD/día x' . ($dias ?? 7) . ' días)' => $aplicarAdicionales ? number_format($almacen, 2) : 'No aplica (< 5 kg)',
+            '   └─ Tasas de Exportación' => $aplicarAdicionales ? number_format($impuestos, 2) : 'No aplica (< 5 kg)',
+            '   └─ Consolidación' => $aplicarAdicionales ? number_format(10, 2) : 'No aplica (< 5 kg)',
         ];
 
         // Poblar gastosAdicionales para el PDF (con todo el detalle)
         $this->gastosAdicionales = [
-            'Gestión Logística en China' => $totalLogisticaChina,
-            'Gravamen Arancelario' => $totalArancel,
-            'IVA' => $iva
+            'Valor de Mercancía' => $valorMercancia,
+            'Costo de Envío de Paquete' => $costoFinal,
+            'Costo de Envío Interno' => $costoEnvioInterno,
+            'Gestión Logística' => $totalLogisticaChina,
+            'Despacho de importación' => $totalDespacho,
+            'Agencia despachante' => $total_tiered_charge,
+            'Impuesto' => $impuestoTotal,   
+            
         ];
 
 
@@ -517,6 +541,44 @@ class CalculadoraAerea extends Component
             'errores' => $errores,
             'advertencias' => $advertencias,
         ];
+    }
+
+    function calculate_tiered_charge(float $evaluation_value): float
+    {
+        $rates = [
+            [999.00, 5.03, 1],
+            [1999.00, 93.39, 1],
+            [3999.00, 150.86, 1],
+            [5000.00, 193.97, 1],
+            [10000.00, 0.03, 2],
+            [20000.00, 0.025, 2],
+            [30000.00, 0.0225, 2],
+            [50000.00, 0.02, 2],
+            [100000.00, 0.0175, 2]
+        ];
+
+        $charge = 0.0;
+
+        foreach ($rates as $tier) {
+            $maximum = $tier[0];
+            $rate = $tier[1];
+            $type = $tier[2];
+
+            if ($evaluation_value <= $maximum) {
+
+                if ($type === 1) {
+                    $charge = $rate;
+                } else {
+                    $charge = $evaluation_value * $rate;
+                }
+                return $charge;
+            }
+        }
+
+        if ($evaluation_value > 100000.00) {
+            return $evaluation_value * 0.015;
+        }
+        return 0.0;
     }
 
     /**

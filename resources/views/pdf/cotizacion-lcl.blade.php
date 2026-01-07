@@ -51,7 +51,7 @@
         }
 
         .address-line {
-            font-size: 16px;
+            font-size: 12px;
             font-weight: bold;
             margin-bottom: 3px;
         }
@@ -181,8 +181,8 @@
                     <div class="header-title">COTIZACION IA GROUPS</div>
                     <div class="address-line">Direccion Internacional: 1209 Mountain Road PL NE STE N, Albuquerque, NM 87110, USA</div>
                     <div class="address-line">Direccion Bolivia: Calle Colón esq Bolivar 820. Edificio AUAD 2do piso. Tarija</div>
-                    <div class="agent-line">AGENTE DE CARGA: {{ $agente['nombre'] ?? 'IA GROUPS' }}</div>
-                    <div class="contact-line">pagina: https://ia-groups.com &nbsp;&nbsp; correo: {{ $agente['email'] ?? 'info@iagroups.com' }} &nbsp;&nbsp; contacto: {{ $agente['telefono'] ?? '+591 702693251' }}</div>
+                    <div class="agent-line">Agentes Internacionales de carga: {{ $agente['nombre'] ?? 'IA GROUPS' }}</div>
+                    <div class="contact-line">https://ia-groups.com &nbsp;&nbsp; {{ $agente['email'] ?? 'info@iagroups.com' }} &nbsp;&nbsp; {{ $agente['telefono'] ?? '+591 702693251' }}</div>
                 </td>
             </tr>
         </table>
@@ -324,16 +324,15 @@
 
 
         <div class="footer-note" style="margin-top: 40px;">
-            <strong>NOTAS:</strong><br>
+            <strong>NOTA:</strong><br>
             <ul class="footer-note-list">
-                <li>ESTA COTIZACIÓN TIENE UNA VALIDEZ DE 7 DÍAS</li>
-                <li>LOS PRECIOS NO INCLUYEN IMPUESTOS DE ADUANA EN DESTINO</li>
-                <li>Esta cotizacion podria sufrir alteraciones en caso de alguna revaloracion por parte de la aduana.</li>
-                <li>Asume que el consignatario que tiene cualquier permiso que sea requerido por autoridades en el país de destino</li>
-                <li>Requisitos de embarque: Factura comercial, Packing List.</li>
-                <li>Contamos con nuestra Propia Agencia Despachante de manera opcional.</li>
-                <li>El PAGO DE ADUANAS es una ves llegue la carga a Almacenes Aduaneros de Bolivia.</li>
-                <li>Cotización en base a datos enviados por el cliente, al llegar a almacén, se verificarán peso y dimensiones.</li>
+                <li style="font-weight: bold; font-size: 12px;">Esta cotizacion tiene una validez de 7 dias.</li>
+                <li style="font-weight: bold; font-size: 12px;">Esta cotizacion podria sufrir alteraciones en caso de alguna revaloracion por parte de la aduana.</li>
+                <li style="font-weight: bold; font-size: 12px;">Asume que el consignatario que tiene cualquier permiso que sea requerido por autoridades en el país de destino</li>
+                <li style="font-weight: bold; font-size: 12px;">Requisitos de embarque: Factura comercial, Packing List.</li>
+                <li style="font-weight: bold; font-size: 12px;">Contamos con nuestra Propia Agencia Despachante de manera opcional.</li>
+                <li style="font-weight: bold; font-size: 12px;">El PAGO DE ADUANAS es una ves llegue la carga a Almacenes Aduaneros de Bolivia.</li>
+                <li style="font-weight: bold; font-size: 12px;">Cotización en base a datos enviados por el cliente, al llegar a almacén, se verificarán peso y dimensiones.</li>
             </ul>
         </div>
 
