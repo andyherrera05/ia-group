@@ -30,9 +30,11 @@ class CalculadoraAerea extends Component
     public $temp_cantidad = 1;
     public $temp_valor_unitario = '';
     public $temp_peso_unitario = '';
+    public $temp_peso_unidad = 'kg';
     public $temp_largo = '';
     public $temp_ancho = '';
     public $temp_alto = '';
+    public $temp_medida_unidad = 'cm';
     public $temp_hs_code = '';
     public $temp_arancel = 0;
     public $temp_costo_envio_interno = '';
@@ -198,6 +200,21 @@ class CalculadoraAerea extends Component
         $valorUnit = floatval($this->temp_valor_unitario);
         $pesoUnit = floatval($this->temp_peso_unitario);
 
+        if ($this->temp_peso_unidad === 'lb') {
+            $pesoUnit = $pesoUnit * 0.453592;
+        }
+
+        $largo = floatval($this->temp_largo);
+        $ancho = floatval($this->temp_ancho);
+        $alto = floatval($this->temp_alto);
+
+        // Convertir pulgadas a cm si es necesario (1 pulgada = 2.54 cm)
+        if ($this->temp_medida_unidad === 'in') {
+            $largo = $largo * 2.54;
+            $ancho = $ancho * 2.54;
+            $alto  = $alto * 2.54;
+        }
+
         $imagenUrl = '';
         if ($this->temp_manualImagen) {
             $imagenUrl = $this->temp_manualImagen->temporaryUrl();
@@ -212,9 +229,9 @@ class CalculadoraAerea extends Component
             'cantidad' => $cantidad,
             'valor_unitario' => $valorUnit,
             'peso_unitario' => $pesoUnit,
-            'largo' => floatval($this->temp_largo),
-            'ancho' => floatval($this->temp_ancho),
-            'alto' => floatval($this->temp_alto),
+            'largo' => $largo,
+            'ancho' => $ancho,
+            'alto' => $alto,
             'total_valor' => $valorUnit * $cantidad,
             'total_peso' => $pesoUnit * $cantidad,
             'hs_code' => $this->temp_hs_code,
@@ -229,9 +246,11 @@ class CalculadoraAerea extends Component
         $this->temp_cantidad = 1;
         $this->temp_valor_unitario = '';
         $this->temp_peso_unitario = '';
+        $this->temp_peso_unidad = 'kg';
         $this->temp_largo = '';
         $this->temp_ancho = '';
         $this->temp_alto = '';
+        $this->temp_medida_unidad = 'cm';
         $this->temp_hs_code = '';
         $this->temp_arancel = 0;
         $this->arancelSuggestions = [];
@@ -449,7 +468,7 @@ class CalculadoraAerea extends Component
        $total_tarifa          = $tarifaPorKg - $tarifa1; 
        $total_peso_tarifa     = $maxKg - $peso1;
        $total_peso_redondeado = $pesoRedondeado - $peso1;
-       $precio_rebajado       = $tarifaPorKg * $pesoRedondeado;
+       
 
        $precioUnitario = $tarifa1 + ($total_peso_redondeado * ($total_tarifa / $total_peso_tarifa));
 
@@ -507,6 +526,7 @@ class CalculadoraAerea extends Component
         $costo_envio_interno = floatval($this->temp_costo_envio_interno);
         $impuestoTotal =  $totalArancel + $iva;
         $totalLogisticaChina = ($valorMercancia + $costoFinal  + $costo_envio_interno) * ($comision+ $seguro+ $pagoInternacional);
+        $precio_rebajado       = ($seguro * $valorMercancia) + $impuestos + ($comision * $valorMercancia) + ($pagoInternacional * $valorMercancia) + $almacen + $factura;
 
         $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina + $impuestoTotal + $costo_envio_interno + $totalDespacho + $total_tiered_charge;
         $totalGeneralRebajado = $valorMercancia + $precio_rebajado + $totalLogisticaChina + $impuestoTotal + $costo_envio_interno + $totalDespacho + $total_tiered_charge;
@@ -703,7 +723,7 @@ class CalculadoraAerea extends Component
     public function limpiar()
     {
         $this->reset(['resultado', 'desglose', 'mostrarPregunta', 'respuestaUsuario', 'items', 
-            'temp_producto', 'temp_imagen', 'temp_manualImagen', 'temp_cantidad', 'temp_valor_unitario', 'temp_peso_unitario', 'temp_largo', 'temp_ancho', 'temp_alto',
+            'temp_producto', 'temp_imagen', 'temp_manualImagen', 'temp_cantidad', 'temp_valor_unitario', 'temp_peso_unitario', 'temp_peso_unidad', 'temp_largo', 'temp_ancho', 'temp_alto', 'temp_medida_unidad',
             'temp_hs_code', 'temp_arancel', 'temp_costo_envio_interno', 'arancelSuggestions',
             'clienteNombre', 'clienteEmail', 'clienteTelefono', 'clienteDireccion', 'clienteCiudad', 'gastosAdicionales']);
         

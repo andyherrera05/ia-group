@@ -215,7 +215,7 @@
                                                 <span>${{ number_format($item['valor_unitario'] ?? ($item['valorMercancia'] ?? 0), 2) }}
                                                     unids</span>
                                                 <span>•</span>
-                                                <span>{{ $item['peso_unitario'] ?? ($item['peso'] ?? 0) }} kg</span>
+                                                <span>{{ number_format($item['peso_unitario'] ?? ($item['peso'] ?? 0), 2) }} kg</span>
                                             </div>
                                         </div>
 
@@ -224,10 +224,10 @@
                                             @php
                                                 $totalVal = isset($item['total_valor'])
                                                     ? $item['total_valor']
-                                                    : ($item['valorMercancia'] ?? 0) * $item['cantidad'];
+                                                    : number_format(($item['valorMercancia'] ?? 0) * $item['cantidad'], 2);
                                                 $totalPes = isset($item['total_peso'])
                                                     ? $item['total_peso']
-                                                    : ($item['peso'] ?? 0) * $item['cantidad'];
+                                                    : number_format(($item['peso'] ?? 0) * $item['cantidad'], 2);
                                             @endphp
                                             <span
                                                 class="text-white font-mono text-xs font-bold">${{ number_format($totalVal, 2) }}</span>
@@ -395,13 +395,22 @@
                                                     class="text-red-400 text-[10px] block mt-0.5">{{ $message }}</span>
                                             @enderror
                                         </div>
-                                        <div>
-                                            <input type="number" wire:model="temp_peso_unitario"
-                                                placeholder="Peso (Kg)"
-                                                class="w-full h-[42px] p-3 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                                        <div class="flex space-x-1">
+                                            <div class="flex-1">
+                                                <input type="number" wire:model="temp_peso_unitario"
+                                                    placeholder="Peso"
+                                                    class="w-full h-[42px] p-3 bg-black/40 border border-yellow-500/10 rounded-l-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                                            </div>
+                                            <div class="w-16">
+                                                <select wire:model="temp_peso_unidad"
+                                                    class="w-full h-[42px] p-3 bg-black/40 border border-yellow-500/10 border-l-0 rounded-r-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none">
+                                                    <option value="kg">Kg</option>
+                                                    <option value="lb">Lb</option>
+                                                </select>
+                                            </div>
                                             @error('temp_peso_unitario')
                                                 <span
-                                                    class="text-red-400 text-[10px] block mt-0.5">{{ $message }}</span>
+                                                    class="text-red-400 text-[10px] block mt-0.5 w-full">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </div>
@@ -412,8 +421,14 @@
                             <div class="grid grid-cols-1 md:grid-cols-1 gap-3 items-center mt-2">
                                 <!-- Dimensions -->
                                 <div class="bg-black/20 rounded-lg p-2 border border-white/5 relative">
-                                    <label class="text-[10px] text-gray-500 block mb-2 text-center">Dimensiones
-                                        Unitarias (cm)</label>
+                                    <div class="flex justify-center items-center gap-2 mb-2">
+                                        <label class="text-[10px] text-gray-500 block text-center uppercase">Dimensiones Unitarias</label>
+                                        <select wire:model="temp_medida_unidad"
+                                            class="bg-black/40 border px-4 border-yellow-500/10 rounded text-white text-[10px] focus:outline-none focus:border-yellow-500/50 py-0.5 px-1">
+                                            <option value="cm">cm</option>
+                                            <option value="in">in</option>
+                                        </select>
+                                    </div>
                                     <div class="flex gap-2">
                                         <div class="flex-1">
                                             <label
