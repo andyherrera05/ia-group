@@ -39,30 +39,30 @@
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Nombre Completo / Empresa</label>
                     <input type="text" wire:model.live="clienteNombre" placeholder="Ej: JAIME CARDONA"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteNombre') 
-                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
-                            {{ $message }}
-                        </div> 
+                    @error('clienteNombre')
+                    <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                        {{ $message }}
+                    </div>
                     @enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Email</label>
                     <input type="email" wire:model.live="clienteEmail" placeholder="ejemplo@correo.com"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteEmail') 
-                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
-                            {{ $message }}
-                        </div> 
+                    @error('clienteEmail')
+                    <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                        {{ $message }}
+                    </div>
                     @enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Teléfono</label>
                     <input type="text" wire:model.live="clienteTelefono" placeholder="72732422"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteTelefono') 
-                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
-                            {{ $message }}
-                        </div> 
+                    @error('clienteTelefono')
+                    <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                        {{ $message }}
+                    </div>
                     @enderror
                 </div>
                 <div>
@@ -79,20 +79,20 @@
                         <option value="Oruro" style="background-color:#1a170c; color: #fff;">Oruro</option>
                         <option value="Chuquisaca" style="background-color:#1a170c; color: #fff;">Chuquisaca</option>
                     </select>
-                    @error('clienteCiudad') 
-                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
-                            {{ $message }}
-                        </div> 
+                    @error('clienteCiudad')
+                    <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                        {{ $message }}
+                    </div>
                     @enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Dirección</label>
                     <input type="text" wire:model.live="clienteDireccion" placeholder="Dirección completa"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteDireccion') 
-                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
-                            {{ $message }}
-                        </div> 
+                    @error('clienteDireccion')
+                    <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                        {{ $message }}
+                    </div>
                     @enderror
                 </div>
                 <div class="sm:col-span-2">
@@ -202,23 +202,23 @@
                             <input type="text" wire:model="temp_producto" placeholder="Nombre del Producto (Ej: Zapatillas)"
                                 class="w-full h-[105px] px-4 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-lg">
                             @error('temp_producto') <span class="text-red-400 text-[10px] ml-1">{{ $message }}</span> @enderror
-                            
+
                             <div class="grid grid-cols-2 gap-2">
                                 <div class="relative">
                                     <input type="text" wire:model.live="temp_hs_code" placeholder="HS Code"
                                         class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
-                                    
+
                                     @if(!empty($arancelSuggestions))
-                                        <div class="absolute top-full left-0 w-full z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto mt-1" @click.away="$wire.limpiarArancelSearch()" style="background-color: rgba(0, 0, 0, 0.9);">
-                                            @foreach($arancelSuggestions as $suggestion)
-                                                <div wire:click="selectArancel('{{ $suggestion['codigo_hs'] }}', {{ $suggestion['arancel'] }})" 
-                                                     class="p-2 hover:bg-gray-800 cursor-pointer text-xs border-b border-gray-800 last:border-0">
-                                                    <div class="font-bold text-yellow-500">{{ $suggestion['codigo_hs'] }}</div>
-                                                    <div class="text-gray-300">{{ $suggestion['descripcion'] }}</div>
-                                                    <div class="text-gray-500 text-[10px]">Arancel: {{ $suggestion['arancel'] }}%</div>
-                                                </div>
-                                            @endforeach
+                                    <div class="absolute top-full left-0 w-full z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto mt-1" @click.away="$wire.limpiarArancelSearch()" style="background-color: rgba(0, 0, 0, 0.9);">
+                                        @foreach($arancelSuggestions as $suggestion)
+                                        <div wire:click="selectArancel('{{ $suggestion['codigo_hs'] }}', {{ $suggestion['arancel'] }})"
+                                            class="p-2 hover:bg-gray-800 cursor-pointer text-xs border-b border-gray-800 last:border-0">
+                                            <div class="font-bold text-yellow-500">{{ $suggestion['codigo_hs'] }}</div>
+                                            <div class="text-gray-300">{{ $suggestion['descripcion'] }}</div>
+                                            <div class="text-gray-500 text-[10px]">Arancel: {{ $suggestion['arancel'] }}%</div>
                                         </div>
+                                        @endforeach
+                                    </div>
                                     @endif
                                 </div>
                                 <div class="relative">
@@ -251,6 +251,32 @@
 
                     <!-- Row 3: Dimensions & Action -->
                     <div class="grid grid-cols-1 md:grid-cols-1 gap-3 items-center">
+                        <!-- Auto-fill Helper -->
+                        <div class="flex items-center gap-2 mb-3 border-b border-white/5 pb-3">
+                            <div class="flex-1">
+                                <label class="block text-[8px] text-gray-500 mb-1">Dimensión Única (Ref)</label>
+                                <input type="number" wire:model.blur="temp_dimension_total" placeholder="Dimensión de un lado"
+                                    class="w-full py-3 bg-black/40 border border-yellow-500/10 rounded px-2 py-1 text-xs text-white focus:border-yellow-500/50 outline-none text-center">
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" wire:click="aplicarDimensiones('square')" title="Caja Cuadrada"
+                                    class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
+                                    <img src="{{ asset('images/cajas/caja_cuadrada.png') }}" alt="Square" class="w-full h-full object-contain opacity-70 hover:opacity-100">
+                                </button>
+                                <button type="button" wire:click="aplicarDimensiones('rectangular')" title="Caja Rectangular"
+                                    class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
+                                    <img src="{{ asset('images/cajas/caja_rectangular.png') }}" alt="Rectangular" class="w-full h-full object-contain opacity-70 hover:opacity-100">
+                                </button>
+                                <button type="button" wire:click="aplicarDimensiones('flat')" title="Caja Plana"
+                                    class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
+                                    <img src="{{ asset('images/cajas/caja_plana.png') }}" alt="Flat" class="w-full h-full object-contain opacity-70 hover:opacity-100">
+                                </button>
+                                <button type="button" wire:click="aplicarDimensiones('long')" title="Caja Alargada"
+                                    class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
+                                    <img src="{{ asset('images/cajas/caja_tubo.png') }}" alt="Long" class="w-full h-full object-contain opacity-70 hover:opacity-100">
+                                </button>
+                            </div>
+                        </div>
                         <!-- Dimensions -->
                         <div class="md:col-span-2 bg-black/20 rounded-lg p-2 border border-white/5 relative">
                             <label class="text-[10px] text-gray-500 block mb-2 text-center">Dimensiones (cm) o CBM Directo</label>

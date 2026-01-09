@@ -242,7 +242,7 @@
                     <td>
                         <strong>{{ $prod['producto'] }}</strong><br>
                     </td>
-                    <td>{{ $prod['cantidad'] }}</td>
+                    <td>{{ $prod['cantidad_total'] ?? $prod['cantidad'] }}</td>
                     <td>unids</td>
                     <td>$ {{ number_format($prod['valor_unitario'], 2) }}</td>
                     <td>${{ number_format($prod['total_valor'], 2) }}</td>
@@ -275,52 +275,147 @@
 
         <!-- Tabla de Gastos Adicionales -->
         <h4 style="margin-top: 25px; margin-bottom: 10px; font-size: 14px; text-transform: uppercase;">Detalle de Gastos Adicionales / Logística</h4>
-        <table class="product-table" style="margin-bottom: 20px;">
-            <thead>
-                <tr>
-                    <th style="width: 70%; text-align: left; padding-left: 15px;">CONCEPTO / SERVICIO</th>
-                    <th style="width: 30%; text-align: right; padding-right: 15px;">MONTO (USD)</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                $subtotalGastos = 0;
-                // El flete principal está en $desglose['Costo de Envío de Paquete']
-                $fleteInternacional = (float)($desglose['Costo de Envío de Paquete'] ?? 0);
-                $valorMercancia = (float)($desglose['Valor de Mercancía'] ?? 0);
-                @endphp
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr>
+                <!-- Columna Izquierda: Gastos Generales -->
+                <td style="width: 48%; vertical-align: top; padding-right: 2%;">
+                    <table class="product-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 70%; text-align: left; padding-left: 15px;">CONCEPTO / SERVICIO</th>
+                                <th style="width: 30%; text-align: right; padding-right: 15px;">MONTO (USD)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                            $subtotalGastos = 0;
+                            $fleteInternacional = (float)($desglose['Costo de Envío de Paquete'] ?? 0);
+                            $valorMercancia = (float)($desglose['Valor de Mercancía'] ?? 0);
+                            
+                            // Extraer valores de aduana para usarlos en la derecha y no duplicarlos aquí
+                            $gravamenArancelario = (float)($valorMercancia * 0.10 ?? 0);
+                            $baseImponible = (float)($gravamenArancelario + $valorMercancia ?? 0);
+                            $impuestoIVA = (float)($baseImponible * 0.1494 ?? 0);
+                            $despacho = (float)($gastosAdicionales['Despacho'] ?? 0);
+                            $agencia = (float)($gastosAdicionales['Agencia despachante'] ?? 0);
 
-                {{-- Mostramos el Flete Marítimo primero --}}
-                <tr style="height: auto;">
-                    <td style="text-align: left; padding: 8px 15px; height: auto;">Costo de Envío de Paquete</td>
-                    <td style="text-align: right; padding: 8px 15px; height: auto; font-weight: bold;">$ {{ number_format($fleteInternacional, 2) }}</td>
-                </tr>
+                            // Lista de keys a EXCLUIR de la izquierda porque van a la derecha o no se muestran
+                            $excludedKeys = [
+                                'Gravamen Arancelario', 
+                                'Impuesto IVA', 
+                                'Base Imponible', 
+                                'Despacho', 
+                                'Agencia despachante',
+                                'Impuesto' // Key vieja agregada
+                            ];
+                            @endphp
 
-                {{-- Mostramos los gastos adicionales (servicios, entrega, verificaciones) --}}
-                @foreach($gastosAdicionales as $concepto => $monto)
-                @php
-                $montoNum = is_numeric($monto) ? (float)$monto : 0;
-                $subtotalGastos += $montoNum;
-                @endphp
-                <tr style="height: auto;">
-                    <td style="text-align: left; padding: 8px 15px; height: auto;">{{ $concepto }}</td>
-                    <td style="text-align: right; padding: 8px 15px; height: auto; font-weight: bold;">$ {{ number_format($montoNum, 2) }}</td>
-                </tr>
-                @endforeach
+                            {{-- Flete Marítimo --}}
+                            <tr style="height: auto;">
+                                <td style="text-align: left; padding: 8px 15px;">Costo de Envío de Paquete</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold;">$ {{ number_format($fleteInternacional, 2) }}</td>
+                            </tr>
 
-                @php
-                // Usamos el resultado pre-calculado si está disponible, de lo contrario recalculamos
-                $granTotal = isset($resultado) && is_numeric($resultado) ? (float)$resultado : ($valorMercancia + $fleteInternacional + $subtotalGastos);
-                @endphp
-                <tr style="background-color: #fb9e00; font-weight: bold;">
-                    <td style="text-align: right;">TOTAL GENERAL ESTIMADO (USD)</td>
-                    <td style="text-align: right; font-size: 16px;">$ {{ number_format($granTotal, 2) }}</td>
-                </tr>
-                <tr style="background-color: #fb9e00; font-weight: bold;">
-                    <td style="text-align: right;">TOTAL GENERAL ESTIMADO (BS)</td>
-                    <td style="text-align: right; font-size: 16px;">Bs {{ number_format($granTotal * 9.61, 2) }}</td>
-                </tr>
-            </tbody>
+                            {{-- Gastos Generales (Filtrando los de aduana) --}}
+                            @foreach($gastosAdicionales as $concepto => $monto)
+                                @if(!in_array($concepto, $excludedKeys))
+                                    @php
+                                    $montoNum = is_numeric($monto) ? (float)$monto : 0;
+                                    $subtotalGastos += $montoNum;
+                                    @endphp
+                                    <tr style="height: auto;">
+                                        <td style="text-align: left; padding: 8px 15px;">{{ $concepto }}</td>
+                                        <td style="text-align: right; padding: 8px 15px; font-weight: bold;">$ {{ number_format($montoNum, 2) }}</td>
+                                    </tr>
+                                @endif
+                            @endforeach
+
+                            @php
+                            $granTotalFinalEnvio = $fleteInternacional + $subtotalGastos;
+                            @endphp
+
+                            <tr style="background-color: #fb9e00; font-weight: bold;">
+                                <td style="text-align: right; border: 1px solid #000;">TOTAL ESTIMADO GESTION DE ENVIO (USD)</td>
+                                <td style="text-align: right; font-size: 14px; border: 1px solid #000;">$ {{ number_format($granTotalFinalEnvio, 2) }}</td>
+                            </tr>
+                            <tr style="background-color: #fb9e00; font-weight: bold;">
+                                <td style="text-align: right; border: 1px solid #000;">TOTAL ESTIMADO GESTION DE ENVIO (BS)</td>
+                                <td style="text-align: right; font-size: 14px; border: 1px solid #000;">
+                                    Bs {{ number_format($granTotalFinalEnvio * 9.70, 2) }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+
+                <!-- Columna Derecha: Gestión Aduanera -->
+                <td style="width: 50%; vertical-align: top;">
+                    <table class="product-table">
+                        <thead>
+                            <tr>
+                                <th colspan="2" style="background-color: #ffe6cc; text-align: center; color: black; border: 1px solid #000;">GESTION ADUANERA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Gravamen Arancelario -->
+                            <tr>
+                                <td style="text-align: left; padding: 8px 15px; background-color: #ffe6cc; font-weight: bold; border: 1px solid #000;">GRAVAMEN ARANCELARIO</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000;">$ {{ number_format($gravamenArancelario, 2) }}</td>
+                            </tr>
+                            <!-- Base Imponible -->
+                            <tr>
+                                <td style="text-align: left; padding: 8px 15px; background-color: #ffe6cc; font-weight: bold; border: 1px solid #000;">BASE</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000;">$ {{ number_format($baseImponible, 2) }}</td>
+                            </tr>
+                            <!-- IVA -->
+                            <tr>
+                                <td style="text-align: left; padding: 8px 15px; border: 1px solid #000;">IMPUESTO AL VALOR AGREGADO</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000;">$ {{ number_format($impuestoIVA, 2) }}</td>
+                            </tr>
+                            <!-- Despacho -->
+                            <tr>
+                                <td style="text-align: left; padding: 8px 15px; border: 1px solid #000;">DESPACHO</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000;">$ {{ number_format($despacho, 2) }}</td>
+                            </tr>
+                            <!-- Agencia -->
+                            <tr>
+                                <td style="text-align: left; padding: 8px 15px; border: 1px solid #000;">AGENCIA DESPACHANTE</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000;">$ {{ number_format($agencia, 2) }}</td>
+                            </tr>
+
+                            @php
+                            
+                           
+                            $granTotalFinal = $gravamenArancelario + $impuestoIVA + $despacho + $agencia;
+                            @endphp
+
+                            <tr style="background-color: #fb9e00; font-weight: bold;">
+                                <td style="text-align: right; border: 1px solid #000;">TOTAL GESTION ADUANERA (USD)</td>
+                                <td style="text-align: right; font-size: 14px; border: 1px solid #000;">$ {{ number_format($granTotalFinal, 2) }}</td>
+                            </tr>
+                            <tr style="background-color: #fb9e00; font-weight: bold;">
+                                <td style="text-align: right; border: 1px solid #000;">TOTAL GESTION ADUANERA (BS)</td>
+                                <td style="text-align: right; font-size: 14px; border: 1px solid #000;">Bs {{ number_format($granTotalFinal * 6.96, 2) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <table style="width: 70%; border-collapse: collapse;">
+            @php
+            $granTotal_gastos =  number_format($granTotalFinal, 2)  + number_format($granTotalFinalEnvio, 2);
+            $granTotal_gastos_bs =  number_format($granTotalFinal, 2) * 6.96  + number_format($granTotalFinalEnvio, 2) * 9.70;
+
+            @endphp
+            <tr style="background-color: #fb9e00; font-weight: bold;">
+                                <td style="text-align: right; border: 1px solid #000;">TOTAL DETALLE DE GASTOS (USD)</td>
+                                <td style="text-align: right; font-size: 14px; border: 1px solid #000;">$ {{ number_format($granTotal_gastos, 2) }}</td>
+                            </tr>
+                            <tr style="background-color: #fb9e00; font-weight: bold;">
+                                <td style="text-align: right; border: 1px solid #000;">TOTAL DETALLE DE GASTOS (BS)</td>
+                                <td style="text-align: right; font-size: 14px; border: 1px solid #000;">Bs {{ number_format($granTotal_gastos_bs, 2) }}</td>
+                            </tr>
         </table>
 
 

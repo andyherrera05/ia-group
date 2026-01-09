@@ -95,6 +95,7 @@ class CalculadoraMaritima extends Component
     public $temp_ancho = 0;
     public $temp_alto = 0;
     public $temp_cbm = 0;
+    public $temp_dimension_total = '';
     public $temp_valor_unitario = 0;
     public $volumenTotal = 0;
     public $temp_hs_code = '';
@@ -130,13 +131,12 @@ class CalculadoraMaritima extends Component
 
             $search = strtolower($this->temp_hs_code);
             $this->arancelSuggestions = array_filter($items, function ($item) use ($search) {
-                return str_contains(strtolower($item['codigo_hs']), $search) || 
-                       str_contains(strtolower($item['descripcion']), $search);
+                return str_contains(strtolower($item['codigo_hs']), $search) ||
+                    str_contains(strtolower($item['descripcion']), $search);
             });
 
             // Limitar a 10 resultados
             $this->arancelSuggestions = array_slice($this->arancelSuggestions, 0, 10);
-
         } catch (\Exception $e) {
             Log::error("Error buscando aranceles: " . $e->getMessage());
             $this->arancelSuggestions = [];
@@ -196,12 +196,15 @@ class CalculadoraMaritima extends Component
             $volumenUnitario = 0.01;
         }
 
-        $pesoTotalItem = $this->temp_peso_unitario;
-        $volumenTotalItem = $volumenUnitario;
+        $pesoTotalItem = $this->temp_peso_unitario * $this->temp_cantidad;
+        $volumenTotalItem = $volumenUnitario * $this->temp_cantidad;
         $valorTotalItem = $this->temp_valor_unitario * $this->temp_cantidad;
 
+        $prefix = strtoupper(substr(trim($this->clienteNombre ?: 'PROD'), 0, 3));
+        $number = str_pad(count($this->productos) + 1, 2, '0', STR_PAD_LEFT);
+
         $this->productos[] = [
-            'id' => uniqid(),
+            'id' => "$prefix-$number",
             'producto' => $this->temp_producto,
             'imagen' => $imagenUrl,
             'cantidad' => $this->temp_cantidad,
@@ -239,6 +242,14 @@ class CalculadoraMaritima extends Component
         if (isset($this->productos[$index])) {
             unset($this->productos[$index]);
             $this->productos = array_values($this->productos);
+
+            // Re-generar IDs para mantener la secuencia
+            $prefix = strtoupper(substr(trim($this->clienteNombre ?: 'PROD'), 0, 3));
+            foreach ($this->productos as $idx => &$item) {
+                $number = str_pad($idx + 1, 2, '0', STR_PAD_LEFT);
+                $item['id'] = "$prefix-$number";
+            }
+
             $this->calcularTotales();
         }
     }
@@ -251,8 +262,8 @@ class CalculadoraMaritima extends Component
         $cantidadTotal = 0;
 
         foreach ($this->productos as $prod) {
-            $pesoTotal += $prod['total_peso'];
-            $this->volumenTotal += $prod['total_volumen'];
+            $pesoTotal += $prod['peso_unitario'] * $prod['cantidad'];
+            $this->volumenTotal += $prod['volumen_unitario'] * $prod['cantidad'];
             $valorTotal += $prod['total_valor'];
             $cantidadTotal += $prod['cantidad'];
         }
@@ -361,31 +372,31 @@ class CalculadoraMaritima extends Component
         ],
         [
             'id' => 1,
-            'nombre' => 'Alejandra Gonzales Soliz',
+            'nombre' => 'Alejandra',
             'email' => 'logistica@iagroups.com',
             'telefono' => '702693251'
         ],
         [
             'id' => 2,
-            'nombre' => 'Christian Quispe Tolaba',
+            'nombre' => 'Christian',
             'email' => 'auction@iagroups.com',
             'telefono' => '64580634'
         ],
         [
             'id' => 3,
-            'nombre' => 'Brenda Garcia Gonzales',
+            'nombre' => 'Brenda',
             'email' => 'consultora@iagroups.com',
             'telefono' => '64583783'
         ],
         [
             'id' => 4,
-            'nombre' => 'Ivana Rodas Vasquez',
+            'nombre' => 'Ivana',
             'email' => 'agentes@iagroups.com',
             'telefono' => '64583783'
         ],
         [
             'id' => 5,
-            'nombre' => 'Marcelo Veliz',
+            'nombre' => 'Marcelo',
             'email' => 'tarija@iagroups.com',
             'telefono' => '72981315'
         ],
@@ -397,7 +408,7 @@ class CalculadoraMaritima extends Component
         ],
         [
             'id' => 7,
-            'nombre' => 'Miguel Rios ',
+            'nombre' => 'Miguel',
             'email' => 'miguel@iagroups.com',
             'telefono' => '71897911'
         ],
@@ -534,7 +545,7 @@ class CalculadoraMaritima extends Component
         $this->selectedRate = $rate;
         $this->selectedContainer = $container;
 
-         $nuevoCliente = Cliente::create([
+        $nuevoCliente = Cliente::create([
             'clienteNombre'    => $this->clienteNombre,
             'clienteEmail'     => $this->clienteEmail,
             'clienteTelefono'  => $this->clienteTelefono,
@@ -720,26 +731,26 @@ class CalculadoraMaritima extends Component
     // =======================================================
     public function calcular($isFinal = true)
     {
-    if ($isFinal) {
-        $this->validate([
-            'peso' => 'nullable|numeric|min:0',
-            'volumen' => 'nullable|numeric|min:0.000001',
-            'valorMercancia' => 'required|numeric|min:0',
-            'clienteNombre' => 'required|string|min:3',
-            'clienteCiudad' => 'required|not_in:0',
-            'clienteDireccion' => 'required|string|min:5',
-            'clienteEmail' => 'required|email',
-            'clienteTelefono' => 'required|string|min:7',
-        ], [
-            'clienteNombre.required' => 'El nombre del cliente es obligatorio.',
-            'clienteCiudad.required' => 'Debe seleccionar una ciudad.',
-            'clienteCiudad.not_in' => 'Debe seleccionar una ciudad.',
-            'clienteDireccion.required' => 'La dirección es obligatoria.',
-            'clienteEmail.required' => 'El email es obligatorio.',
-            'clienteEmail.email' => 'El formato del email no es válido.',
-            'clienteTelefono.required' => 'El teléfono es obligatorio.',
-        ]);
-    }
+        if ($isFinal) {
+            $this->validate([
+                'peso' => 'nullable|numeric|min:0',
+                'volumen' => 'nullable|numeric|min:0.000001',
+                'valorMercancia' => 'required|numeric|min:0',
+                'clienteNombre' => 'required|string|min:3',
+                'clienteCiudad' => 'required|not_in:0',
+                'clienteDireccion' => 'required|string|min:5',
+                'clienteEmail' => 'required|email',
+                'clienteTelefono' => 'required|string|min:7',
+            ], [
+                'clienteNombre.required' => 'El nombre del cliente es obligatorio.',
+                'clienteCiudad.required' => 'Debe seleccionar una ciudad.',
+                'clienteCiudad.not_in' => 'Debe seleccionar una ciudad.',
+                'clienteDireccion.required' => 'La dirección es obligatoria.',
+                'clienteEmail.required' => 'El email es obligatorio.',
+                'clienteEmail.email' => 'El formato del email no es válido.',
+                'clienteTelefono.required' => 'El teléfono es obligatorio.',
+            ]);
+        }
 
         $this->mostrarPregunta = false;
         $this->respuestaUsuario = null;
@@ -784,15 +795,10 @@ class CalculadoraMaritima extends Component
         }
 
         if ($totalArancel > 0) {
-            $this->desglose['Gravamen Arancelario'] = number_format($totalArancel, 2, '.', '');
-            $this->gastosAdicionales['Gravamen Arancelario'] = number_format($totalArancel, 2, '.', '');
-            $shippingPackage['costo'] += $totalArancel;
-        }
-
-        if ($iva > 0) {
-            $this->desglose['IVA'] = number_format($iva, 2, '.', '');
-            $this->gastosAdicionales['IVA'] = number_format($iva, 2, '.', '');
-            $shippingPackage['costo'] += $iva;
+            $this->desglose['Impuestos'] = number_format($totalArancel + $iva, 2, '.', '');
+            $this->gastosAdicionales['Impuestos'] = number_format($totalArancel + $iva, 2, '.', '');
+            $this->gastosAdicionales['Base Imponible'] = number_format($this->valorMercancia + $totalArancel, 2, '.', '');
+            $shippingPackage['costo'] += $totalArancel + $iva;
         }
 
         $this->resultado = (float) $shippingPackage['costo'];
@@ -818,7 +824,7 @@ class CalculadoraMaritima extends Component
             ];
         }
         if ($isFinal) {
-             $nuevoCliente = Cliente::create([
+            $nuevoCliente = Cliente::create([
                 'clienteNombre'    => $this->clienteNombre,
                 'clienteEmail'     => $this->clienteEmail,
                 'clienteTelefono'  => $this->clienteTelefono,
@@ -828,6 +834,50 @@ class CalculadoraMaritima extends Component
         }
 
         session()->flash('success', 'Cálculo completado exitosamente.');
+    }
+
+    public function aplicarDimensiones($tipo)
+    {
+        $total = floatval($this->temp_dimension_total);
+        if ($total <= 0) return;
+        if ($total <= 0) return;
+
+        // Distribución según tipo de caja
+        // Square: L=W=H => 3x = total => x = total/3
+        // Rectangular: L=2x, W=x, H=x => 4x = total => x = total/4
+        // Flat: L=4x, W=4x, H=x => 9x = total => x = total/9 (Aproximación para caja plana baja)
+
+        switch ($tipo) {
+            case 'square':
+                $this->temp_largo = number_format($total, 2, '.', '');
+                $this->temp_ancho = number_format($total, 2, '.', '');
+                $this->temp_alto = number_format($total, 2, '.', '');
+                break;
+            case 'rectangular':
+                $largo = $total;
+                $ancho = $total / 2;
+                $alto = $total / 2;
+                $this->temp_largo = number_format($largo, 2, '.', '');
+                $this->temp_ancho = number_format($ancho, 2, '.', '');
+                $this->temp_alto = number_format($alto, 2, '.', '');
+                break;
+            case 'flat': // Baja y ancha
+                $largo = $total;
+                $ancho = $total / 2;
+                $alto = $total / 4;
+                $this->temp_largo = number_format($largo, 2, '.', '');
+                $this->temp_ancho = number_format($ancho, 2, '.', '');
+                $this->temp_alto = number_format($alto, 2, '.', '');
+                break;
+            case 'long': // Alargada
+                $largo = $total;
+                $ancho = 4;
+                $alto = 2;
+                $this->temp_largo = number_format($largo, 2, '.', '');
+                $this->temp_ancho = number_format($ancho, 2, '.', '');
+                $this->temp_alto = number_format($alto, 2, '.', '');
+                break;
+        }
     }
 
     // =======================================================
@@ -890,10 +940,10 @@ class CalculadoraMaritima extends Component
             // Ordenamos ascendente para aplicar lógica "Up To" (Hasta X CBM)
             // Array original es descendente (20 -> 0.25). Reverse = (0.25 -> 20).
             $tarifasAsc = array_reverse($TARIFA_POR_CBM);
-            
+
             // Valor por defecto: el precio del tramo más alto (para > 20 CBM)
             // El primer elemento original [0] es el de 20 CBM ($129).
-            $costoFinal = $TARIFA_POR_CBM[0]['precio']; 
+            $costoFinal = $TARIFA_POR_CBM[0]['precio'];
 
             foreach ($tarifasAsc as $tramo) {
                 if ($cbmReal <= $tramo['min']) {
@@ -916,15 +966,8 @@ class CalculadoraMaritima extends Component
             $valorFacturado = $costoFinal;
         }
         $costo_envio_interno = 15;
-        $despacho = 0;
-        if ($this->volumenTotal <= 0.25) {
-            $despacho = 8.43;
-        }elseif ($this->volumenTotal <= 0.5){
-            $despacho = 16.85;
-        }else{
-            $despacho = $this->volumenTotal * 33.70;
-        }
-        
+        $despacho = 33.70;
+
         $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
 
         // =====================================================
@@ -988,11 +1031,13 @@ class CalculadoraMaritima extends Component
         // =====================================================
         // CONSTRUCCIÓN FINAL DEL DESGLOSE
         // =====================================================
+
+        $this->gastosAdicionales = [];
         $this->desglose = [
             'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
-            'Costo de Envío de Paquete' => number_format($valorFacturado, 2, '.', ''),
             'Costo de Envío Interno' => number_format($costo_envio_interno, 2, '.', ''),
-            'Despacho de importacion' => number_format($despacho, 2, '.', ''),
+            'Costo de Envío de Paquete' => number_format($valorFacturado, 2, '.', ''),
+            'Despacho' => number_format($despacho, 2, '.', ''),
             'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
         ];
         $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
@@ -1025,7 +1070,7 @@ class CalculadoraMaritima extends Component
             $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
         }
 
-        $this->gastosAdicionales = [];
+
         if ($this->recojoAlmacen) {
             $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $valorUsado, 2, '.', '');
         }
@@ -1035,7 +1080,7 @@ class CalculadoraMaritima extends Component
         }
 
         $this->gastosAdicionales['Costo de Envío Interno'] = number_format($costo_envio_interno, 2, '.', '');
-        $this->gastosAdicionales['Despacho de importacion'] = number_format($despacho, 2, '.', '');
+        $this->gastosAdicionales['Despacho'] = number_format($despacho, 2, '.', '');
         $this->gastosAdicionales['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
         if ($this->verificacionProducto) $this->gastosAdicionales['Verificación de Producto'] = number_format($this->calculateVerificationCost(), 2, '.', '');
         if ($this->verificacionCalidad) $this->gastosAdicionales['Verificación de Calidad'] = 50.00;
@@ -1165,24 +1210,19 @@ class CalculadoraMaritima extends Component
         if ($this->verificacionEmpresaPresencial) $this->gastosAdicionales['Verificación Presencial de Empresa'] = 350.00;
 
         $costo_envio_interno = 15;
-        $despacho = 0;
-        if ($this->volumenTotal <= 0.25) {
-            $despacho = 8.43;
-        } elseif ($this->volumenTotal <= 0.5) {
-            $despacho = 16.85;
-        } else {
-            $despacho = $this->volumenTotal * 33.70;
-        }
+        $despacho =  33.70;
 
         $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
 
         $this->desglose['Costo de Envío Interno'] = number_format($costo_envio_interno, 2, '.', '');
-        $this->desglose['Despacho de importacion'] = number_format($despacho, 2, '.', '');
+        $this->desglose['Despacho'] = number_format($despacho, 2, '.', '');
         $this->desglose['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
 
         $this->gastosAdicionales['Costo de Envío Interno'] = number_format($costo_envio_interno, 2, '.', '');
-        $this->gastosAdicionales['Despacho de importacion'] = number_format($despacho, 2, '.', '');
+        $this->gastosAdicionales['Despacho'] = number_format($despacho, 2, '.', '');
         $this->gastosAdicionales['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
+
+
 
         $total = $this->valorMercancia + $costoFleteTotal + $additional_services + $costoDestino + $costo_envio_interno + $despacho + $total_tiered_charge;
 
