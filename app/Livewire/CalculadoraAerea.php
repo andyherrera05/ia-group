@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 use App\Models\Cliente;
+use Illuminate\Support\Facades\Http;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
@@ -22,6 +23,11 @@ class CalculadoraAerea extends Component
     public $encodedItems = '';
 
     public $items = [];
+
+    public $p2pPrice;
+
+    // Configura aquí tu moneda (USD, PEN, ARS, MXN, COP, etc.)
+    public $fiat = 'BOB';
 
     // Propiedades temporales para el formulario de agregar (Estilo LCL)
     public $temp_producto = '';
@@ -182,6 +188,7 @@ class CalculadoraAerea extends Component
         if (count($this->items) > 0) {
             $this->calcular(false);
         }
+        $this->fetchP2P();
     }
 
 
@@ -338,6 +345,31 @@ class CalculadoraAerea extends Component
                 $this->temp_ancho = number_format($ancho, 2, '.', '');
                 $this->temp_alto = number_format($alto, 2, '.', '');
                 break;
+        }
+    }
+
+    public function fetchP2P()
+    {
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            ])->post("https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search", [
+                "asset" => "USDT",
+                "fiat" => $this->fiat,
+                "merchantCheck" => false,
+                "page" => 1,
+                "payTypes" => [],
+                "publisherType" => null,
+                "rows" => 1,
+                "tradeType" => "BUY" // "BUY" muestra el precio al que los mercantes venden
+            ]);
+
+            if ($response->successful() && isset($response->json()['data'][0])) {
+                $this->p2pPrice = $response->json()['data'][0]['adv']['price'];
+            }
+        } catch (\Exception $e) {
+            // Error silencioso para no romper la vista
+            $this->p2pPrice = 'Error';
         }
     }
 
@@ -807,6 +839,7 @@ class CalculadoraAerea extends Component
             'clienteTelefono' => $this->clienteTelefono,
             'clienteDireccion' => $this->clienteDireccion,
             'clienteCiudad' => $this->clienteCiudad,
+            'p2pPrice' => $this->p2pPrice,
         ]);
     }
 

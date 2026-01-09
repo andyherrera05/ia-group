@@ -103,6 +103,7 @@ class CotizacionPDFController extends Controller
             'clienteTelefono' => $request->clienteTelefono,
             'clienteDireccion' => $request->clienteDireccion,
             'clienteCiudad' => $request->clienteCiudad,
+            'p2pPrice' => $request->p2pPrice,
             'agente' => json_decode($request->agente, true) ?? [],
             'gastosAdicionales' => json_decode($request->gastosAdicionales, true) ?? [],
             'logoBase64' => $logoBase64,

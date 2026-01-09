@@ -120,6 +120,7 @@
                 </h4>
 
                 <div class="space-y-3">
+
                     <!-- Row 1: Image & Name -->
                     <div class="flex gap-3" style="align-items: center;">
                         <!-- Image Upload (Square with Preview) -->
