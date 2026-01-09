@@ -190,7 +190,14 @@
                         <div class="space-y-2">
                             @foreach ($mainItems as $concepto => $valor)
                             <div class="flex justify-between items-center py-2 px-4 bg-white/5 rounded-lg border border-white/5">
-                                <span class="text-gray-300 text-sm font-medium">{{ trim($concepto) }}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-300 text-sm font-medium">{{ trim($concepto) }}</span>
+                                    @if(in_array(trim($concepto), ['Despacho', 'Agencia despachante', 'Impuestos']))
+                                    <span class="px-1.5 py-0.5 rounded font-bold bg-green-500/20 text-green-400 border border-green-500/30" style="font-size:9px">TC OF</span>
+                                    @else
+                                    <span class="px-1.5 py-0.5 rounded font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30" style="font-size:9px">TC BLUE</span>
+                                    @endif
+                                </div>
                                 <span class="font-bold text-white text-sm">
                                     {{ is_numeric($valor) ? '$' . number_format($valor, 2) : $valor }}
                                 </span>

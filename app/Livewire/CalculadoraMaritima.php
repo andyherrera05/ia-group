@@ -85,6 +85,31 @@ class CalculadoraMaritima extends Component
         shuffle($this->agentes);
     }
 
+    public function updated($propertyName)
+    {
+        if (in_array($propertyName, ['clienteNombre', 'clienteEmail', 'clienteTelefono', 'clienteCiudad', 'clienteDireccion'])) {
+            $this->validateOnly($propertyName, [
+                'clienteNombre'    => 'required|string|min:3',
+                'clienteCiudad'    => 'required|not_in:0',
+                'clienteDireccion' => 'required|string|min:5',
+                'clienteEmail'     => 'required|email',
+                'clienteTelefono'  => 'required|string|min:7',
+            ], [
+                'clienteNombre.required'    => 'El nombre del cliente es obligatorio.',
+                'clienteNombre.min'         => 'El nombre debe tener al menos 3 caracteres.',
+                'clienteCiudad.required'    => 'Debe seleccionar una ciudad.',
+                'clienteCiudad.not_in'      => 'Debe seleccionar una ciudad.',
+                'clienteDireccion.required' => 'La dirección es obligatoria.',
+                'clienteDireccion.min'      => 'La dirección debe tener al menos 5 caracteres.',
+                'clienteEmail.required'     => 'El email es obligatorio.',
+                'clienteEmail.email'        => 'El formato del email no es válido.',
+                'clienteTelefono.required'  => 'El teléfono es obligatorio.',
+                'clienteTelefono.min'       => 'El teléfono debe tener al menos 7 caracteres.',
+            ]);
+        }
+    }
+
+
     public $productos = [];
     public $temp_producto = '';
     public $temp_imagen = '';
@@ -364,12 +389,6 @@ class CalculadoraMaritima extends Component
     public $gastosAdicionales = [];
 
     public $agentes = [
-        [
-            'id' => 0,
-            'nombre' => 'Ninguno',
-            'email' => 'info@iagroups.com',
-            'telefono' => '702693251'
-        ],
         [
             'id' => 1,
             'nombre' => 'Alejandra',
@@ -743,12 +762,15 @@ class CalculadoraMaritima extends Component
                 'clienteTelefono' => 'required|string|min:7',
             ], [
                 'clienteNombre.required' => 'El nombre del cliente es obligatorio.',
+                'clienteNombre.min' => 'El nombre debe tener al menos 3 caracteres.',
                 'clienteCiudad.required' => 'Debe seleccionar una ciudad.',
                 'clienteCiudad.not_in' => 'Debe seleccionar una ciudad.',
                 'clienteDireccion.required' => 'La dirección es obligatoria.',
+                'clienteDireccion.min' => 'La dirección debe tener al menos 5 caracteres.',
                 'clienteEmail.required' => 'El email es obligatorio.',
                 'clienteEmail.email' => 'El formato del email no es válido.',
                 'clienteTelefono.required' => 'El teléfono es obligatorio.',
+                'clienteTelefono.min' => 'El teléfono debe tener al menos 7 caracteres.',
             ]);
         }
 
