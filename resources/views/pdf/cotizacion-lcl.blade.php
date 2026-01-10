@@ -212,9 +212,9 @@
         $valorMercancia = (float)($desglose['Valor de Mercancía'] ?? 0);
 
         // Extraer valores de aduana para usarlos en la derecha y no duplicarlos aquí
-        $gravamenArancelario = (float)($valorMercancia * 0.10 ?? 0);
+        $gravamenArancelario = (float)($gastosAdicionales['Gravamen Arancelario'] ?? 0);
         $baseImponible = (float)($gravamenArancelario + $valorMercancia ?? 0);
-        $impuestoIVA = (float)($baseImponible * 0.1494 ?? 0);
+        $impuestoIVA = (float)($gastosAdicionales['Impuesto IVA'] ?? 0);
         $despacho = (float)($gastosAdicionales['Despacho'] ?? 0);
         $agencia = (float)($gastosAdicionales['Agencia despachante'] ?? 0);
 
@@ -295,8 +295,6 @@
             </tbody>
         </table>
 
-
-        <!-- Tabla de Gastos Adicionales -->
         <!-- Tabla de Gastos Adicionales -->
         <table style="width: 100%; border-collapse: collapse; margin-top: 25px; margin-bottom: 20px;">
             <tr>

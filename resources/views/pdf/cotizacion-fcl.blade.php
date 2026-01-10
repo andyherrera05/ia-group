@@ -304,96 +304,134 @@
     </table>
 
     <!-- Detailed Cost Summary Table -->
-    <table style="width: 70%; border-collapse: collapse; margin-top: 20px; font-size: 11px;">
-        @php
-        $item = $desglose_reporte;
-        $valorCarga = $item['valorMercancia'] ?? 0;
-        $fleteMaritimo = $item['precio'] ?? 0;
-        // Costos fijos/hardcoded
-        $seguroComisiones = ($fleteMaritimo + $valorCarga) * 0.07; // Aproximación basada en Booking 50%
-        $transporte_terrestre = 3500;
-        $despachante = 1853.45;
-        $agencia_despachante = 373.73;
-        $impuesto = 4698.04;
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <tr>
+            <td style="width: 60%; vertical-align: top; padding-right: 10px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                    @php
+                    $item = $desglose_reporte;
+                    $valorCarga = $item['valorMercancia'] ?? 0;
+                    $fleteMaritimo = $item['precio'] ?? 0;
+                    // Costos fijos/hardcoded
+                    $seguroComisiones = ($fleteMaritimo + $valorCarga) * 0.07; // Aproximación basada en Booking 50%
+                    $transporte_terrestre = $item['transporte_terrestre'] ?? 0;
+                    $despachante = $item['despachante'] ?? 0;
+                    $gravamenArancelario = $item['gravamen'] ?? 0;
+                    $agencia_despachante = $item['agencia_despachante'] ?? 0;
+                    $impuesto = $item['impuesto'] ?? 0;
 
-        $costoAdicionalCargaPeligrosa = 250;
-        $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoAdicionalCargaPeligrosa + $transporte_terrestre + $despachante + $agencia_despachante + $impuesto;
-        @endphp
+                    $costoAdicionalCargaPeligrosa = 0;
+                    $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoAdicionalCargaPeligrosa;
+                    @endphp
 
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold; width: 80%;">VALOR DE CARGA</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; width: 20%;">${{ number_format($valorCarga, 2) }}</td>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">VALOR DE CARGA</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($valorCarga, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO DE RECOGIDA DESDE LA FABRICA A NUESTRO ALMACEN</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE BUSQUEDA DE PRODUCTOS</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE INSPECCION DE CALIDAD</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE ENVIO MARITIMO {{ $origen }} - {{ $destino }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">${{ number_format($fleteMaritimo, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO ADICIONAL DE ENVIO POR CARGA PELIGROSA CON CERTIFICACION</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO ADICIONAL DE ENVIO POR CARGA PELIGROSA SIN CERTIFICACION</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoAdicionalCargaPeligrosa, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">DESCONSOLIDACION</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">GESTION PORTUARIA</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($item['gestionPortuaria'] ?? 0, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">BOOKING</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($item['booking'] ?? 0, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SEGURO, GIRO INTERNACIONAL Y COMISIONES</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($seguroComisiones, 2) }}</td>
+                    </tr>
+                    @php
+                    // Update total to include port fees and booking
+                    $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoAdicionalCargaPeligrosa + ($item['gestionPortuaria'] ?? 0) + ($item['booking'] ?? 0);
+                    $exchangeRateP2P = (isset($p2pPrice) && is_numeric($p2pPrice)) ? (float)$p2pPrice : 9.70;
+                    @endphp
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TOTAL</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">${{ number_format($totalGeneral, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TOTAL T/C {{ number_format($exchangeRateP2P, 2) }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Bs {{ number_format($totalGeneral * $exchangeRateP2P, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Shipping Date: {{ \Carbon\Carbon::parse($fecha)->format('d/m/Y') }}</td>
+                    </tr>
+                </table>
+            </td>
+            <td style="width: 40%; vertical-align: top;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                    @php
+                    $totalImpuesto = $gravamenArancelario + $transporte_terrestre + $impuesto + $despachante + $agencia_despachante;
+                    @endphp
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">GRAVAMEN ARANCELARIO</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($gravamenArancelario, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TRANSPORTE TERRESTRE(Puerto Iquique - Cbba)</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($transporte_terrestre, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">IMPUESTO</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($impuesto , 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">DESPACHO</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($despachante, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">AGENCIA DESPACHANTE</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($agencia_despachante, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TOTAL</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">${{ number_format($totalImpuesto, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TOTAL T/C 6,96 Bs</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Bs {{ number_format($totalImpuesto * 6.96, 2) }}</td>
+                    </tr>
+
+                </table>
+            </td>
         </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO DE RECOGIDA DESDE LA FABRICA A NUESTRO ALMACEN</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
+    </table>
+    <table style="width: 70%; border-collapse: collapse; margin-top: 20px; font-size: 12px;">
+        <tr style="border: 1px solid #000;">
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Total Estimado USD</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">${{ number_format($totalGeneral + $totalImpuesto, 2) }}</td>
         </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE BUSQUEDA DE PRODUCTOS</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE INSPECCION DE CALIDAD</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE ENVIO MARITIMO {{ $origen }} - {{ $destino }}</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">${{ number_format($fleteMaritimo, 2) }}</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO ADICIONAL DE ENVIO POR CARGA PELIGROSA CON CERTIFICACION</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO ADICIONAL DE ENVIO POR CARGA PELIGROSA SIN CERTIFICACION</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoAdicionalCargaPeligrosa, 2) }}</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">DESCONSOLIDACION</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">GESTION PORTUARIA</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($item['gestionPortuaria'] ?? 0, 2) }}</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">BOOKING Y CUPO DE CARGA</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($item['booking'] ?? 0, 2) }}</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SEGURO, GIRO INTERNACIONAL Y COMISIONES</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($seguroComisiones, 2) }}</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">DESPACHO</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($despachante, 2) }}</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">AGENCIA DESPACHANTE</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($agencia_despachante, 2) }}</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TRANSPORTE TERRESTRE(Puerto Iquique - Cbba)</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($transporte_terrestre, 2) }}</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">IMPUESTO</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($impuesto , 2) }}</td>
-        </tr>
-        @php
-        // Update total to include port fees and booking
-        $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoAdicionalCargaPeligrosa + ($item['gestionPortuaria'] ?? 0) + ($item['booking'] ?? 0) + $despachante + $agencia_despachante + $transporte_terrestre + $impuesto;
-        @endphp
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TOTAL</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">${{ number_format($totalGeneral, 2) }}</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TOTAL T/C 9,62 Bs</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Bs {{ number_format($totalGeneral * 9.62, 2) }}</td>
-        </tr>
-        <tr>
-            <td colspan="2" style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Shipping Date: {{ \Carbon\Carbon::parse($fecha)->format('d/m/Y') }}</td>
+        <tr style="border: 1px solid #000;">
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Total Estimado Bs</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Bs {{ number_format(($totalGeneral * 9.70) + ($totalImpuesto * 6.96) , 2) }}</td>
         </tr>
     </table>
 

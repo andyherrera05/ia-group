@@ -636,7 +636,7 @@ class CalculadoraAerea extends Component
             $valorItem = $prod['total_valor'];
             $fleteEstimado = $valorItem * 0.05;
             $seguroEstimado = $valorItem * 0.02;
-            $baseCIF = $valorItem + $fleteEstimado + $seguroEstimado;
+            $baseCIF = $valorItem + $costoFinal + $seguroEstimado;
 
             $totalArancel += $baseCIF * ($arancelPct / 100);
             $iva += $baseCIF * (14.94 / 100);

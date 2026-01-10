@@ -91,10 +91,69 @@
                 </div>
             </div>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-50">
+            <!-- Valor de Carga (Nuevo) -->
+            <div class="relative z-[40]">
+                <label class="block text-sm font-medium text-gray-300 mb-2">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Valor de Carga (USD)
+                </label>
+                <input type="number" wire:model="valorMercancia" placeholder="Ej: 5000"
+                    class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+            </div>
+            <!-- HS Code Search -->
+            <div class="relative z-[40]">
+                <label class="block text-sm font-medium text-gray-300 mb-2">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Buscador Arancelario
+                </label>
+                <input type="text" wire:model.live.debounce.300ms="temp_hs_code"
+                    placeholder="HS Code"
+                    class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+                <span class="block uppercase font-bold text-gray-500 mt-1"
+                    style="font-size: 9px;">Colocar una palabra genérica que identifique al
+                    producto</span>
+
+                @if (!empty($arancelSuggestions))
+                <div class="absolute z-50 left-0 w-[150%] mt-1 bg-gray-900 border border-yellow-500/30 rounded-lg shadow-2xl max-h-48 overflow-y-auto custom-scrollbar"
+                    style="background-color: rgba(0, 0, 0, 0.9); z-index: 1000;">
+                    @foreach ($arancelSuggestions as $sug)
+                    <div wire:click="selectArancel('{{ $sug['codigo_hs'] }}', {{ $sug['arancel'] }})"
+                        class="p-2 hover:bg-yellow-500/10 cursor-pointer border-b border-white/5 last:border-0 transition-colors" style="font-size: 12px">
+                        <div class="flex justify-between items-start">
+                            <span
+                                class="text-yellow-500 text-[9px] font-bold">{{ $sug['codigo_hs'] }}</span>
+                            <span
+                                class="bg-yellow-500/20 text-yellow-500 text-[7px] px-1 rounded">{{ $sug['arancel'] }}%</span>
+                        </div>
+                        <p class="text-[8px] text-gray-400 truncate">
+                            {{ $sug['descripcion'] }}
+                        </p>
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+            </div>
+            <!-- Arancel % -->
+            <div class="relative z-[40]">
+                <label class="block text-sm font-medium text-gray-300 mb-2">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Arancel %
+                </label>
+                <input type="number" wire:model="temp_arancel" placeholder="GA %"
+                    class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
             <!-- Puerto Origen (POL) con Autocompletado -->
-            <div class="relative z-[60]">
+            <div class="relative">
                 <label class="block text-sm font-medium text-gray-300 mb-2">
                     <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
@@ -110,7 +169,7 @@
 
                 <!-- Dropdown de Sugerencias POL -->
                 @if ($showPOLDropdown && count($polSuggestions) > 0)
-                <div class="absolute z-[9999] w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden"
+                <div class="absolute w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden"
                     style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
                     x-data="{ activeRegion: null }" style="min-width: 800px; left: 0;">
 
@@ -177,7 +236,7 @@
             </div>
 
             <!-- Puerto Destino (POD) con Autocompletado -->
-            <div class="relative z-[50]">
+            <div class="relative">
                 <label class="block text-sm font-medium text-gray-300 mb-2">
                     <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
@@ -193,7 +252,7 @@
 
                 <!-- Dropdown de Sugerencias POD -->
                 @if ($showPODDropdown && count($podSuggestions) > 0)
-                <div class="absolute z-[9999] w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden"
+                <div class="absolute  w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden"
                     style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
                     x-data="{ activeRegion: null }" style="min-width: 800px; right: 0;">
 
@@ -257,18 +316,6 @@
                 </p>
                 @endif
             </div>
-
-            <!-- Valor de Carga (Nuevo) -->
-            <div class="relative z-[40]">
-                <label class="block text-sm font-medium text-gray-300 mb-2">
-                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Valor de Carga (USD)
-                </label>
-                <input type="number" wire:model="valorMercancia" placeholder="Ej: 5000"
-                    class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
-            </div>
         </div>
         <div class="mt-6 flex justify-center">
             <button wire:click="buscarTarifasFCL"
@@ -303,7 +350,7 @@
         <!-- Fondo sutil inspirado en la imagen (opcional: puedes poner una imagen de fondo real si quieres) -->
         <div class="absolute inset-0 opacity-10 bg-gradient-to-tr from-yellow-600 to-white pointer-events-none"></div>
 
-        <div class="relative z-10">
+        <div class="relative">
             <!-- Lista vertical de navieras (cada una en un row con grid)-->
             <div class="space-y-6">
                 @php

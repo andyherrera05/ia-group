@@ -31,7 +31,7 @@ class CalculadoraMaritima extends Component
 
     public $cbm_directo;
 
-
+    public $p2pPrice;
     public $q;
 
     public $producto = '';
@@ -83,6 +83,7 @@ class CalculadoraMaritima extends Component
         }
 
         shuffle($this->agentes);
+        $this->fetchP2P();
     }
 
     public function updated($propertyName)
@@ -165,6 +166,32 @@ class CalculadoraMaritima extends Component
         } catch (\Exception $e) {
             Log::error("Error buscando aranceles: " . $e->getMessage());
             $this->arancelSuggestions = [];
+        }
+    }
+
+    public function fetchP2P()
+    {
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            ])->post("https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search", [
+                "asset" => "USDT",
+                "fiat" => $this->fiat,
+                "merchantCheck" => false,
+                "page" => 1,
+                "payTypes" => [],
+                "publisherType" => null,
+                "rows" => 1,
+                "tradeType" => "BUY" // "BUY" muestra el precio al que los mercantes venden
+            ]);
+
+            if ($response->successful() && isset($response->json()['data'][0])) {
+                $data = $response->json()['data'][0]['adv']['price'];
+                $this->p2pPrice = $data + 0.03;
+            }
+        } catch (\Exception $e) {
+            // Error silencioso para no romper la vista
+            $this->p2pPrice = 'Error';
         }
     }
 
@@ -561,6 +588,7 @@ class CalculadoraMaritima extends Component
         $this->mostrarPregunta = false;
         $this->respuestaUsuario = null;
 
+
         // Recuperar la tarifa usando el index que viene de la vista
         $rate = $this->fclRates[$index] ?? null;
 
@@ -609,6 +637,15 @@ class CalculadoraMaritima extends Component
         $subtotalPortuaria = array_sum($gastosLocales);
 
         $valorMercancia = floatval($this->valorMercancia);
+        $agencia_despachante = $this->calculate_tiered_charge($valorMercancia);
+        $despachante = 768.68;
+        $transporte_terrestre = 3600;
+        $transporte_terrestre_cif = $transporte_terrestre / 2;
+        $seguroEstimado = $valorMercancia * 0.02;
+        $baseCIF = $valorMercancia + $precioBase + $transporte_terrestre_cif + $seguroEstimado;
+        $gravamen = $baseCIF * ($this->temp_arancel / 100);
+        $iva = ($baseCIF + $gravamen) * (14.94 / 100);
+        $impuesto = $iva + $gravamen;
         if ($valorMercancia > 0) {
             $this->desglose['Valor de la Mercancía'] = number_format($valorMercancia, 2, '.', '');
         }
@@ -623,13 +660,11 @@ class CalculadoraMaritima extends Component
         }
         $this->desglose['   Valor de la Mercancía'] = number_format($valorMercancia, 2, '.', '');
         $this->desglose['   Gestión Portuaria'] = number_format($subtotalPortuaria, 2);
-        $this->desglose['   Booking y Cupo de Carga'] = number_format($precioBase * 0.05, 2);
-
-        $this->desglose['Tiempo de Tránsito'] = ($rate['transit_time'] ?? 'N/A') . ' días';
-        $this->desglose['Válido hasta'] = isset($rate['valid_until'])
-            ? \Carbon\Carbon::parse($rate['valid_until'])->format('d/m/Y')
-            : 'No especificado';
-        $this->desglose['Cierre (cutoff)'] = ($rate['closing'] ?? 'N/A') . ' días';
+        $this->desglose['   Booking'] = number_format($precioBase * 0.05, 2);
+        $this->desglose['   Despachante'] = number_format($despachante, 2);
+        $this->desglose['   Agencia Despachante'] = number_format($agencia_despachante, 2);
+        $this->desglose['   Transporte Terrestre'] = number_format($transporte_terrestre, 2);
+        $this->desglose['   Impuesto'] = number_format($impuesto, 2);
 
         $this->resultado = $precioBase + $subtotalPortuaria + ($precioBase * 0.05) + $valorMercancia;
 
@@ -643,7 +678,12 @@ class CalculadoraMaritima extends Component
             'imagen' => $this->imagen ?: null,
             'valorMercancia' => $valorMercancia,
             'gestionPortuaria' => $subtotalPortuaria,
-            'booking' => $precioBase * 0.05
+            'booking' => $precioBase * 0.05,
+            'agencia_despachante' => $agencia_despachante,
+            'despachante' => $despachante,
+            'transporte_terrestre' => $transporte_terrestre,
+            'gravamen' => $gravamen,
+            'impuesto' => $impuesto
         ];
 
         $this->tipoCobroActual = 'Contenedor Completo (FCL)';
@@ -802,16 +842,22 @@ class CalculadoraMaritima extends Component
             $volumetricWeight = $volumen ?? 0;
             $CBM = $this->volumen ?? 0;
         }
+        Log::info('CBM: ' . $CBM);
+        Log::info('volumetricWeight: ' . $volumetricWeight);
 
         if (($this->peso > 0) && (empty($largo) || empty($ancho) || empty($alto)) && $CBM <= 0) {
             $CBM_estimado = $this->peso / 300;
             $shippingPackage = $this->calculateShippingPackage($this->peso, $CBM_estimado);
+            Log::info('shippingPackage1: ');
         } elseif (empty($this->peso) || $this->peso <= 0) {
             $shippingPackage = $this->calculateShippingPackagePerDimensions($CBM);
+            Log::info('shippingPackage2: ');
         } elseif (empty($largo) || empty($ancho) || empty($alto)) {
             $shippingPackage = $this->calculateShippingPackage($this->peso, $volumetricWeight);
+            Log::info('shippingPackage3: ');
         } else {
             $shippingPackage = $this->calculateShippingPackage($this->peso, $CBM);
+            Log::info('shippingPackage4: ');
         }
 
         $totalArancel = 0;
@@ -939,15 +985,15 @@ class CalculadoraMaritima extends Component
         ];
 
         $TARIFA_POR_CBM = [
-            ['min' => 20,   'precio' => 129],
-            ['min' => 15,   'precio' => 138],
-            ['min' => 11,   'precio' => 149],
-            ['min' => 8,    'precio' => 159],
-            ['min' => 5,    'precio' => 168],
-            ['min' => 3,    'precio' => 179],
-            ['min' => 1,    'precio' => 188],
-            ['min' => 0.5,  'precio' => 116],
-            ['min' => 0.25, 'precio' => 60]
+            ['min' => 20,   'precio' => 144],
+            ['min' => 15,   'precio' => 154],
+            ['min' => 11,   'precio' => 164],
+            ['min' => 8,    'precio' => 174],
+            ['min' => 5,    'precio' => 184],
+            ['min' => 3,    'precio' => 194],
+            ['min' => 1,    'precio' => 204],
+            ['min' => 0.5,  'precio' => 125],
+            ['min' => 0.25, 'precio' => 65]
         ];
 
         $costoFinal = 0.0;
@@ -993,8 +1039,12 @@ class CalculadoraMaritima extends Component
         if ($unidad == 'kg') {
             $valorFacturado = $costoFinal * $this->peso;
         } else {
-            $valorFacturado = $costoFinal;
+            $valorFacturado = $costoFinal * $this->cantidad;
         }
+        Log::info('costoFinal: ' . $costoFinal);
+        Log::info('cantidad: ' . $this->cantidad);
+        Log::info('peso: ' . $this->peso);
+        Log::info('cbmReal: ' . $cbmReal);
         $costo_envio_interno = 15;
         $despacho = 33.70;
 
@@ -1311,6 +1361,7 @@ class CalculadoraMaritima extends Component
             'clienteCiudad' => $this->clienteCiudad,
             'agente' => json_encode($agenteSeleccionado),
             'productos' => json_encode($this->productos),
+            'p2pPrice' => $this->p2pPrice,
         ]);
     }
     
