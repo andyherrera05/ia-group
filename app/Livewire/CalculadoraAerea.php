@@ -365,7 +365,8 @@ class CalculadoraAerea extends Component
             ]);
 
             if ($response->successful() && isset($response->json()['data'][0])) {
-                $this->p2pPrice = $response->json()['data'][0]['adv']['price'];
+                $data = $response->json()['data'][0]['adv']['price'];
+                $this->p2pPrice = $data + 0.03;
             }
         } catch (\Exception $e) {
             // Error silencioso para no romper la vista

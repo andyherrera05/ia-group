@@ -23,30 +23,30 @@
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Nombre Completo / Empresa</label>
                     <input type="text" wire:model.live="clienteNombre" placeholder="Ej: JAIME CARDONA"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteNombre') 
-                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
-                            {{ $message }}
-                        </div> 
+                    @error('clienteNombre')
+                    <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                        {{ $message }}
+                    </div>
                     @enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Email</label>
                     <input type="email" wire:model.live="clienteEmail" placeholder="ejemplo@correo.com"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteEmail') 
-                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
-                            {{ $message }}
-                        </div> 
+                    @error('clienteEmail')
+                    <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                        {{ $message }}
+                    </div>
                     @enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Teléfono</label>
                     <input type="text" wire:model.live="clienteTelefono" placeholder="72732422"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteTelefono') 
-                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
-                            {{ $message }}
-                        </div> 
+                    @error('clienteTelefono')
+                    <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                        {{ $message }}
+                    </div>
                     @enderror
                 </div>
                 <div>
@@ -63,20 +63,20 @@
                         <option value="Oruro" style="background-color:#1a170c; color: #fff;">Oruro</option>
                         <option value="Chuquisaca" style="background-color:#1a170c; color: #fff;">Chuquisaca</option>
                     </select>
-                    @error('clienteCiudad') 
-                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
-                            {{ $message }}
-                        </div> 
+                    @error('clienteCiudad')
+                    <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                        {{ $message }}
+                    </div>
                     @enderror
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Dirección</label>
                     <input type="text" wire:model.live="clienteDireccion" placeholder="Dirección completa"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteDireccion') 
-                        <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
-                            {{ $message }}
-                        </div> 
+                    @error('clienteDireccion')
+                    <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
+                        {{ $message }}
+                    </div>
                     @enderror
                 </div>
                 <div class="sm:col-span-2">
@@ -85,7 +85,7 @@
                         class="w-full px-3 py-2 bg-black/60 border border-yellow-500/20 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
                         <option value="0" style="background-color:#1a170c; color: #fff;">-- Seleccionar Agente --</option>
                         @foreach($agentes as $agente)
-                            <option value="{{ $agente['id'] }}" style="background-color:#1a170c; color: #fff;">{{ $agente['nombre'] }}</option>
+                        <option value="{{ $agente['id'] }}" style="background-color:#1a170c; color: #fff;">{{ $agente['nombre'] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -110,69 +110,69 @@
 
                 <!-- Dropdown de Sugerencias POL -->
                 @if ($showPOLDropdown && count($polSuggestions) > 0)
-                    <div class="absolute z-[9999] w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden"
-                        style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
-                        x-data="{ activeRegion: null }" style="min-width: 800px; left: 0;">
+                <div class="absolute z-[9999] w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden"
+                    style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
+                    x-data="{ activeRegion: null }" style="min-width: 800px; left: 0;">
 
-                        <!-- Pestañas de Regiones -->
-                        <div class="border-b border-gray-200 bg-gray-50 p-3"
-                            style="background-color: #030100; color: #FFF;">
-                            <div class="flex flex-wrap gap-2"
-                                style="background-color: #030100; color: #FFF; border: 1px ">
-                                @php
-                                    $regions = collect($polSuggestions)->pluck('region')->unique()->values();
-                                @endphp
-                                @foreach ($regions as $index => $region)
-                                    <button type="button"
-                                        @click="activeRegion = activeRegion === '{{ $region }}' ? null : '{{ $region }}'"
-                                        :class="activeRegion === '{{ $region }}' ? 'bg-yellow-500 text-white' :
+                    <!-- Pestañas de Regiones -->
+                    <div class="border-b border-gray-200 bg-gray-50 p-3"
+                        style="background-color: #030100; color: #FFF;">
+                        <div class="flex flex-wrap gap-2"
+                            style="background-color: #030100; color: #FFF; border: 1px ">
+                            @php
+                            $regions = collect($polSuggestions)->pluck('region')->unique()->values();
+                            @endphp
+                            @foreach ($regions as $index => $region)
+                            <button type="button"
+                                @click="activeRegion = activeRegion === '{{ $region }}' ? null : '{{ $region }}'"
+                                :class="activeRegion === '{{ $region }}' ? 'bg-yellow-500 text-white' :
                                             'bg-white text-gray-700 hover:bg-gray-100'"
-                                        style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
-                                        class="px-4 py-2 rounded text-sm font-medium transition-all border border-gray-300">
-                                        {{ $region }}
-                                    </button>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- Lista de Puertos -->
-                        <div class="max-h-80 overflow-y-auto p-3 bg-white"
-                            style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;">
-                            @foreach ($regions as $region)
-                                <div x-show="activeRegion === '{{ $region }}' || activeRegion === null">
-                                    @if ($loop->first || true)
-                                        <div class="mb-4">
-                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2 px-2"
-                                                x-show="activeRegion === null">{{ $region }}</h4>
-                                            <div class="grid grid-cols-4 gap-2">
-                                                @foreach ($polSuggestions as $port)
-                                                    @if ($port['region'] === $region)
-                                                        <button type="button"
-                                                            wire:click="selectPOL('{{ $port['code'] }}', '{{ $port['name'] }}')"
-                                                            style="background-color: #030100; color: #FFF;"
-                                                            class="text-left px-3 py-2 hover:bg-yellow-50 rounded transition-colors text-sm text-gray-700 hover:text-yellow-600">
-                                                            {{ $port['name'] }}
-                                                        </button>
-                                                    @endif
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-                                </div>
+                                style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
+                                class="px-4 py-2 rounded text-sm font-medium transition-all border border-gray-300">
+                                {{ $region }}
+                            </button>
                             @endforeach
                         </div>
                     </div>
+
+                    <!-- Lista de Puertos -->
+                    <div class="max-h-80 overflow-y-auto p-3 bg-white"
+                        style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;">
+                        @foreach ($regions as $region)
+                        <div x-show="activeRegion === '{{ $region }}' || activeRegion === null">
+                            @if ($loop->first || true)
+                            <div class="mb-4">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2 px-2"
+                                    x-show="activeRegion === null">{{ $region }}</h4>
+                                <div class="grid grid-cols-4 gap-2">
+                                    @foreach ($polSuggestions as $port)
+                                    @if ($port['region'] === $region)
+                                    <button type="button"
+                                        wire:click="selectPOL('{{ $port['code'] }}', '{{ $port['name'] }}')"
+                                        style="background-color: #030100; color: #FFF;"
+                                        class="text-left px-3 py-2 hover:bg-yellow-50 rounded transition-colors text-sm text-gray-700 hover:text-yellow-600">
+                                        {{ $port['name'] }}
+                                    </button>
+                                    @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
                 @endif
 
                 @if ($polCode)
-                    <p class="text-xs text-green-400 mt-1 flex items-center">
-                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd"
-                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        Seleccionado: {{ $polCode }}
-                    </p>
+                <p class="text-xs text-green-400 mt-1 flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Seleccionado: {{ $polCode }}
+                </p>
                 @endif
             </div>
 
@@ -193,68 +193,68 @@
 
                 <!-- Dropdown de Sugerencias POD -->
                 @if ($showPODDropdown && count($podSuggestions) > 0)
-                    <div class="absolute z-[9999] w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden"
-                        style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
-                        x-data="{ activeRegion: null }" style="min-width: 800px; right: 0;">
+                <div class="absolute z-[9999] w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden"
+                    style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
+                    x-data="{ activeRegion: null }" style="min-width: 800px; right: 0;">
 
-                        <!-- Pestañas de Regiones -->
-                        <div class="border-b border-gray-200 bg-gray-50 p-3"
-                            style="background-color: #030100; color: #FFF;">
-                            <div class="flex flex-wrap gap-2">
-                                @php
-                                    $regions = collect($podSuggestions)->pluck('region')->unique()->values();
-                                @endphp
-                                @foreach ($regions as $index => $region)
-                                    <button type="button"
-                                        @click="activeRegion = activeRegion === '{{ $region }}' ? null : '{{ $region }}'"
-                                        :class="activeRegion === '{{ $region }}' ? 'bg-yellow-500 text-white' :
+                    <!-- Pestañas de Regiones -->
+                    <div class="border-b border-gray-200 bg-gray-50 p-3"
+                        style="background-color: #030100; color: #FFF;">
+                        <div class="flex flex-wrap gap-2">
+                            @php
+                            $regions = collect($podSuggestions)->pluck('region')->unique()->values();
+                            @endphp
+                            @foreach ($regions as $index => $region)
+                            <button type="button"
+                                @click="activeRegion = activeRegion === '{{ $region }}' ? null : '{{ $region }}'"
+                                :class="activeRegion === '{{ $region }}' ? 'bg-yellow-500 text-white' :
                                             'bg-white text-gray-700 hover:bg-gray-100'"
-                                        class="px-4 py-2 rounded text-sm font-medium transition-all border border-gray-300"
-                                        style="background-color: #030100; color: #FFF;border: 1px solid #f0b100;">
-                                        {{ $region }}
-                                    </button>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- Lista de Puertos -->
-                        <div class="max-h-80 overflow-y-auto p-3 bg-white"
-                            style="background-color: #030100; color: #FFF;  border: 1px solid #f0b100;">
-                            @foreach ($regions as $region)
-                                <div x-show="activeRegion === '{{ $region }}' || activeRegion === null">
-                                    @if ($loop->first || true)
-                                        <div class="mb-4">
-                                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2 px-2"
-                                                x-show="activeRegion === null">{{ $region }}</h4>
-                                            <div class="grid grid-cols-4 gap-2">
-                                                @foreach ($podSuggestions as $port)
-                                                    @if ($port['region'] === $region)
-                                                        <button type="button"
-                                                            wire:click="selectPOD('{{ $port['code'] }}', '{{ $port['name'] }}')"
-                                                            style="background-color: #030100; color: #FFF;"
-                                                            class="text-left px-3 py-2 hover:bg-yellow-50 rounded transition-colors text-sm text-gray-700 hover:text-yellow-600">
-                                                            {{ $port['name'] }}
-                                                        </button>
-                                                    @endif
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-                                </div>
+                                class="px-4 py-2 rounded text-sm font-medium transition-all border border-gray-300"
+                                style="background-color: #030100; color: #FFF;border: 1px solid #f0b100;">
+                                {{ $region }}
+                            </button>
                             @endforeach
                         </div>
                     </div>
+
+                    <!-- Lista de Puertos -->
+                    <div class="max-h-80 overflow-y-auto p-3 bg-white"
+                        style="background-color: #030100; color: #FFF;  border: 1px solid #f0b100;">
+                        @foreach ($regions as $region)
+                        <div x-show="activeRegion === '{{ $region }}' || activeRegion === null">
+                            @if ($loop->first || true)
+                            <div class="mb-4">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2 px-2"
+                                    x-show="activeRegion === null">{{ $region }}</h4>
+                                <div class="grid grid-cols-4 gap-2">
+                                    @foreach ($podSuggestions as $port)
+                                    @if ($port['region'] === $region)
+                                    <button type="button"
+                                        wire:click="selectPOD('{{ $port['code'] }}', '{{ $port['name'] }}')"
+                                        style="background-color: #030100; color: #FFF;"
+                                        class="text-left px-3 py-2 hover:bg-yellow-50 rounded transition-colors text-sm text-gray-700 hover:text-yellow-600">
+                                        {{ $port['name'] }}
+                                    </button>
+                                    @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
                 @endif
 
                 @if ($podCode)
-                    <p class="text-xs text-green-400 mt-1 flex items-center">
-                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd"
-                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        Seleccionado: {{ $podCode }}
-                    </p>
+                <p class="text-xs text-green-400 mt-1 flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Seleccionado: {{ $podCode }}
+                </p>
                 @endif
             </div>
 
@@ -278,9 +278,9 @@
                 <div wire:loading wire:target="buscarTarifasFCL" class="flex items-center justify-center space-x-3">
                     <span class="font-medium">
                         @if ($statusMessage && str_starts_with($statusMessage, 'Buscando'))
-                            {{ $statusMessage }}...
+                        {{ $statusMessage }}...
                         @else
-                            Buscando tarifas...
+                        Buscando tarifas...
                         @endif
                     </span>
                 </div>
@@ -298,177 +298,177 @@
 
     <!-- Resultados de Tarifas -->
     @if (count($fclRates) > 0)
-        <div
-            class="relative overflow-hidden text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 backdrop-blur-xl border rounded-2xl p-8 shadow-2xl">
-            <!-- Fondo sutil inspirado en la imagen (opcional: puedes poner una imagen de fondo real si quieres) -->
-            <div class="absolute inset-0 opacity-10 bg-gradient-to-tr from-yellow-600 to-white pointer-events-none"></div>
+    <div
+        class="relative overflow-hidden text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 backdrop-blur-xl border rounded-2xl p-8 shadow-2xl">
+        <!-- Fondo sutil inspirado en la imagen (opcional: puedes poner una imagen de fondo real si quieres) -->
+        <div class="absolute inset-0 opacity-10 bg-gradient-to-tr from-yellow-600 to-white pointer-events-none"></div>
 
-            <div class="relative z-10">
-                <!-- Lista vertical de navieras (cada una en un row con grid)-->
-                <div class="space-y-6">
-                    @php
-                        $paginatedRates = collect($fclRates)->forPage($currentPage, $perPage);
-                        $totalPages = ceil(count($fclRates) / $perPage);
-                    @endphp
+        <div class="relative z-10">
+            <!-- Lista vertical de navieras (cada una en un row con grid)-->
+            <div class="space-y-6">
+                @php
+                $paginatedRates = collect($fclRates)->forPage($currentPage, $perPage);
+                $totalPages = ceil(count($fclRates) / $perPage);
+                @endphp
 
-                    @foreach ($paginatedRates as $index => $rate)
-                        <div
-                            class="bg-gradient-to-r from-yellow-600/60 to-yellow-800/40 backdrop-blur-md border border-yellow-500/30 rounded-2xl p-2 hover:border-yellow-500/50 transition-all duration-300 shadow-xl">
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-                                <!-- Columna 1: Naviera + Validez -->
-                                <div class="md:col-span-1 flex items-center space-x-4">
-                                    <div
-                                        class="w-16 h-16 bg-yellow-600/20 rounded-xl flex items-center justify-center border border-yellow-500/40">
-                                        <span class="text-yellow-400 font-black text-2xl p-2">
-                                            {{ strtoupper(substr($rate['shipping_line'], 0, 3)) }}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-white font-bold text-xl uppercase">
-                                            {{ $rate['shipping_line'] }}
-                                        </h4>
-                                        <p class="text-sm text-gray-300">
-                                            Válida {{ \Carbon\Carbon::parse($rate['valid_until'])->format('d/m/Y') }}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Columna 2: Precio 20' -->
-                                <div class="text-center">
-                                    @if (!is_null($rate['gp20'] ?? null))
-                                        <button wire:click="selectRate({{ $index }}, 'gp20')"
-                                            class="block w-full bg-white/10 rounded-2xl py-1 hover:bg-yellow-600/30 hover:scale-105 transition-all duration-300 border border-yellow-500/30">
-                                            <p class="text-xl font-black text-yellow-400 mt-2">
-                                                20 GP
-                                            </p>
-                                            <p class="text-xl font-black text-white">
-                                                USD {{ number_format($rate['gp20']) }}
-                                            </p>
-                                            <p
-                                                class="text-xs font-black text-yellow-400 mt-2">
-                                                ✓ Click para cotizar
-                                            </p>
-                                        </button>
-                                    @else
-                                        <div class="bg-gray-800/50 rounded-2xl py-1 border border-gray-600">
-                                            <p class="text-2xl text-gray-500">N/A</p>
-                                        </div>
-                                    @endif
-                                </div>
-
-                                <!-- Columna 3: Precio 40' -->
-                                <div class="text-center">
-                                    @if (!is_null($rate['gp40'] ?? null))
-                                        <button wire:click="selectRate({{ $index }}, 'gp40')"
-                                            class="block w-full bg-white/10 rounded-2xl py-1 hover:bg-yellow-600/30 hover:scale-105 transition-all duration-300 border border-yellow-500/30">
-                                            <p class="text-xl font-black text-yellow-400 mt-2">
-                                                40 GP
-                                            </p>
-                                            <p class="text-2xl font-black text-white">
-                                                USD {{ number_format($rate['gp40']) }}
-                                            </p>
-                                            <p
-                                                class="text-xs font-black text-yellow-400 mt-2">
-                                                ✓ Click para cotizar
-                                            </p>
-                                        </button>
-                                    @else
-                                        <div class="bg-gray-800/50 rounded-2xl py-1 border border-gray-600">
-                                            <p class="text-2xl text-gray-500">N/A</p>
-                                        </div>
-                                    @endif
-                                </div>
-
-                                <!-- Columna 4: Precio NOR + info extra (tránsito/cierre) -->
-                                <div class="text-center">
-                                    @if (!is_null($rate['hq40'] ?? null))
-                                        <button wire:click="selectRate({{ $index }}, 'hq40')"
-                                            class="block w-full bg-white/10 rounded-2xl py-1 hover:bg-yellow-600/30 hover:scale-105 transition-all duration-300 border border-yellow-500/30">
-                                            <p class="text-xl font-black text-yellow-400 mt-2">
-                                                40 HQ
-                                            </p>
-                                            <p class="text-2xl font-black text-white">
-                                                USD {{ number_format($rate['hq40']) }}
-                                            </p>
-                                            <p
-                                                class="text-xs font-black text-yellow-400 mt-2">
-                                                ✓ Click para cotizar
-                                            </p>
-                                        </button>
-                                    @else
-                                        <div class="bg-gray-800/50 rounded-2xl py-1 border border-gray-600">
-                                            <p class="text-2xl text-gray-500">N/A</p>
-                                        </div>
-                                    @endif
-                                </div>
+                @foreach ($paginatedRates as $index => $rate)
+                <div
+                    class="bg-gradient-to-r from-yellow-600/60 to-yellow-800/40 backdrop-blur-md border border-yellow-500/30 rounded-2xl p-2 hover:border-yellow-500/50 transition-all duration-300 shadow-xl">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+                        <!-- Columna 1: Naviera + Validez -->
+                        <div class="md:col-span-1 flex items-center space-x-4">
+                            <div
+                                class="w-16 h-16 bg-yellow-600/20 rounded-xl flex items-center justify-center border border-yellow-500/40">
+                                <span class="text-yellow-400 font-black text-2xl p-2">
+                                    {{ strtoupper(substr($rate['shipping_line'], 0, 3)) }}
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold text-xl uppercase">
+                                    {{ $rate['shipping_line'] }}
+                                </h4>
+                                <p class="text-sm text-gray-300">
+                                    Válida {{ \Carbon\Carbon::parse($rate['valid_until'])->format('d/m/Y') }}
+                                </p>
                             </div>
                         </div>
-                    @endforeach
-                </div>
 
-                <!-- Paginación -->
-                @if ($totalPages > 1)
-                    <div class="mt-10 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-yellow-500/20 pt-8">
-                        <p class="text-gray-400 text-sm">
-                            Mostrando <span class="text-yellow-500 font-bold">{{ ($currentPage - 1) * $perPage + 1 }}</span>
-                            a <span class="text-yellow-500 font-bold">{{ min($currentPage * $perPage, count($fclRates)) }}</span>
-                            de <span class="text-yellow-500 font-bold">{{ count($fclRates) }}</span> resultados
-                        </p>
-
-                        <div class="flex items-center space-x-2">
-                            <!-- Botón Anterior -->
-                            <button wire:click="previousPage" 
-                                @if($currentPage == 1) disabled @endif
-                                class="px-4 py-2 rounded-xl border border-yellow-500/30 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                                </svg>
+                        <!-- Columna 2: Precio 20' -->
+                        <div class="text-center">
+                            @if (!is_null($rate['gp20'] ?? null))
+                            <button wire:click="selectRate({{ $index }}, 'gp20')"
+                                class="block w-full bg-white/10 rounded-2xl py-1 hover:bg-yellow-600/30 hover:scale-105 transition-all duration-300 border border-yellow-500/30">
+                                <p class="text-xl font-black text-yellow-400 mt-2">
+                                    20 GP
+                                </p>
+                                <p class="text-xl font-black text-white">
+                                    USD {{ number_format($rate['gp20']) }}
+                                </p>
+                                <p
+                                    class="text-xs font-black text-yellow-400 mt-2">
+                                    ✓ Click para cotizar
+                                </p>
                             </button>
+                            @else
+                            <div class="bg-gray-800/50 rounded-2xl py-1 border border-gray-600">
+                                <p class="text-2xl text-gray-500">N/A</p>
+                            </div>
+                            @endif
+                        </div>
 
-                            <!-- Números de Página -->
-                            <div class="flex items-center space-x-1">
-                                @for ($i = 1; $i <= $totalPages; $i++)
-                                    <button wire:click="setPage({{ $i }})"
-                                        class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all
+                        <!-- Columna 3: Precio 40' -->
+                        <div class="text-center">
+                            @if (!is_null($rate['gp40'] ?? null))
+                            <button wire:click="selectRate({{ $index }}, 'gp40')"
+                                class="block w-full bg-white/10 rounded-2xl py-1 hover:bg-yellow-600/30 hover:scale-105 transition-all duration-300 border border-yellow-500/30">
+                                <p class="text-xl font-black text-yellow-400 mt-2">
+                                    40 GP
+                                </p>
+                                <p class="text-2xl font-black text-white">
+                                    USD {{ number_format($rate['gp40']) }}
+                                </p>
+                                <p
+                                    class="text-xs font-black text-yellow-400 mt-2">
+                                    ✓ Click para cotizar
+                                </p>
+                            </button>
+                            @else
+                            <div class="bg-gray-800/50 rounded-2xl py-1 border border-gray-600">
+                                <p class="text-2xl text-gray-500">N/A</p>
+                            </div>
+                            @endif
+                        </div>
+
+                        <!-- Columna 4: Precio NOR + info extra (tránsito/cierre) -->
+                        <div class="text-center">
+                            @if (!is_null($rate['hq40'] ?? null))
+                            <button wire:click="selectRate({{ $index }}, 'hq40')"
+                                class="block w-full bg-white/10 rounded-2xl py-1 hover:bg-yellow-600/30 hover:scale-105 transition-all duration-300 border border-yellow-500/30">
+                                <p class="text-xl font-black text-yellow-400 mt-2">
+                                    40 HQ
+                                </p>
+                                <p class="text-2xl font-black text-white">
+                                    USD {{ number_format($rate['hq40']) }}
+                                </p>
+                                <p
+                                    class="text-xs font-black text-yellow-400 mt-2">
+                                    ✓ Click para cotizar
+                                </p>
+                            </button>
+                            @else
+                            <div class="bg-gray-800/50 rounded-2xl py-1 border border-gray-600">
+                                <p class="text-2xl text-gray-500">N/A</p>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <!-- Paginación -->
+            @if ($totalPages > 1)
+            <div class="mt-10 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-yellow-500/20 pt-8">
+                <p class="text-gray-400 text-sm">
+                    Mostrando <span class="text-yellow-500 font-bold">{{ ($currentPage - 1) * $perPage + 1 }}</span>
+                    a <span class="text-yellow-500 font-bold">{{ min($currentPage * $perPage, count($fclRates)) }}</span>
+                    de <span class="text-yellow-500 font-bold">{{ count($fclRates) }}</span> resultados
+                </p>
+
+                <div class="flex items-center space-x-2">
+                    <!-- Botón Anterior -->
+                    <button wire:click="previousPage"
+                        @if($currentPage==1) disabled @endif
+                        class="px-4 py-2 rounded-xl border border-yellow-500/30 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Números de Página -->
+                    <div class="flex items-center space-x-1">
+                        @for ($i = 1; $i <= $totalPages; $i++)
+                            <button wire:click="setPage({{ $i }})"
+                            class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all
                                         {{ $currentPage == $i 
                                             ? 'bg-yellow-500 text-black shadow-lg shadow-yellow-500/20' 
                                             : 'text-gray-400 hover:bg-yellow-500/20 hover:text-yellow-500 border border-transparent' }}">
-                                        {{ $i }}
-                                    </button>
-                                @endfor
-                            </div>
-
-                            <!-- Botón Siguiente -->
-                            <button wire:click="nextPage" 
-                                @if($currentPage == $totalPages) disabled @endif
-                                class="px-4 py-2 rounded-xl border border-yellow-500/30 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                </svg>
+                            {{ $i }}
                             </button>
-                        </div>
+                            @endfor
                     </div>
-                @endif
+
+                    <!-- Botón Siguiente -->
+                    <button wire:click="nextPage"
+                        @if($currentPage==$totalPages) disabled @endif
+                        class="px-4 py-2 rounded-xl border border-yellow-500/30 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
             </div>
+            @endif
         </div>
+    </div>
     @endif
 
     @if ($loadingRates)
-        <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-12 shadow-xl text-center">
-            <p class="text-gray-300 font-medium">Buscando mejores tarifas...</p>
-        </div>
+    <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-12 shadow-xl text-center">
+        <p class="text-gray-300 font-medium">Buscando mejores tarifas...</p>
+    </div>
     @elseif (count($fclRates) === 0)
-        <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-12 shadow-xl text-center">
-            <div
-                class="w-20 h-20 mx-auto my-6 bg-yellow-500/5 border-2 border-yellow-500/20 rounded-full flex items-center justify-center">
-                <svg class="w-10 h-10 text-yellow-500/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </div>
-            <p class="text-gray-400 my-6 text-sm">Selecciona los puertos de origen y destino para ver las tarifas
-                disponibles</p>
+    <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-12 shadow-xl text-center">
+        <div
+            class="w-20 h-20 mx-auto my-6 bg-yellow-500/5 border-2 border-yellow-500/20 rounded-full flex items-center justify-center">
+            <svg class="w-10 h-10 text-yellow-500/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
         </div>
+        <p class="text-gray-400 my-6 text-sm">Selecciona los puertos de origen y destino para ver las tarifas
+            disponibles</p>
+    </div>
     @endif
 
     <!-- Botón Limpiar -->

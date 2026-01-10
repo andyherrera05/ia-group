@@ -540,7 +540,7 @@ class CalculadoraMaritima extends Component
     {
         $this->calcular();
     }
-    public function selectRate($rate, $container)
+    public function selectRate($index, $container)
     {
         $this->validate([
             'clienteNombre' => 'required|string|min:3',
@@ -561,10 +561,18 @@ class CalculadoraMaritima extends Component
         $this->mostrarPregunta = false;
         $this->respuestaUsuario = null;
 
+        // Recuperar la tarifa usando el index que viene de la vista
+        $rate = $this->fclRates[$index] ?? null;
+
+        if (!$rate) {
+            session()->flash('error', 'No se pudo encontrar la tarifa seleccionada.');
+            return;
+        }
+
         $this->selectedRate = $rate;
         $this->selectedContainer = $container;
 
-        $nuevoCliente = Cliente::create([
+        Cliente::create([
             'clienteNombre'    => $this->clienteNombre,
             'clienteEmail'     => $this->clienteEmail,
             'clienteTelefono'  => $this->clienteTelefono,
@@ -1532,7 +1540,6 @@ class CalculadoraMaritima extends Component
             ['code' => 'CNGUA', 'name' => 'Guang Zhou', 'country' => 'China', 'region' => 'Sudeste asiático'],
             ['code' => 'CNSHA', 'name' => 'Shang Hai', 'country' => 'China', 'region' => 'Sudeste asiático'],
             ['code' => 'HKHKG', 'name' => 'Hong Kong', 'country' => 'Hong Kong', 'region' => 'Sudeste asiático'],
-            ['code' => 'CNXMN', 'name' => 'Xia Men', 'country' => 'China', 'region' => 'Sudeste asiático'],
             ['code' => 'CNNBO', 'name' => 'Ning Bo', 'country' => 'China', 'region' => 'Sudeste asiático'],
             ['code' => 'CNQIN', 'name' => 'Qing Dao', 'country' => 'China', 'region' => 'Sudeste asiático'],
             ['code' => 'CNTJN', 'name' => 'Tian Jin', 'country' => 'China', 'region' => 'Sudeste asiático'],

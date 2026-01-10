@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
         @page {
             margin: 0;
         }
+
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
             background: #fff;
@@ -15,58 +17,70 @@
             margin: 0;
             padding: 20px;
         }
+
         .header-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 5px;
         }
+
         .header-logo {
             width: 80px;
             vertical-align: top;
         }
+
         .header-title {
             text-align: center;
             vertical-align: middle;
         }
+
         .header-title h1 {
             font-size: 18px;
             margin: 0;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
         .client-info-table {
             width: 100%;
             border-collapse: collapse;
             border-bottom: 1px solid #000;
         }
+
         .client-info-table td {
             border: 1px solid #000;
             padding: 5px 10px;
             font-size: 13px;
         }
+
         .label-cell {
             width: 15%;
             font-weight: bold;
         }
+
         .value-cell {
             width: 85%;
         }
+
         .order-date-table {
             width: 100%;
             border-collapse: collapse;
             background-color: #f0f0f0;
         }
+
         .order-date-table td {
             border: 1px solid #000;
             padding: 5px 10px;
             font-size: 13px;
             font-weight: bold;
         }
+
         .items-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
         }
+
         .items-table th {
             background: #fb9e00;
             border: 1px solid #000;
@@ -75,6 +89,7 @@
             text-align: center;
             text-transform: uppercase;
         }
+
         .items-table td {
             border: 1px solid #000;
             padding: 10px 5px;
@@ -82,63 +97,105 @@
             vertical-align: middle;
             text-align: center;
         }
-        .col-ref { width: 8%; font-weight: bold; text-transform: uppercase; }
-        .col-foto { width: 30%; }
-        .col-desc { width: 20%; font-weight: bold; }
-        .col-cant { width: 8%; font-weight: bold; }
-        .col-unid { width: 8%; font-weight: bold; }
-        .col-price { width: 12%; font-weight: bold; }
-        .col-empty { width: 8%; }
-        .col-total { width: 12%; font-weight: bold; }
+
+        .col-ref {
+            width: 8%;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .col-foto {
+            width: 30%;
+        }
+
+        .col-desc {
+            width: 20%;
+            font-weight: bold;
+        }
+
+        .col-cant {
+            width: 8%;
+            font-weight: bold;
+        }
+
+        .col-unid {
+            width: 8%;
+            font-weight: bold;
+        }
+
+        .col-price {
+            width: 12%;
+            font-weight: bold;
+        }
+
+        .col-empty {
+            width: 8%;
+        }
+
+        .col-total {
+            width: 12%;
+            font-weight: bold;
+        }
 
         .product-img {
             max-width: 150px;
             max-height: 100px;
         }
+
         .price-val {
             display: inline-block;
             width: 100%;
             text-align: center;
         }
+
         .currency-prefix {
             float: left;
             margin-left: 5px;
         }
+
         .amount-val {
             float: right;
             margin-right: 5px;
         }
+
         .header-info-cell {
             padding: 10px;
             vertical-align: top;
             text-align: center;
         }
+
         .logo-cell img {
             width: 80px;
         }
+
         .header-title {
             font-size: 22px;
             font-weight: bold;
             text-align: center;
             margin-bottom: 5px;
         }
+
         .address-line {
             font-size: 12px;
             font-weight: bold;
             margin-bottom: 3px;
         }
+
         .contact-line {
             font-size: 12px;
             color: #000;
             margin-bottom: 3px;
         }
+
         .agent-line {
             font-size: 12px;
             color: #000;
             font-weight: bold;
         }
-        
-        .clear { clear: both; }
+
+        .clear {
+            clear: both;
+        }
 
         .footer-note {
             margin-top: 20px;
@@ -147,55 +204,56 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Header Section -->
     <table class="header-table">
-            <tr>
-                <td class="logo-cell">
-                    @if(!empty($logoBase64))
-                        <img src="{{ $logoBase64 }}" alt="Logo">
-                    @else
-                        <div style="color: #f59e0b; font-weight: bold; font-size: 24px;">IA GROUPS</div>
-                    @endif
-                </td>
-                <td class="header-info-cell">
-                    <div class="header-title">COTIZACION IA GROUPS</div>
-                    <div class="address-line">Direccion Internacional: 1209 Mountain Road PL NE STE N, Albuquerque, NM 87110, USA</div>
-                    <div class="address-line">Direccion Bolivia: Calle Colón esq Bolivar 820. Edificio AUAD 2do piso. Tarija</div>
-                    <div class="agent-line">Agentes Internacionales de carga: {{ $agente['nombre'] ?? 'IA GROUPS' }}</div>
-                    <div class="contact-line">https://ia-groups.com &nbsp;&nbsp; {{ $agente['email'] ?? 'info@iagroups.com' }} &nbsp;&nbsp; {{ $agente['telefono'] ?? '+591 702693251' }}</div>
-                </td>
-            </tr>
-        </table>
-    
+        <tr>
+            <td class="logo-cell">
+                @if(!empty($logoBase64))
+                <img src="{{ $logoBase64 }}" alt="Logo">
+                @else
+                <div style="color: #f59e0b; font-weight: bold; font-size: 24px;">IA GROUPS</div>
+                @endif
+            </td>
+            <td class="header-info-cell">
+                <div class="header-title">COTIZACION IA GROUPS</div>
+                <div class="address-line">Direccion Internacional: 1209 Mountain Road PL NE STE N, Albuquerque, NM 87110, USA</div>
+                <div class="address-line">Direccion Bolivia: Calle Colón esq Bolivar 820. Edificio AUAD 2do piso. Tarija</div>
+                <div class="agent-line">Agentes Internacionales de carga: {{ $agente['nombre'] ?? 'IA GROUPS' }}</div>
+                <div class="contact-line">https://ia-groups.com &nbsp;&nbsp; {{ $agente['email'] ?? 'info@iagroups.com' }} &nbsp;&nbsp; {{ $agente['telefono'] ?? '+591 702693251' }}</div>
+            </td>
+        </tr>
+    </table>
+
 
     <!-- Client & Order Info -->
-   <table class="client-info-table">
-            <tr>
-                <td class="label-cell">Cliente</td>
-                <td class="value-cell">{{ $clienteNombre ?: 'N/A' }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Ciudad</td>
-                <td class="value-cell">{{ $clienteCiudad ?: 'N/A' }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Contacto</td>
-                <td class="value-cell">{{ $clienteTelefono ?: 'N/A' }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Email:</td>
-                <td class="value-cell">{{ $clienteEmail ?: 'N/A' }}</td>
-            </tr>
-        </table>
+    <table class="client-info-table">
+        <tr>
+            <td class="label-cell">Cliente</td>
+            <td class="value-cell">{{ $clienteNombre ?: 'N/A' }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Ciudad</td>
+            <td class="value-cell">{{ $clienteCiudad ?: 'N/A' }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Contacto</td>
+            <td class="value-cell">{{ $clienteTelefono ?: 'N/A' }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Email:</td>
+            <td class="value-cell">{{ $clienteEmail ?: 'N/A' }}</td>
+        </tr>
+    </table>
 
-        <table class="order-date-table">
-            <tr>
-                <td style="width: 50%;">ORDER NO.:</td>
-                <td style="width: 25%;">FECHA:</td>
-                <td style="width: 25%;">{{ \Carbon\Carbon::now()->format('d/m/Y') }}</td>
-            </tr>
-        </table>
+    <table class="order-date-table">
+        <tr>
+            <td style="width: 50%;">ORDER NO.:</td>
+            <td style="width: 25%;">FECHA:</td>
+            <td style="width: 25%;">{{ \Carbon\Carbon::now()->format('d/m/Y') }}</td>
+        </tr>
+    </table>
 
     <!-- Main Items Table -->
     <table class="items-table">
@@ -212,14 +270,14 @@
         </thead>
         <tbody>
             @php
-                $item = $desglose_reporte;
+            $item = $desglose_reporte;
             @endphp
             <tr>
                 <td class="col-ref">{{ $item['ref'] ?? 'CONTAINER' }}</td>
                 <td>@if(!empty($containerBase64))
-                        <img src="{{ $containerBase64 }}" alt="Container" style="max-width: 100px; max-height: 100px; object-fit: contain;">
+                    <img src="{{ $containerBase64 }}" alt="Container" style="max-width: 100px; max-height: 100px; object-fit: contain;">
                     @else
-                        <div style="color: #9ca3af; font-size: 10px; font-style: italic;">Sin imagen</div>
+                    <div style="color: #9ca3af; font-size: 10px; font-style: italic;">Sin imagen</div>
                     @endif
                 </td>
                 <td class="col-desc">
@@ -241,22 +299,27 @@
                         <div class="clear"></div>
                     </div>
                 </td>
-            </tr>           
+            </tr>
         </tbody>
     </table>
 
     <!-- Detailed Cost Summary Table -->
     <table style="width: 70%; border-collapse: collapse; margin-top: 20px; font-size: 11px;">
         @php
-            $item = $desglose_reporte;
-            $valorCarga = $item['valorMercancia'] ?? 0;
-            $fleteMaritimo = $item['precio'] ?? 0;
-            // Costos fijos/hardcoded
-            $seguroComisiones = ($fleteMaritimo + $valorCarga) * 0.07; // Aproximación basada en Booking 50%
-            $costoAdicionalCargaPeligrosa = 250;
-            $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoAdicionalCargaPeligrosa;
+        $item = $desglose_reporte;
+        $valorCarga = $item['valorMercancia'] ?? 0;
+        $fleteMaritimo = $item['precio'] ?? 0;
+        // Costos fijos/hardcoded
+        $seguroComisiones = ($fleteMaritimo + $valorCarga) * 0.07; // Aproximación basada en Booking 50%
+        $transporte_terrestre = 3500;
+        $despachante = 1853.45;
+        $agencia_despachante = 373.73;
+        $impuesto = 4698.04;
+
+        $costoAdicionalCargaPeligrosa = 250;
+        $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoAdicionalCargaPeligrosa + $transporte_terrestre + $despachante + $agencia_despachante + $impuesto;
         @endphp
-        
+
         <tr>
             <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold; width: 80%;">VALOR DE CARGA</td>
             <td style="border: 1px solid #000; padding: 4px; text-align: right; width: 20%;">${{ number_format($valorCarga, 2) }}</td>
@@ -301,9 +364,25 @@
             <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SEGURO, GIRO INTERNACIONAL Y COMISIONES</td>
             <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($seguroComisiones, 2) }}</td>
         </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">DESPACHO</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($despachante, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">AGENCIA DESPACHANTE</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($agencia_despachante, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TRANSPORTE TERRESTRE(Puerto Iquique - Cbba)</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($transporte_terrestre, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">IMPUESTO</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($impuesto , 2) }}</td>
+        </tr>
         @php
-            // Update total to include port fees and booking
-            $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoAdicionalCargaPeligrosa + ($item['gestionPortuaria'] ?? 0) + ($item['booking'] ?? 0);
+        // Update total to include port fees and booking
+        $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoAdicionalCargaPeligrosa + ($item['gestionPortuaria'] ?? 0) + ($item['booking'] ?? 0) + $despachante + $agencia_despachante + $transporte_terrestre + $impuesto;
         @endphp
         <tr>
             <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TOTAL</td>
@@ -325,7 +404,7 @@
             <li style="font-weight: bold; font-size: 12px;">El pago expresado es dolares puede ser pagado en bolivianos al tipo de cambio del dia.</li>
             <li style="font-weight: bold; font-size: 12px;">Esta cotizacion podria sufrir alteraciones en caso de alguna revaloracion por parte de la aduana.</li>
             <li style="font-weight: bold; font-size: 12px;">Se aplica a carga regular, no peligrosos</li>
-            <li style="font-weight: bold; font-size: 12px;">Asume que el consignatario  que tiene cualquier permiso que sea requerido por autoridades en el país de destino</li>
+            <li style="font-weight: bold; font-size: 12px;">Asume que el consignatario que tiene cualquier permiso que sea requerido por autoridades en el país de destino</li>
             <li style="font-weight: bold; font-size: 12px;">Está sujeto a verificación de peso y medidas</li>
             <li style="font-weight: bold; font-size: 12px;">Requisitos de embarque: Factura comercial, Packing List.</li>
             <li style="font-weight: bold; font-size: 12px;">Contamos con nuestra Propia Agencia Despachante de manera opcional.</li>
@@ -334,4 +413,5 @@
         </ul>
     </div>
 </body>
+
 </html>
