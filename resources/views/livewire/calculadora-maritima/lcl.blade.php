@@ -508,6 +508,21 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Verificación Sustancias Peligrosas -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model="verificacionSustanciasPeligrosas" id="verificacionSustanciasPeligrosas"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="verificacionSustanciasPeligrosas" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">Verificación de Sustancias Peligrosas</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Envio de sustancias peligrosas como: explosivos, gases, liquidos y solidos infamable, etc.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
