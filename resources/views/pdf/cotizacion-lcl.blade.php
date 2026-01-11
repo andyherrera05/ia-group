@@ -208,15 +208,21 @@
         </table>
         @php
         $subtotalGastos = 0;
-        $fleteInternacional = (float)($desglose['Costo de Envío de Paquete'] ?? 0);
+        $fleteInternacional = (float)($desglose['Costo de Envío Internacional'] ?? 0);
         $valorMercancia = (float)($desglose['Valor de Mercancía'] ?? 0);
+        $gestionLogistica = (float)($desglose['Gestión Logística'] ?? 0);
 
         // Extraer valores de aduana para usarlos en la derecha y no duplicarlos aquí
         $gravamenArancelario = (float)($gastosAdicionales['Gravamen Arancelario'] ?? 0);
         $baseImponible = (float)($gravamenArancelario + $valorMercancia ?? 0);
-        $impuestoIVA = (float)($gastosAdicionales['Impuesto IVA'] ?? 0);
+        $iva = (float)($gastosAdicionales['Impuesto IVA'] ?? 0);
         $despacho = (float)($gastosAdicionales['Despacho'] ?? 0);
+
+        $impuesto = (float) $gravamenArancelario + $iva + $baseImponible;
+
         $agencia = (float)($gastosAdicionales['Agencia despachante'] ?? 0);
+
+        $recojoAlmacen = (float)($gastosAdicionales['Recojo Almacén'] ?? 0);
 
         // Lista de keys a EXCLUIR de la izquierda porque van a la derecha o no se muestran
         $excludedKeys = [
@@ -227,8 +233,8 @@
         'Agencia despachante',
         'Impuesto' // Key vieja agregada
         ];
-        $granTotalFinal = $gravamenArancelario + $impuestoIVA + $despacho + $agencia;
-        $granTotalFinalEnvio = $fleteInternacional + $subtotalGastos;
+        $granTotalFinal = $impuesto + $despacho + $agencia;
+        $granTotalFinalEnvio = $fleteInternacional + $subtotalGastos + $gestionLogistica;
         @endphp
         <table class="order-date-table">
             <tr>
@@ -311,8 +317,12 @@
                         <tbody>
                             {{-- Flete Marítimo --}}
                             <tr style="height: auto;">
-                                <td style="text-align: left; padding: 8px 15px;">Costo de Envío de Paquete</td>
+                                <td style="text-align: left; padding: 8px 15px;">Costo de Envío Internacional</td>
                                 <td style="text-align: right; padding: 8px 15px; font-weight: bold;">$ {{ number_format($fleteInternacional, 2) }}</td>
+                            </tr>
+                            <tr style="height: auto;">
+                                <td style="text-align: left; padding: 8px 15px;">Gestión Logística</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold;">$ {{ number_format($gestionLogistica, 2) }}</td>
                             </tr>
 
                             {{-- Gastos Generales (Filtrando los de aduana) --}}
@@ -331,7 +341,7 @@
                             @endforeach
 
                             @php
-                            $totalEnvioUSD = $fleteInternacional + $subtotalGastosAccum;
+                            $totalEnvioUSD = $fleteInternacional + $gestionLogistica + $subtotalGastosAccum;
                             $exchangeRateP2P = (isset($p2pPrice) && is_numeric($p2pPrice)) ? (float)$p2pPrice : 9.70;
                             @endphp
 
@@ -362,28 +372,18 @@
                         <tbody>
                             <!-- Gravamen Arancelario -->
                             <tr>
-                                <td style="text-align: left; padding: 8px 15px; background-color: #ffe6cc; font-weight: bold; border: 1px solid #000;">GRAVAMEN ARANCELARIO</td>
-                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000;">$ {{ number_format($gravamenArancelario, 2) }}</td>
-                            </tr>
-                            <!-- Base Imponible -->
-                            <tr>
-                                <td style="text-align: left; padding: 8px 15px; background-color: #ffe6cc; font-weight: bold; border: 1px solid #000;">BASE</td>
-                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000;">$ {{ number_format($baseImponible, 2) }}</td>
-                            </tr>
-                            <!-- IVA -->
-                            <tr>
-                                <td style="text-align: left; padding: 8px 15px; border: 1px solid #000;">IMPUESTO AL VALOR AGREGADO</td>
-                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000;">$ {{ number_format($impuestoIVA, 2) }}</td>
+                                <td style="text-align: left; padding: 8px 15px; background-color: #ffe6cc; font-weight: bold; border: 1px solid #000; font-size: 10px;">CALCULO ESTIMADO DE IMPUESTO</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000; font-size: 10px;">$ {{ number_format($impuesto, 2) }}</td>
                             </tr>
                             <!-- Despacho -->
                             <tr>
-                                <td style="text-align: left; padding: 8px 15px; border: 1px solid #000;">DESPACHO</td>
-                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000;">$ {{ number_format($despacho, 2) }}</td>
+                                <td style="text-align: left; padding: 8px 15px; border: 1px solid #000; font-size: 10px;">CARGO DE IMPORTACION Y DESPACHO</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000; font-size: 10px;">$ {{ number_format($despacho, 2) }}</td>
                             </tr>
                             <!-- Agencia -->
                             <tr>
-                                <td style="text-align: left; padding: 8px 15px; border: 1px solid #000;">AGENCIA DESPACHANTE</td>
-                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000;">$ {{ number_format($agencia, 2) }}</td>
+                                <td style="text-align: left; padding: 8px 15px; border: 1px solid #000; font-size: 10px;">AGENCIA DESPACHANTE</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000; font-size: 10px;">$ {{ number_format($agencia, 2) }}</td>
                             </tr>
                             <tr style="background-color: #fb9e00; font-weight: bold;">
                                 <td style="text-align: right; font-size: 10px; border: 1px solid #000;">TOTAL GESTION ADUANERA (USD)</td>
@@ -417,6 +417,7 @@
         <div class="footer-note" style="margin-top: 20px;">
             <strong>NOTA:</strong><br>
             <ul class="footer-note-list">
+                <li style="font-weight: bold; font-size: 12px;">Costo de envío a {{ $desglose_reporte['nombre_destino'] }} tiene un costo de $ {{ number_format($desglose_reporte['costo_destino'], 2) }}</li>
                 <li style="font-weight: bold; font-size: 12px;">Esta cotizacion tiene una validez de 7 dias.</li>
                 <li style="font-weight: bold; font-size: 12px;">Esta cotizacion podria sufrir alteraciones en caso de alguna revaloracion por parte de la aduana.</li>
                 <li style="font-weight: bold; font-size: 12px;">Asume que el consignatario que tiene cualquier permiso que sea requerido por autoridades en el país de destino</li>

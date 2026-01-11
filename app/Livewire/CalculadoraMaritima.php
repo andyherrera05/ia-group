@@ -44,6 +44,12 @@ class CalculadoraMaritima extends Component
 
     public $manualImagen;
 
+    public $costoDestino = 0;
+
+    public $nombreDestino = '';
+
+    public $totalLogisticaChina = 0;
+
     public function mount()
     {
         $qParam = request()->query('q') ?? $this->q;
@@ -361,6 +367,7 @@ class CalculadoraMaritima extends Component
     public $podSuggestions = [];
     public $showPOLDropdown = false;
     public $showPODDropdown = false;
+    public $costo_envio_interno = 15;
 
     public $fclRates = [];
     public $perPage = 5;
@@ -692,9 +699,8 @@ class CalculadoraMaritima extends Component
             'despachante' => $despachante,
             'transporte_terrestre' => $transporte_terrestre,
             'gravamen' => $gravamen,
-            'impuesto' => $impuesto
-        ];
 
+        ];
         $this->tipoCobroActual = 'Contenedor Completo (FCL)';
         $this->unidadActual = "Contenedor " . $containerName;
         $this->valorFacturadoActual = $precioBase;
@@ -873,6 +879,7 @@ class CalculadoraMaritima extends Component
         $totalArancel = 0;
         $iva = 0;
         $impuesto = 0;
+
         foreach ($this->productos as $prod) {
             $arancelPct = isset($prod['arancel']) ? floatval($prod['arancel']) : 0;
             $seguro = $prod['total_valor'] * 0.02;
@@ -880,19 +887,18 @@ class CalculadoraMaritima extends Component
             $subtotalArancel = $prod['total_valor'] + $shippingPackage['valor_facturado'] + $seguro;
             $iva += ($subtotalArancel + $totalArancel) * (14.94 / 100);
             $impuesto += ($totalArancel + $iva);
+            $this->totalLogisticaChina = ($prod['total_valor'] + $shippingPackage['valor_facturado']  + $this->costo_envio_interno) * 0.09;
         }
 
-        if ($totalArancel > 0) {
-            $this->desglose['Impuestos'] = number_format($impuesto, 2, '.', '');
-            $this->gastosAdicionales['Impuestos'] = number_format($impuesto, 2, '.', '');
-            $this->gastosAdicionales['Base Imponible'] = number_format($this->valorMercancia + $totalArancel, 2, '.', '');
-        }
-
+        $this->gastosAdicionales['Gravamen Arancelario'] = number_format($totalArancel, 2, '.', '');
+        $this->gastosAdicionales['Impuesto IVA'] = number_format($iva, 2, '.', '');
         $this->resultado = (float) $shippingPackage['costo'];
         $this->tipoCobroActual = $shippingPackage['tipo'] ?? '';
         $this->unidadActual = $shippingPackage['unidad'] ?? '';
         $this->valorFacturadoActual = $shippingPackage['valor_facturado'] ?? 0;
         $this->cbmFacturadoActual = $shippingPackage['cbm_facturado'] ?? 0;
+        $this->costoDestino = $shippingPackage['costo_destino'] ?? 0;
+        $this->nombreDestino = $shippingPackage['nombre_destino'] ?? '';
 
         $this->mostrarPregunta = true;
 
@@ -907,7 +913,9 @@ class CalculadoraMaritima extends Component
                 'unidad' => 'PCS',
                 'precio' => $this->valorMercancia,
                 'total' => $this->valorMercancia * ($this->cantidad ?: 1),
-                'imagen' => $this->imagen
+                'imagen' => $this->imagen,
+                'costo_destino' => $this->costoDestino,
+                'nombre_destino' => $this->nombreDestino,
             ];
         }
         if ($isFinal) {
@@ -1049,16 +1057,9 @@ class CalculadoraMaritima extends Component
         $unidad = str_contains($tipoCobro, 'Peso') ? 'kg' : 'm³';
         if ($unidad == 'kg') {
             $valorFacturado = ($costoFinal * $this->peso);
-            Log::info('valorFacturado: ' . $valorFacturado);
-            Log::info('costoFinal: ' . $costoFinal);
-            Log::info('peso: ' . $this->peso);
         } else {
             $valorFacturado = $costoFinal * $cbmReal;
-            Log::info('valorFacturado1: ' . $valorFacturado);
-            Log::info('costoFinal1: ' . $costoFinal);
-            Log::info('cantidad1: ' . $this->cantidad);
         }
-        $costo_envio_interno = 15;
         $despacho = 33.70;
 
         $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
@@ -1128,10 +1129,12 @@ class CalculadoraMaritima extends Component
         $this->gastosAdicionales = [];
         $this->desglose = [
             'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
-            'Costo de Envío Interno' => number_format($costo_envio_interno, 2, '.', ''),
-            'Costo de Envío de Paquete' => number_format($valorFacturado, 2, '.', ''),
+            'Costo de Envío Interno' => number_format($this->costo_envio_interno, 2, '.', ''),
+            'Costo de Envío Internacional' => number_format($valorFacturado, 2, '.', ''),
+            'Gestión Logística' => number_format($this->totalLogisticaChina, 2, '.', ''),
             'Despacho' => number_format($despacho * $this->volumenTotal, 2, '.', ''),
             'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
+
         ];
         $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
 
@@ -1166,30 +1169,24 @@ class CalculadoraMaritima extends Component
         if ($costoDestino > 0 && $nombreDestino) {
             $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
         }
-
-
-        if ($this->recojoAlmacen) {
-            $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $valorUsado, 2, '.', '');
-        }
-
-        if ($costoDestino > 0 && $nombreDestino) {
-            $this->gastosAdicionales["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
-        }
-
-        $this->gastosAdicionales['Costo de Envío Interno'] = number_format($costo_envio_interno, 2, '.', '');
+        if ($this->recojoAlmacen) $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumenTotal, 2, '.', '');
+        $this->gastosAdicionales['Costo de Envío Interno'] = number_format($this->costo_envio_interno, 2, '.', '');
         $this->gastosAdicionales['Despacho'] = number_format($despacho * $this->volumenTotal, 2, '.', '');
         $this->gastosAdicionales['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
+
         if ($this->verificacionProducto) $this->gastosAdicionales['Verificación de Producto'] = number_format($this->calculateVerificationCost(), 2, '.', '');
         if ($this->verificacionCalidad) $this->gastosAdicionales['Verificación de Calidad'] = 50.00;
         if ($this->verificacionEmpresaDigital) $this->gastosAdicionales['Verificación de Empresa Digital'] = 100.00;
         if ($this->verificacionEmpresaPresencial) $this->gastosAdicionales['Verificación Presencial de Empresa'] = 350.00;
         if ($this->verificacionSustanciasPeligrosas) $this->gastosAdicionales['Envio de producto peligroso'] = 250.00;
 
-        $total = $this->valorMercancia + $valorFacturado + $addServices + $costoDestino + $costoVerificacion + $total_tiered_charge + $despacho + $costo_envio_interno;
+        $total = $this->valorMercancia + $valorFacturado + $addServices + $costoDestino + $costoVerificacion + $total_tiered_charge + $despacho + $this->costo_envio_interno;
         return [
             'costo'  => number_format($total, 2, '.', ''),
             'tipo'   => $tipoCobro,
             'unidad' => $unidad,
+            'costo_destino' => $costoDestino,
+            'nombre_destino' => $nombreDestino,
             'valor_facturado' => $valorFacturado,
             'cbm_facturado' => $tipoCobro === 'CBM' ? $valorUsado : null,
         ];
@@ -1271,7 +1268,7 @@ class CalculadoraMaritima extends Component
         // =====================================================
         $this->desglose = [
             'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
-            'Costo de Envío de Paquete' => number_format($costoFleteTotal, 2, '.', ''),
+            'Costo de Envío Internacional' => number_format($costoFleteTotal, 2, '.', ''),
         ];
 
 
@@ -1318,7 +1315,6 @@ class CalculadoraMaritima extends Component
         $this->desglose['Costo de Envío Interno'] = number_format($costo_envio_interno, 2, '.', '');
         $this->desglose['Despacho'] = number_format($despacho * $this->volumen, 2, '.', '');
         $this->desglose['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
-
         $this->gastosAdicionales['Costo de Envío Interno'] = number_format($costo_envio_interno, 2, '.', '');
         $this->gastosAdicionales['Despacho'] = number_format($despacho * $this->volumen, 2, '.', '');
         $this->gastosAdicionales['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
@@ -1333,6 +1329,8 @@ class CalculadoraMaritima extends Component
             'unidad' => 'm³',
             'valor_facturado' => $costoFleteTotal,
             'cbm_facturado' => $cbmAplicado,
+            'costo_destino' => $costoDestino,
+            'nombre_destino' => $nombreDestino,
             'detalle' => [
                 'cbm_real' => $cbmReal,
                 'cbm_facturado' => $cbmAplicado,
