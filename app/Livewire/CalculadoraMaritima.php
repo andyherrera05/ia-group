@@ -134,6 +134,13 @@ class CalculadoraMaritima extends Component
     public $temp_arancel = 0;
     public $arancelSuggestions = [];
 
+    // Pallet properties (Estándar Asia: 110x110 cm, 15kg)
+    public $temp_con_pallet = false;
+    public $temp_pallet_largo = 110;
+    public $temp_pallet_ancho = 110;
+    public $temp_pallet_alto = 15;
+    public $temp_pallet_peso = 15;
+
     public function updatedTempHsCode()
     {
         if (strlen($this->temp_hs_code) < 3) {
@@ -214,6 +221,7 @@ class CalculadoraMaritima extends Component
     }
 
     public $cbmTotalUnitario = 0;
+    public $pesoKGTotal = 0;
 
     public function agregarProducto()
     {
@@ -247,8 +255,24 @@ class CalculadoraMaritima extends Component
         }
         $volumenUnitario = 0;
 
+        // Calculate dimensions including pallet if applicable
+        $largoTotal = $this->temp_largo;
+        $anchoTotal = $this->temp_ancho;
+        $altoTotal = $this->temp_alto;
+        $pesoAdicionalPallet = 0;
+
+        if ($this->temp_con_pallet) {
+            // El pallet define un área mínima (footprint). Si la carga es más grande, manda la carga.
+            $largoTotal = max($this->temp_largo, $this->temp_pallet_largo);
+            $anchoTotal = max($this->temp_ancho, $this->temp_pallet_ancho);
+            // La altura siempre se suma (la carga va sobre el pallet)
+            $altoTotal = $this->temp_alto + $this->temp_pallet_alto;
+            // Se suma el peso del pallet
+            $pesoAdicionalPallet = $this->temp_pallet_peso;
+        }
+
         if ($this->temp_largo > 0 && $this->temp_ancho > 0 && $this->temp_alto > 0) {
-            $volumenUnitario = ($this->temp_largo * $this->temp_ancho * $this->temp_alto) / 1000000;
+            $volumenUnitario = ($largoTotal * $anchoTotal * $altoTotal) / 1000000;
         } elseif ($this->temp_cbm > 0) {
             $volumenUnitario = $this->temp_cbm;
         } else {
@@ -256,7 +280,7 @@ class CalculadoraMaritima extends Component
             $volumenUnitario = 0.01;
         }
 
-        $pesoTotalItem = $this->temp_peso_unitario * $this->temp_cantidad;
+        $pesoTotalItem = ($this->temp_peso_unitario + $pesoAdicionalPallet) * $this->temp_cantidad;
         $volumenTotalItem = $volumenUnitario;
         $valorTotalItem = $this->temp_valor_unitario * $this->temp_cantidad;
 
@@ -280,8 +304,13 @@ class CalculadoraMaritima extends Component
             'total_volumen' => $volumenTotalItem,
             'total_valor' => $valorTotalItem,
             'hs_code' => $this->temp_hs_code,
-            'arancel' => $this->temp_arancel
+            'arancel' => $this->temp_arancel,
+            'con_pallet' => $this->temp_con_pallet,
+            'pallet_largo' => $this->temp_pallet_largo,
+            'pallet_ancho' => $this->temp_pallet_ancho,
+            'pallet_alto' => $this->temp_pallet_alto
         ];
+        $this->pesoKGTotal = $pesoTotalItem;
 
         $this->temp_producto = '';
         $this->temp_imagen = '';
@@ -295,6 +324,11 @@ class CalculadoraMaritima extends Component
         $this->temp_valor_unitario = 0;
         $this->temp_hs_code = '';
         $this->temp_arancel = 0;
+        $this->temp_con_pallet = false;
+        $this->temp_pallet_largo = 110;
+        $this->temp_pallet_ancho = 110;
+        $this->temp_pallet_alto = 15;
+        $this->temp_pallet_peso = 15;
 
         $this->calcularTotales();
     }
@@ -483,30 +517,27 @@ class CalculadoraMaritima extends Component
         'amazonica' => [
             'label' => 'Zona Amazónica',
             'color' => 'text-yellow-300',
-            'costo' => '$36.36 USD',
             'departamentos' => [
-                ['value' => 'beni', 'nombre' => 'Beni'],
                 ['value' => 'pando', 'nombre' => 'Pando'],
+                ['value' => 'santa_cruz', 'nombre' => 'Santa Cruz'],
+                ['value' => 'beni', 'nombre' => 'Beni'],
             ],
         ],
         'central' => [
-            'label' => 'Eje Central',
+            'label' => 'Zona Central',
             'color' => 'text-blue-300',
-            'costo' => '$36.36 USD',
             'departamentos' => [
                 ['value' => 'cochabamba', 'nombre' => 'Cochabamba'],
-                ['value' => 'santa_cruz', 'nombre' => 'Santa Cruz'],
+                ['value' => 'chuquisaca', 'nombre' => 'Chuquisaca'],
+                ['value' => 'tarija', 'nombre' => 'Tarija'],
             ],
         ],
         'sur' => [
             'label' => 'Zona Sur',
             'color' => 'text-green-300',
-            'costo' => '$36.36 USD',
             'departamentos' => [
-                ['value' => 'chuquisaca', 'nombre' => 'Chuquisaca'],
-                ['value' => 'potosi', 'nombre' => 'Potosí'],
                 ['value' => 'oruro', 'nombre' => 'Oruro'],
-                ['value' => 'tarija', 'nombre' => 'Tarija'],
+                ['value' => 'potosi', 'nombre' => 'Potosí'],
             ],
         ],
     ];
@@ -779,16 +810,16 @@ class CalculadoraMaritima extends Component
     {
         return [
 
-            'beni' => ['costo' => 36.36, 'nombre' => 'Beni'],
-            'pando' => ['costo' => 36.36, 'nombre' => 'Pando'],
+            'beni' => ['costo' => 62.96, 'nombre' => 'Beni'],
+            'pando' => ['costo' => 62.96, 'nombre' => 'Pando'],
 
-            'cochabamba' => ['costo' => 36.36, 'nombre' => 'Cochabamba'],
-            'santa_cruz' => ['costo' => 36.36, 'nombre' => 'Santa Cruz'],
+            'cochabamba' => ['costo' => 62.96, 'nombre' => 'Cochabamba'],
+            'santa_cruz' => ['costo' => 62.96, 'nombre' => 'Santa Cruz'],
 
-            'chuquisaca' => ['costo' => 36.36, 'nombre' => 'Chuquisaca'],
-            'potosi' => ['costo' => 36.36, 'nombre' => 'Potosí'],
-            'oruro' => ['costo' => 36.36, 'nombre' => 'Oruro'],
-            'tarija' => ['costo' => 36.36, 'nombre' => 'Tarija'],
+            'chuquisaca' => ['costo' => 80.00, 'nombre' => 'Chuquisaca'],
+            'potosi' => ['costo' => 80.00, 'nombre' => 'Potosí'],
+            'oruro' => ['costo' => 48.48, 'nombre' => 'Oruro'],
+            'tarija' => ['costo' => 80.00, 'nombre' => 'Tarija'],
         ];
     }
 
@@ -857,23 +888,17 @@ class CalculadoraMaritima extends Component
             $volumetricWeight = $volumen ?? 0;
             $CBM = $this->volumen ?? 0;
         }
-        Log::info('CBM: ' . $CBM);
-        Log::info('volumetricWeight: ' . $volumetricWeight);
 
 
         if (($this->peso > 0) && (empty($largo) || empty($ancho) || empty($alto)) && $CBM <= 0) {
             $CBM_estimado = $this->peso / 300;
             $shippingPackage = $this->calculateShippingPackage($this->peso, $CBM_estimado);
-            Log::info('CBM estimado1: ' . $CBM_estimado);
         } elseif (empty($this->peso) || $this->peso <= 0) {
             $shippingPackage = $this->calculateShippingPackagePerDimensions($CBM);
-            Log::info('CBM estimado2: ' . $CBM);
         } elseif (empty($largo) || empty($ancho) || empty($alto)) {
             $shippingPackage = $this->calculateShippingPackage($this->peso, $volumetricWeight);
-            Log::info('CBM estimado4: ' . $volumetricWeight);
         } else {
             $shippingPackage = $this->calculateShippingPackage($this->peso, $CBM);
-            Log::info('CBM estimado5: ' . $CBM);
         }
 
         $totalArancel = 0;
@@ -1056,10 +1081,11 @@ class CalculadoraMaritima extends Component
         $valorFacturado = 0;
         $unidad = str_contains($tipoCobro, 'Peso') ? 'kg' : 'm³';
         if ($unidad == 'kg') {
-            $valorFacturado = ($costoFinal * $this->peso);
+            $valorFacturado = ($costoFinal * $this->pesoKGTotal);
         } else {
             $valorFacturado = $costoFinal * $cbmReal;
         }
+
         $despacho = 33.70;
 
         $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
@@ -1278,7 +1304,6 @@ class CalculadoraMaritima extends Component
         $resultadoDestino = $this->calcularCostoDestino();
         $costoDestino = $resultadoDestino['costo'];
         $nombreDestino = $resultadoDestino['nombre'];
-        Log::info('Volumen Total: ' . $this->volumenTotal);
 
         $additional_services = 0;
         if ($this->recojoAlmacen) {
@@ -1309,7 +1334,6 @@ class CalculadoraMaritima extends Component
         $costo_envio_interno = 15;
         $despacho =  33.70;
         $valorMercancia = floatval($this->valorMercancia);
-        Log::info('Valor de Mercancía: ' . $valorMercancia);
         $total_tiered_charge = $this->calculate_tiered_charge($valorMercancia);
 
         $this->desglose['Costo de Envío Interno'] = number_format($costo_envio_interno, 2, '.', '');

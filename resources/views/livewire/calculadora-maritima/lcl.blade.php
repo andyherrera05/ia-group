@@ -251,6 +251,49 @@
                             @error('temp_dimensiones') <div class="absolute -bottom-4 left-0 w-full text-center"><span class="text-red-400 text-xs bg-black/80 px-1 rounded">{{ $message }}</span></div> @enderror
                         </div>
 
+                        <!-- Pallet Option -->
+                        <div class="md:col-span-2 bg-black/20 rounded-lg p-3 border border-white/5">
+                            <div class="flex items-center gap-2 mb-2">
+                                <input type="checkbox" wire:model.live="temp_con_pallet" id="temp_con_pallet" class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                                <label for="temp_con_pallet" class="text-[10px] text-gray-400 cursor-pointer uppercase tracking-wider">¿La carga viene con pallet?</label>
+                            </div>
+
+                            @if($temp_con_pallet)
+                            <div class="mt-2 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg space-y-3">
+                                <div class="flex justify-between items-center px-1">
+                                    <label class="text-[10px] text-yellow-500/80 uppercase font-bold">Configuración del Pallet</label>
+                                </div>
+
+                                <div class="flex gap-2 bg-black/20 rounded-lg p-2 border border-white/5">
+                                    <div class="flex-1">
+                                        <label class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Largo (cm)</label>
+                                        <input type="number" wire:model="temp_pallet_largo" placeholder="110" class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" title="Largo del pallet (cm)">
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Ancho (cm)</label>
+                                        <input type="number" wire:model="temp_pallet_ancho" placeholder="110" class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" title="Ancho del pallet (cm)">
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Alto (cm)</label>
+                                        <input type="number" wire:model="temp_pallet_alto" placeholder="15" class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" title="Alto del pallet (cm)">
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-[4px] text-yellow-500/70 text-center mb-1 uppercase">Peso (kg)</label>
+                                        <input type="number" wire:model="temp_pallet_peso" placeholder="15" class="w-full bg-transparent border-b border-yellow-500/50 text-center text-xs text-yellow-500 focus:border-yellow-500 outline-none pb-1" title="Peso del pallet (kg)">
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2 bg-black/40 p-2 rounded border border-white/5">
+                                    <svg class="w-3 h-3 text-yellow-500/50 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                    <p class="text-[8px] text-gray-500 leading-tight">
+                                        <strong class="text-gray-400">Lógica de Cálculo:</strong> Se utiliza el mayor valor entre la carga y el pallet para el área (Largo/Ancho). La altura y el peso se suman directamente.
+                                    </p>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+
                         <!-- Action Button -->
                         <button wire:click="agregarProducto" class="w-full px-6 h-[52px] p-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-bold text-xs rounded-lg shadow-lg hover:shadow-yellow-500/20 transition-all flex items-center justify-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -406,7 +449,7 @@
                                     @foreach ($zona['departamentos'] as $departamento)
                                     <option value="{{ $departamento['value'] }}"
                                         class="bg-gray-900 text-white" style="background-color: #0f0e0d">
-                                        {{ $departamento['nombre'] }} - {{ $zona['costo'] }}
+                                        {{ $departamento['nombre'] }}
                                     </option>
                                     @endforeach
                                 </optgroup>
