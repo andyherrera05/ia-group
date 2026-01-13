@@ -559,8 +559,67 @@
                             <div class="flex-1">
                                 <label for="verificacionSustanciasPeligrosas" class="flex items-center justify-between cursor-pointer">
                                     <div>
-                                        <h5 class="text-white font-semibold text-sm">Verificación de Sustancias Peligrosas</h5>
+                                        <h5 class="text-white font-semibold text-sm">¿Los productos que envia contienen sustancias peligrosas?</h5>
                                         <p class="text-gray-400 text-xs mt-0.5">Envio de sustancias peligrosas como: explosivos, gases, liquidos y solidos infamable, etc.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pagos internacionales con swift 1% o sin swift 2.5%-->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <h5 class="text-white font-semibold text-sm mb-3">Método de Pago Internacional</h5>
+
+                        <div class="space-y-3">
+                            <!-- Opción Con Swift (1%) -->
+                            <label class="flex items-start space-x-3 cursor-pointer group">
+                                <input type="radio" wire:model="pagosInternacionalesSwift" value="swift"
+                                    class="mt-1 w-4 h-4 text-yellow-500 border-gray-600 focus:ring-yellow-500 bg-black/40">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">Pago CON Swift</span>
+                                    </div>
+                                    <p class="text-gray-500 text-xs mt-0.5">Transferencia bancaria internacional estándar (SWIFT).</p>
+                                </div>
+                            </label>
+
+                            <!-- Opción Sin Swift (2.5%) -->
+                            <label class="flex items-start space-x-3 cursor-pointer group">
+                                <input type="radio" wire:model="pagosInternacionalesSwift" value="sin_swift"
+                                    class="mt-1 w-4 h-4 text-yellow-500 border-gray-600 focus:ring-yellow-500 bg-black/40">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">Pago SIN Swift / USDT / China</span>
+                                    </div>
+                                    <p class="text-gray-500 text-xs mt-0.5">Pagos directos en China, USDT o sin uso de red SWIFT.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Seguro de la carga -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model="seguroCarga" id="seguroCarga"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="seguroCarga" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">¿Requiere seguro de la carga?</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Seguro para todo tipo de riesgos de la carga.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model="examenPrevio" id="examenPrevio"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="examenPrevio" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">¿Requiere un examen previo?</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">-</p>
                                     </div>
                                 </label>
                             </div>

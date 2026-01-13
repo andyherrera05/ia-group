@@ -210,15 +210,15 @@
         $subtotalGastos = 0;
         $fleteInternacional = (float)($desglose['Costo de Envío Internacional'] ?? 0);
         $valorMercancia = (float)($desglose['Valor de Mercancía'] ?? 0);
-        $gestionLogistica = (float)($desglose['Gestión Logística'] ?? 0);
+        $gestionLogisticaBolivia = (float)($desglose['Gestión Logística en Bolivia'] ?? 0);
+        $brokersChina = (float)($desglose['Brokers en China'] ?? 0);
 
         // Extraer valores de aduana para usarlos en la derecha y no duplicarlos aquí
         $gravamenArancelario = (float)($gastosAdicionales['Gravamen Arancelario'] ?? 0);
-        $baseImponible = (float)($gravamenArancelario + $valorMercancia ?? 0);
         $iva = (float)($gastosAdicionales['Impuesto IVA'] ?? 0);
         $despacho = (float)($gastosAdicionales['Despacho'] ?? 0);
 
-        $impuesto = (float) $gravamenArancelario + $iva + $baseImponible;
+        $impuesto = (float) $gravamenArancelario + $iva;
 
         $agencia = (float)($gastosAdicionales['Agencia despachante'] ?? 0);
 
@@ -234,7 +234,7 @@
         'Impuesto' // Key vieja agregada
         ];
         $granTotalFinal = $impuesto + $despacho + $agencia;
-        $granTotalFinalEnvio = $fleteInternacional + $subtotalGastos + $gestionLogistica;
+        $granTotalFinalEnvio = $fleteInternacional + $subtotalGastos + $gestionLogisticaBolivia + $brokersChina;
         @endphp
         <table class="order-date-table">
             <tr>
@@ -322,7 +322,11 @@
                             </tr>
                             <tr style="height: auto;">
                                 <td style="text-align: left; padding: 8px 15px;">Gestión Logística</td>
-                                <td style="text-align: right; padding: 8px 15px; font-weight: bold;">$ {{ number_format($gestionLogistica, 2) }}</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold;">$ {{ number_format($gestionLogisticaBolivia, 2) }}</td>
+                            </tr>
+                            <tr style="height: auto;">
+                                <td style="text-align: left; padding: 8px 15px;">Brokers en China</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold;">$ {{ number_format($brokersChina, 2) }}</td>
                             </tr>
 
                             {{-- Gastos Generales (Filtrando los de aduana) --}}
@@ -341,7 +345,7 @@
                             @endforeach
 
                             @php
-                            $totalEnvioUSD = $fleteInternacional + $gestionLogistica + $subtotalGastosAccum;
+                            $totalEnvioUSD = $fleteInternacional + $gestionLogisticaBolivia + $brokersChina + $subtotalGastosAccum;
                             $exchangeRateP2P = (isset($p2pPrice) && is_numeric($p2pPrice)) ? (float)$p2pPrice : 9.70;
                             @endphp
 

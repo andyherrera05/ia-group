@@ -32,6 +32,7 @@ class CalculadoraMaritima extends Component
     public $cbm_directo;
 
     public $p2pPrice;
+
     public $q;
 
     public $producto = '';
@@ -48,342 +49,17 @@ class CalculadoraMaritima extends Component
 
     public $nombreDestino = '';
 
-    public $totalLogisticaChina = 0;
+    public $totalLogisticaBolivia = 0;
 
-    public function mount()
-    {
-        $qParam = request()->query('q') ?? $this->q;
+    public $totalBrokersChina = 0;
 
-        if ($qParam) {
-            try {
-                $decoded = json_decode(base64_decode($qParam), true);
-
-                if (is_array($decoded)) {
-                    $this->temp_producto = $decoded['producto'] ?? '';
-                    $this->temp_imagen = $decoded['imagen'] ?? '';
-
-                    $this->temp_cantidad = isset($decoded['cantidad']) ? floatval($decoded['cantidad']) : 1;
-
-                    // El payload trae PESO UNITARIO y CBM UNITARIO
-                    $this->temp_peso_unitario = isset($decoded['peso']) ? floatval($decoded['peso']) : 0;
-
-                    $valorTotal = isset($decoded['valorMercancia']) ? floatval($decoded['valorMercancia']) : 0;
-                    // REVERTIDO: Tratamos valorMercancia como Valor Unitario tal cual llega
-                    $this->temp_valor_unitario = $valorTotal;
-
-                    // Manejo de Volumen (UNITARIO)
-                    $cbmUnitario = isset($decoded['cbm']) ? floatval($decoded['cbm']) : 0;
-                    if ($cbmUnitario > 0) {
-                        $this->temp_cbm = $cbmUnitario;
-                    }
-
-                    $this->id_producto = $decoded['id_producto'] ?? '';
-
-                    if ($this->id_producto) {
-                        $this->esAnalisis = true;
-                    }
-                }
-            } catch (\Exception $e) {
-                Log::error('Error al decodificar parámetro "q": ' . $e->getMessage());
-            }
-        }
-
-        shuffle($this->agentes);
-        $this->fetchP2P();
-    }
-
-    public function updated($propertyName)
-    {
-        if (in_array($propertyName, ['clienteNombre', 'clienteEmail', 'clienteTelefono', 'clienteCiudad', 'clienteDireccion'])) {
-            $this->validateOnly($propertyName, [
-                'clienteNombre'    => 'required|string|min:3',
-                'clienteCiudad'    => 'required|not_in:0',
-                'clienteDireccion' => 'required|string|min:5',
-                'clienteEmail'     => 'required|email',
-                'clienteTelefono'  => 'required|string|min:7',
-            ], [
-                'clienteNombre.required'    => 'El nombre del cliente es obligatorio.',
-                'clienteNombre.min'         => 'El nombre debe tener al menos 3 caracteres.',
-                'clienteCiudad.required'    => 'Debe seleccionar una ciudad.',
-                'clienteCiudad.not_in'      => 'Debe seleccionar una ciudad.',
-                'clienteDireccion.required' => 'La dirección es obligatoria.',
-                'clienteDireccion.min'      => 'La dirección debe tener al menos 5 caracteres.',
-                'clienteEmail.required'     => 'El email es obligatorio.',
-                'clienteEmail.email'        => 'El formato del email no es válido.',
-                'clienteTelefono.required'  => 'El teléfono es obligatorio.',
-                'clienteTelefono.min'       => 'El teléfono debe tener al menos 7 caracteres.',
-            ]);
-        }
-    }
-
-
-    public $productos = [];
-    public $temp_producto = '';
-    public $temp_imagen = '';
-    public $temp_manualImagen;
-    public $temp_cantidad = 1;
-    public $temp_peso_unitario = 0;
-    public $temp_largo = 0;
-    public $temp_ancho = 0;
-    public $temp_alto = 0;
-    public $temp_cbm = 0;
-    public $temp_dimension_total = '';
-    public $temp_valor_unitario = 0;
-    public $volumenTotal = 0;
-    public $temp_hs_code = '';
-    public $temp_arancel = 0;
-    public $arancelSuggestions = [];
-
-    // Pallet properties (Estándar Asia: 110x110 cm, 15kg)
-    public $temp_con_pallet = false;
-    public $temp_pallet_largo = 110;
-    public $temp_pallet_ancho = 110;
-    public $temp_pallet_alto = 15;
-    public $temp_pallet_peso = 15;
-
-    public function updatedTempHsCode()
-    {
-        if (strlen($this->temp_hs_code) < 3) {
-            $this->arancelSuggestions = [];
-            return;
-        }
-
-        $jsonPath = base_path('database/mockup/aranceles.json');
-        if (!File::exists($jsonPath)) {
-            Log::error("JSON de aranceles no encontrado en: " . $jsonPath);
-            return;
-        }
-
-        try {
-            $jsonContent = File::get($jsonPath);
-            $data = json_decode($jsonContent, true);
-            $items = [];
-
-            // Aplanar estructura: Capitulos -> Items
-            foreach ($data['capitulos'] as $capitulo) {
-                if (isset($capitulo['items'])) {
-                    foreach ($capitulo['items'] as $item) {
-                        $items[] = $item;
-                    }
-                }
-            }
-
-            $search = strtolower($this->temp_hs_code);
-            $this->arancelSuggestions = array_filter($items, function ($item) use ($search) {
-                return str_contains(strtolower($item['codigo_hs']), $search) ||
-                    str_contains(strtolower($item['descripcion']), $search);
-            });
-
-            // Limitar a 10 resultados
-            $this->arancelSuggestions = array_slice($this->arancelSuggestions, 0, 10);
-        } catch (\Exception $e) {
-            Log::error("Error buscando aranceles: " . $e->getMessage());
-            $this->arancelSuggestions = [];
-        }
-    }
-
-    public function fetchP2P()
-    {
-        try {
-            $response = Http::withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            ])->post("https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search", [
-                "asset" => "USDT",
-                "fiat" => $this->fiat,
-                "merchantCheck" => false,
-                "page" => 1,
-                "payTypes" => [],
-                "publisherType" => null,
-                "rows" => 1,
-                "tradeType" => "BUY" // "BUY" muestra el precio al que los mercantes venden
-            ]);
-
-            if ($response->successful() && isset($response->json()['data'][0])) {
-                $data = $response->json()['data'][0]['adv']['price'];
-                $this->p2pPrice = $data + 0.03;
-            }
-        } catch (\Exception $e) {
-            // Error silencioso para no romper la vista
-            $this->p2pPrice = 'Error';
-        }
-    }
-
-    public function selectArancel($codigo, $arancel)
-    {
-        $this->temp_hs_code = $codigo;
-        $this->temp_arancel = $arancel;
-        $this->arancelSuggestions = [];
-    }
-
-    public function limpiarArancelSearch()
-    {
-        $this->arancelSuggestions = [];
-    }
-
-    public $cbmTotalUnitario = 0;
-    public $pesoKGTotal = 0;
-
-    public function agregarProducto()
-    {
-        $this->validate([
-            'temp_producto' => 'required|min:3',
-            'temp_cantidad' => 'required|numeric|min:1',
-            'temp_valor_unitario' => 'required|numeric|min:0',
-            'temp_peso_unitario' => 'required|numeric|gt:0',
-        ], [
-            'temp_producto.required' => 'El nombre es obligatorio',
-            'temp_cantidad.required' => 'La cantidad es obligatoria',
-            'temp_cantidad.min' => 'La cantidad debe ser mayor a 0',
-            'temp_valor_unitario.required' => 'El valor es obligatorio',
-            'temp_peso_unitario.required' => 'El peso es obligatorio',
-            'temp_peso_unitario.gt' => 'El peso debe ser mayor a 0',
-        ]);
-
-        $hasDimensions = ($this->temp_largo > 0 && $this->temp_ancho > 0 && $this->temp_alto > 0);
-        $hasCbm = ($this->temp_cbm > 0);
-
-        if (!$hasDimensions && !$hasCbm) {
-            $this->addError('temp_dimensiones', 'Debes ingresar las Dimensiones (L, W, H) o el CBM.');
-            return;
-        }
-
-        $imagenUrl = '';
-        if ($this->temp_manualImagen) {
-            $imagenUrl = $this->temp_manualImagen->temporaryUrl();
-        } elseif ($this->temp_imagen) {
-            $imagenUrl = $this->temp_imagen;
-        }
-        $volumenUnitario = 0;
-
-        // Calculate dimensions including pallet if applicable
-        $largoTotal = $this->temp_largo;
-        $anchoTotal = $this->temp_ancho;
-        $altoTotal = $this->temp_alto;
-        $pesoAdicionalPallet = 0;
-
-        if ($this->temp_con_pallet) {
-            // El pallet define un área mínima (footprint). Si la carga es más grande, manda la carga.
-            $largoTotal = max($this->temp_largo, $this->temp_pallet_largo);
-            $anchoTotal = max($this->temp_ancho, $this->temp_pallet_ancho);
-            // La altura siempre se suma (la carga va sobre el pallet)
-            $altoTotal = $this->temp_alto + $this->temp_pallet_alto;
-            // Se suma el peso del pallet
-            $pesoAdicionalPallet = $this->temp_pallet_peso;
-        }
-
-        if ($this->temp_largo > 0 && $this->temp_ancho > 0 && $this->temp_alto > 0) {
-            $volumenUnitario = ($largoTotal * $anchoTotal * $altoTotal) / 1000000;
-        } elseif ($this->temp_cbm > 0) {
-            $volumenUnitario = $this->temp_cbm;
-        } else {
-
-            $volumenUnitario = 0.01;
-        }
-
-        $pesoTotalItem = ($this->temp_peso_unitario + $pesoAdicionalPallet) * $this->temp_cantidad;
-        $volumenTotalItem = $volumenUnitario;
-        $valorTotalItem = $this->temp_valor_unitario * $this->temp_cantidad;
-
-        $prefix = strtoupper(substr(trim($this->clienteNombre ?: 'PROD'), 0, 3));
-        $number = str_pad(count($this->productos) + 1, 2, '0', STR_PAD_LEFT);
-
-        $this->productos[] = [
-            'id' => "$prefix-$number",
-            'producto' => $this->temp_producto,
-            'imagen' => $imagenUrl,
-            'cantidad' => $this->temp_cantidad,
-            'peso_unitario' => $this->temp_peso_unitario,
-            'largo' => $this->temp_largo,
-            'ancho' => $this->temp_ancho,
-            'alto' => $this->temp_alto,
-            'cbm' => $this->temp_cbm,
-            'volumen_unitario' => $volumenUnitario,
-            'valor_unitario' => $this->temp_valor_unitario,
-            'total_peso' => $pesoTotalItem,
-            'cbm_unitario' => $this->cbmTotalUnitario,
-            'total_volumen' => $volumenTotalItem,
-            'total_valor' => $valorTotalItem,
-            'hs_code' => $this->temp_hs_code,
-            'arancel' => $this->temp_arancel,
-            'con_pallet' => $this->temp_con_pallet,
-            'pallet_largo' => $this->temp_pallet_largo,
-            'pallet_ancho' => $this->temp_pallet_ancho,
-            'pallet_alto' => $this->temp_pallet_alto
-        ];
-        $this->pesoKGTotal = $pesoTotalItem;
-
-        $this->temp_producto = '';
-        $this->temp_imagen = '';
-        $this->temp_manualImagen = null;
-        $this->temp_cantidad = 1;
-        $this->temp_peso_unitario = 0;
-        $this->temp_largo = 0;
-        $this->temp_ancho = 0;
-        $this->temp_alto = 0;
-        $this->temp_cbm = 0;
-        $this->temp_valor_unitario = 0;
-        $this->temp_hs_code = '';
-        $this->temp_arancel = 0;
-        $this->temp_con_pallet = false;
-        $this->temp_pallet_largo = 110;
-        $this->temp_pallet_ancho = 110;
-        $this->temp_pallet_alto = 15;
-        $this->temp_pallet_peso = 15;
-
-        $this->calcularTotales();
-    }
-
-    public function eliminarProducto($index)
-    {
-        if (isset($this->productos[$index])) {
-            unset($this->productos[$index]);
-            $this->productos = array_values($this->productos);
-
-            // Re-generar IDs para mantener la secuencia
-            $prefix = strtoupper(substr(trim($this->clienteNombre ?: 'PROD'), 0, 3));
-            foreach ($this->productos as $idx => &$item) {
-                $number = str_pad($idx + 1, 2, '0', STR_PAD_LEFT);
-                $item['id'] = "$prefix-$number";
-            }
-
-            $this->calcularTotales();
-        }
-    }
-
-    public function calcularTotales()
-    {
-        $pesoTotal = 0;
-        $this->volumenTotal = 0; // Resetear acumulador
-        $valorTotal = 0;
-        $cantidadTotal = 0;
-
-        foreach ($this->productos as $prod) {
-            $pesoTotal += $prod['peso_unitario'];
-            $this->volumenTotal += $prod['volumen_unitario'];
-            $valorTotal += $prod['total_valor'];
-            $cantidadTotal += $prod['cantidad'];
-        }
-        $this->peso = $pesoTotal;
-        $this->volumen = number_format($this->volumenTotal, 4);
-        $this->valorMercancia = $valorTotal;
-        $this->cantidad = $cantidadTotal;
-
-        if (count($this->productos) > 1) {
-            $this->producto = 'Carga Consolidada (' . count($this->productos) . ' items)';
-        } elseif (count($this->productos) == 1) {
-            $this->producto = $this->productos[0]['producto'];
-        } else {
-            $this->producto = '';
-        }
-
-        $this->calcular();
-    }
+    public $totalCBMCobrables = 0;
+    public $volumenUnitario = 0;
 
     public $largo, $ancho, $alto;
     public $origen = '';
     public $destino = '';
 
-    public $volumenCalculado = null;
     public $metodoVolumen = 'dimensiones';
 
     public $resultado = null;
@@ -416,23 +92,36 @@ class CalculadoraMaritima extends Component
     public $selectedRate = null;
     public $mostrarModal = false;
 
-    public $freight = 51.29;
+    public $productos = [];
+    public $temp_producto = '';
+    public $temp_imagen = '';
+    public $temp_manualImagen;
+    public $temp_cantidad = 1;
+    public $temp_peso_unitario = 0;
+    public $temp_largo = 0;
+    public $temp_ancho = 0;
+    public $temp_alto = 0;
+    public $temp_cbm = 0;
+    public $temp_dimension_total = '';
+    public $temp_valor_unitario = 0;
+    public $volumenTotal = 0;
+    public $temp_hs_code = '';
+    public $temp_arancel = 0;
+    public $arancelSuggestions = [];
+
+    // Pallet properties (Estándar Asia: 110x110 cm, 15kg)
+    public $temp_con_pallet = false;
+    public $temp_pallet_largo = 110;
+    public $temp_pallet_ancho = 110;
+    public $temp_pallet_alto = 15;
+    public $temp_pallet_peso = 15;
 
     // Control de visibilidad del resultado
     public $mostrarDesglose = false;
 
-    public function calcularResultado()
-    {
-        $this->calcular();
-        $this->mostrarDesglose = true;
-        $this->dispatch('scroll-to-result');
-    }
-    public $importation = 8.58;
-    public $total_import_costs = 47.32;
-    public $insurance = 38.18;
-    public $customs_clearance_cost = 17.09;
-    public $logistics_expenses = 33.70;
-
+    public $cbmTotalUnitario = 0;
+    public $pesoKGTotal = 0;
+    public $cantidadTotal = 0;
 
     public $recojoAlmacen = false;
     public $destinoFinal = 'tarija';
@@ -441,9 +130,12 @@ class CalculadoraMaritima extends Component
 
     public $verificacionProducto = false;
     public $verificacionCalidad = false;
+    public $seguroCarga = false;
+    public $examenPrevio = false;
     public $verificacionEmpresaDigital = false;
     public $verificacionSustanciasPeligrosas = false;
     public $verificacionEmpresaPresencial = false;
+    public $pagosInternacionalesSwift = 'swift';
 
     public $selectedRateIndex = null;
 
@@ -459,7 +151,12 @@ class CalculadoraMaritima extends Component
     public $clienteDireccion = '';
     public $clienteCiudad = '';
     public $agenteId = '';
+    public $volumetricWeight = 0;
     public $gastosAdicionales = [];
+
+    public $tipoCobro = '';
+
+    public $valorCBMKG = 0;
 
     public $agentes = [
         [
@@ -542,6 +239,381 @@ class CalculadoraMaritima extends Component
         ],
     ];
 
+
+    public function mount()
+    {
+        $qParam = request()->query('q') ?? $this->q;
+
+        if ($qParam) {
+            try {
+                $decoded = json_decode(base64_decode($qParam), true);
+
+                if (is_array($decoded)) {
+                    $this->temp_producto = $decoded['producto'] ?? '';
+                    $this->temp_imagen = $decoded['imagen'] ?? '';
+
+                    $this->temp_cantidad = isset($decoded['cantidad']) ? floatval($decoded['cantidad']) : 1;
+
+                    // El payload trae PESO UNITARIO y CBM UNITARIO
+                    $this->temp_peso_unitario = isset($decoded['peso']) ? floatval($decoded['peso']) : 0;
+
+                    $valorTotal = isset($decoded['valorMercancia']) ? floatval($decoded['valorMercancia']) : 0;
+                    // REVERTIDO: Tratamos valorMercancia como Valor Unitario tal cual llega
+                    $this->temp_valor_unitario = $valorTotal;
+
+                    // Manejo de Volumen (UNITARIO)
+                    $cbmUnitario = isset($decoded['cbm']) ? floatval($decoded['cbm']) : 0;
+                    if ($cbmUnitario > 0) {
+                        $this->temp_cbm = $cbmUnitario;
+                    }
+
+                    $this->id_producto = $decoded['id_producto'] ?? '';
+
+                    if ($this->id_producto) {
+                        $this->esAnalisis = true;
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('Error al decodificar parámetro "q": ' . $e->getMessage());
+            }
+        }
+
+        shuffle($this->agentes);
+        $this->fetchP2P();
+    }
+
+    public function updated($propertyName)
+    {
+        if (in_array($propertyName, ['clienteNombre', 'clienteEmail', 'clienteTelefono', 'clienteCiudad', 'clienteDireccion'])) {
+            $this->validateOnly($propertyName, [
+                'clienteNombre'    => 'required|string|min:3',
+                'clienteCiudad'    => 'required|not_in:0',
+                'clienteDireccion' => 'required|string|min:5',
+                'clienteEmail'     => 'required|email',
+                'clienteTelefono'  => 'required|string|min:7',
+            ], [
+                'clienteNombre.required'    => 'El nombre del cliente es obligatorio.',
+                'clienteNombre.min'         => 'El nombre debe tener al menos 3 caracteres.',
+                'clienteCiudad.required'    => 'Debe seleccionar una ciudad.',
+                'clienteCiudad.not_in'      => 'Debe seleccionar una ciudad.',
+                'clienteDireccion.required' => 'La dirección es obligatoria.',
+                'clienteDireccion.min'      => 'La dirección debe tener al menos 5 caracteres.',
+                'clienteEmail.required'     => 'El email es obligatorio.',
+                'clienteEmail.email'        => 'El formato del email no es válido.',
+                'clienteTelefono.required'  => 'El teléfono es obligatorio.',
+                'clienteTelefono.min'       => 'El teléfono debe tener al menos 7 caracteres.',
+            ]);
+        }
+    }
+
+    public function updatedTempHsCode()
+    {
+        if (strlen($this->temp_hs_code) < 3) {
+            $this->arancelSuggestions = [];
+            return;
+        }
+
+        $jsonPath = base_path('database/mockup/aranceles.json');
+        if (!File::exists($jsonPath)) {
+            Log::error("JSON de aranceles no encontrado en: " . $jsonPath);
+            return;
+        }
+
+        try {
+            $jsonContent = File::get($jsonPath);
+            $data = json_decode($jsonContent, true);
+            $items = [];
+
+            // Aplanar estructura: Capitulos -> Items
+            foreach ($data['capitulos'] as $capitulo) {
+                if (isset($capitulo['items'])) {
+                    foreach ($capitulo['items'] as $item) {
+                        $items[] = $item;
+                    }
+                }
+            }
+
+            $search = strtolower($this->temp_hs_code);
+            $this->arancelSuggestions = array_filter($items, function ($item) use ($search) {
+                return str_contains(strtolower($item['codigo_hs']), $search) ||
+                    str_contains(strtolower($item['descripcion']), $search);
+            });
+
+            // Limitar a 10 resultados
+            $this->arancelSuggestions = array_slice($this->arancelSuggestions, 0, 10);
+        } catch (\Exception $e) {
+            Log::error("Error buscando aranceles: " . $e->getMessage());
+            $this->arancelSuggestions = [];
+        }
+    }
+
+    public function fetchP2P()
+    {
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            ])->post("https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search", [
+                "asset" => "USDT",
+                "fiat" => $this->fiat,
+                "merchantCheck" => false,
+                "page" => 1,
+                "payTypes" => [],
+                "publisherType" => null,
+                "rows" => 1,
+                "tradeType" => "BUY" // "BUY" muestra el precio al que los mercantes venden
+            ]);
+
+            if ($response->successful() && isset($response->json()['data'][0])) {
+                $data = $response->json()['data'][0]['adv']['price'];
+                $this->p2pPrice = $data + 0.03;
+            }
+        } catch (\Exception $e) {
+            // Error silencioso para no romper la vista
+            $this->p2pPrice = 'Error';
+        }
+    }
+
+    public function selectArancel($codigo, $arancel)
+    {
+        $this->temp_hs_code = $codigo;
+        $this->temp_arancel = $arancel;
+        $this->arancelSuggestions = [];
+    }
+
+    public function limpiarArancelSearch()
+    {
+        $this->arancelSuggestions = [];
+    }
+
+    public function agregarProducto()
+    {
+        $this->validate([
+            'temp_producto' => 'required|min:3',
+            'temp_cantidad' => 'required|numeric|min:1',
+            'temp_valor_unitario' => 'required|numeric|min:0',
+            'temp_peso_unitario' => 'required|numeric|gt:0',
+        ], [
+            'temp_producto.required' => 'El nombre es obligatorio',
+            'temp_cantidad.required' => 'La cantidad es obligatoria',
+            'temp_cantidad.min' => 'La cantidad debe ser mayor a 0',
+            'temp_valor_unitario.required' => 'El valor es obligatorio',
+            'temp_peso_unitario.required' => 'El peso es obligatorio',
+            'temp_peso_unitario.gt' => 'El peso debe ser mayor a 0',
+        ]);
+
+        $hasDimensions = ($this->temp_largo > 0 && $this->temp_ancho > 0 && $this->temp_alto > 0);
+        $hasCbm = ($this->temp_cbm > 0);
+
+        if (!$hasDimensions && !$hasCbm) {
+            $this->addError('temp_dimensiones', 'Debes ingresar las Dimensiones (L, W, H) o el CBM.');
+            return;
+        }
+
+        $imagenUrl = '';
+        if ($this->temp_manualImagen) {
+            $imagenUrl = $this->temp_manualImagen->temporaryUrl();
+        } elseif ($this->temp_imagen) {
+            $imagenUrl = $this->temp_imagen;
+        }
+
+        // Calculate dimensions including pallet if applicable
+        $largoTotal = $this->temp_largo;
+        $anchoTotal = $this->temp_ancho;
+        $altoTotal = $this->temp_alto;
+        $pesoAdicionalPallet = 0;
+
+        if ($this->temp_con_pallet) {
+            // El pallet define un área mínima (footprint). Si la carga es más grande, manda la carga.
+            $largoTotal = max($this->temp_largo, $this->temp_pallet_largo);
+            $anchoTotal = max($this->temp_ancho, $this->temp_pallet_ancho);
+            // La altura siempre se suma (la carga va sobre el pallet)
+            $altoTotal = $this->temp_alto + $this->temp_pallet_alto;
+            // Se suma el peso del pallet
+            $pesoAdicionalPallet = $this->temp_pallet_peso;
+        }
+
+        $pesoTotalItem = ($this->temp_peso_unitario + $pesoAdicionalPallet) * $this->temp_cantidad;
+        $valorTotalItem = $this->temp_valor_unitario * $this->temp_cantidad;
+
+
+        if ($this->temp_largo > 0 && $this->temp_ancho > 0 && $this->temp_alto > 0) {
+            $this->volumenUnitario = ($largoTotal * $anchoTotal * $altoTotal) / 1000000;
+        } elseif ($this->temp_cbm > 0) {
+            $this->volumenUnitario = $this->temp_cbm;
+        } else {
+
+            $this->volumenUnitario = 0.01;
+        }
+
+
+        $prefix = strtoupper(substr(trim($this->clienteNombre ?: 'PROD'), 0, 3));
+        $number = str_pad(count($this->productos) + 1, 2, '0', STR_PAD_LEFT);
+
+        $this->productos[] = [
+            'id' => "$prefix-$number",
+            'producto' => $this->temp_producto,
+            'imagen' => $imagenUrl,
+            'cantidad' => $this->temp_cantidad,
+            'peso_unitario' => $this->temp_peso_unitario,
+            'largo' => $this->temp_largo,
+            'ancho' => $this->temp_ancho,
+            'alto' => $this->temp_alto,
+            'cbm' => $this->temp_cbm,
+            'volumen_unitario' => $this->volumenUnitario,
+            'valor_unitario' => $this->temp_valor_unitario,
+            'total_peso' => $pesoTotalItem,
+            'cbm_unitario' => $this->cbmTotalUnitario,
+            'total_valor' => $valorTotalItem,
+            'hs_code' => $this->temp_hs_code,
+            'arancel' => $this->temp_arancel,
+            'con_pallet' => $this->temp_con_pallet,
+            'pallet_largo' => $this->temp_pallet_largo,
+            'pallet_ancho' => $this->temp_pallet_ancho,
+            'pallet_alto' => $this->temp_pallet_alto
+        ];
+        $this->pesoKGTotal = $pesoTotalItem;
+        $this->cantidadTotal = $this->temp_cantidad;
+
+        $this->temp_producto = '';
+        $this->temp_imagen = '';
+        $this->temp_manualImagen = null;
+        $this->temp_cantidad = 1;
+        $this->temp_peso_unitario = 0;
+        $this->temp_largo = 0;
+        $this->temp_ancho = 0;
+        $this->temp_alto = 0;
+        $this->temp_cbm = 0;
+        $this->temp_valor_unitario = 0;
+        $this->temp_hs_code = '';
+        $this->temp_arancel = 0;
+        $this->temp_con_pallet = false;
+        $this->temp_pallet_largo = 110;
+        $this->temp_pallet_ancho = 110;
+        $this->temp_pallet_alto = 15;
+        $this->temp_pallet_peso = 15;
+
+        $this->calcularTotales();
+    }
+
+    public function eliminarProducto($index)
+    {
+        if (isset($this->productos[$index])) {
+            unset($this->productos[$index]);
+            $this->productos = array_values($this->productos);
+
+            // Re-generar IDs para mantener la secuencia
+            $prefix = strtoupper(substr(trim($this->clienteNombre ?: 'PROD'), 0, 3));
+            foreach ($this->productos as $idx => &$item) {
+                $number = str_pad($idx + 1, 2, '0', STR_PAD_LEFT);
+                $item['id'] = "$prefix-$number";
+            }
+
+            $this->calcularTotales();
+        }
+    }
+
+    public function calcularTotales()
+    {
+        $pesoTotal = 0;
+        $this->volumenTotal = 0; // Resetear acumulador
+        $valorTotal = 0;
+        $cantidadTotal = 0;
+
+        $this->totalCBMCobrables = 0; // Reset
+        $this->valorCBMKG = 0;
+
+        foreach ($this->productos as $prod) {
+            $pesoTotal += $prod['peso_unitario'] * $prod['cantidad'];
+            $this->volumenTotal += $prod['volumen_unitario'] * $prod['cantidad'];
+            $valorTotal += $prod['total_valor'];
+            $cantidadTotal += $prod['cantidad'];
+
+            $largo = $prod['largo'] ?? 0;
+            $ancho = $prod['ancho'] ?? 0;
+            $alto = $prod['alto'] ?? 0;
+            $cbm = $prod['cbm'] ?? 0;
+            $this->volumetricWeight = $this->obtenerPesoVolumetrico($largo, $ancho, $alto, $pesoTotal, $cbm);
+            if ($cbm > 0) {
+                $this->totalCBMCobrables += $cbm;
+            } elseif ($largo > 0 && $ancho > 0 && $alto > 0) {
+                $volumenInfo = $this->obtenerVolumenTotal($largo, $ancho, $alto, 0, $cantidadTotal);
+                if ($volumenInfo['tipoCbm'] == 'CBM') {
+                    $this->totalCBMCobrables += $volumenInfo['cbm'];
+                    $this->valorCBMKG = $pesoTotal;
+                    $this->tipoCobro = 'CBM';
+                } else {
+                    $this->totalCBMCobrables += $volumenInfo['kg'];
+                    $this->valorCBMKG +=  $volumenInfo['kg'];
+                    $this->tipoCobro = 'KG';
+                }
+            }
+        }
+        $this->peso = $pesoTotal;
+        $this->volumen = number_format($this->volumenTotal, 4);
+        $this->valorMercancia = $valorTotal;
+        $this->cantidad = $cantidadTotal;
+
+        if (count($this->productos) > 1) {
+            $this->producto = 'Carga Consolidada (' . count($this->productos) . ' items)';
+        } elseif (count($this->productos) == 1) {
+            $this->producto = $this->productos[0]['producto'];
+        } else {
+            $this->producto = '';
+        }
+
+        $this->calcular();
+    }
+
+    function obtenerPesoVolumetrico($largo, $alto, $ancho, $peso, $cbm)
+    {
+        Log::info("--------obtenerPesoVolumetrico--------");
+        Log::info("largo: " . $largo);
+        Log::info("alto: " . $alto);
+        Log::info("ancho: " . $ancho);
+        Log::info("peso: " . $peso);
+        Log::info("cbm: " . $cbm);
+        if ($largo === 0 && $alto === 0 && $ancho === 0) {
+            return $cbm;
+        }
+
+        $volumen_cbm = ($largo * $alto * $ancho) / 1_000_000;
+        if ($volumen_cbm < 0.01) {
+            $cbmPorVolumen = ($largo * $alto * $ancho) / 5000;
+            return max($cbmPorVolumen, $peso);
+        }
+
+        return $volumen_cbm;
+    }
+
+    function obtenerVolumenTotal($largo, $alto, $ancho, $cbm, $qty)
+    {
+        if ($largo === 0 && $alto === 0 && $ancho === 0) {
+            return $cbm;
+        }
+
+        $volumenCalculado = ($largo * $alto * $ancho) / 1_000_000;
+        if ($volumenCalculado < 0.01) {
+            $cbmPorVolumen = (($largo * $alto * $ancho) / 5000) * $qty;
+            return [
+                'kg' => $cbmPorVolumen,
+                'tipoCbm' => 'KG'
+            ];
+        }
+        return [
+            'cbm' => $volumenCalculado,
+            'tipoCbm' => 'CBM'
+        ];
+    }
+
+
+    public function calcularResultado()
+    {
+        $this->calcular();
+        $this->mostrarDesglose = true;
+        $this->dispatch('scroll-to-result');
+    }
+
+
     protected $listeners = [
         'fcl-rates-ready' => 'handleRatesReady',
         'fcl-heartbeat'   => 'handleHeartbeat',
@@ -599,6 +671,14 @@ class CalculadoraMaritima extends Component
         $this->calcular();
     }
     public function updatedVerificacionCalidad()
+    {
+        $this->calcular();
+    }
+    public function updatedSeguroCarga()
+    {
+        $this->calcular();
+    }
+    public function updatedExamenPrevio()
     {
         $this->calcular();
     }
@@ -873,32 +953,15 @@ class CalculadoraMaritima extends Component
 
         $this->fecha = now()->toDateTimeString();
 
-        $peso = floatval($this->peso);
-        $largo = floatval($this->largo);
-        $ancho = floatval($this->ancho);
-        $alto = floatval($this->alto);
-        $volumen = floatval($this->volumen);
+        // ---------------------------------------------------------
+        // LOGIC TO HANDLE "DRAFT" CALCULATION (User hasn't clicked Add)
+        // ---------------------------------------------------------
 
-        $volumetricWeight = $CBM = 0;
-
-        if (!empty($largo) && !empty($ancho) && !empty($alto)) {
-            $volumetricWeight = ($largo * $ancho * $alto) / 5000;
-            $CBM = ($largo * $ancho * $alto) / 1000000;
+        if ($this->tipoCobro == 'CBM') {
+            $shippingPackage = $this->calculateShippingPackage($this->pesoKGTotal, $this->volumenUnitario);
         } else {
-            $volumetricWeight = $volumen ?? 0;
-            $CBM = $this->volumen ?? 0;
-        }
-
-
-        if (($this->peso > 0) && (empty($largo) || empty($ancho) || empty($alto)) && $CBM <= 0) {
-            $CBM_estimado = $this->peso / 300;
-            $shippingPackage = $this->calculateShippingPackage($this->peso, $CBM_estimado);
-        } elseif (empty($this->peso) || $this->peso <= 0) {
-            $shippingPackage = $this->calculateShippingPackagePerDimensions($CBM);
-        } elseif (empty($largo) || empty($ancho) || empty($alto)) {
-            $shippingPackage = $this->calculateShippingPackage($this->peso, $volumetricWeight);
-        } else {
-            $shippingPackage = $this->calculateShippingPackage($this->peso, $CBM);
+            $maxPeso = max($this->totalCBMCobrables, $this->pesoKGTotal);
+            $shippingPackage = $this->calculateShippingPackage($maxPeso, $this->volumenUnitario);
         }
 
         $totalArancel = 0;
@@ -912,9 +975,24 @@ class CalculadoraMaritima extends Component
             $subtotalArancel = $prod['total_valor'] + $shippingPackage['valor_facturado'] + $seguro;
             $iva += ($subtotalArancel + $totalArancel) * (14.94 / 100);
             $impuesto += ($totalArancel + $iva);
-            $this->totalLogisticaChina = ($prod['total_valor'] + $shippingPackage['valor_facturado']  + $this->costo_envio_interno) * 0.09;
+            $this->totalLogisticaBolivia = ($prod['total_valor'] + $shippingPackage['valor_facturado']  + $this->costo_envio_interno) * 0.03;
+            $this->totalBrokersChina = ($prod['total_valor'] + $shippingPackage['valor_facturado']  + $this->costo_envio_interno) * 0.035;
         }
 
+        // CÁLCULO DE COMISIÓN POR PAGO INTERNACIONAL
+        $swiftFee = 0;
+        $tasaSwift = 0;
+
+        if ($this->pagosInternacionalesSwift === 'swift') {
+            $tasaSwift = 0.01; // 1%
+        } elseif ($this->pagosInternacionalesSwift === 'sin_swift') {
+            $tasaSwift = 0.025; // 2.5%
+        }
+
+        $swiftFee = $this->valorMercancia * $tasaSwift;
+
+        $this->gastosAdicionales['Comisión Pago Internacional'] = number_format($swiftFee, 2, '.', '');
+        $this->desglose['Comisión Pago Internacional'] = number_format($swiftFee, 2, '.', '');
         $this->gastosAdicionales['Gravamen Arancelario'] = number_format($totalArancel, 2, '.', '');
         $this->gastosAdicionales['Impuesto IVA'] = number_format($iva, 2, '.', '');
         $this->resultado = (float) $shippingPackage['costo'];
@@ -1057,12 +1135,8 @@ class CalculadoraMaritima extends Component
             $tipoCobro  = 'CBM';
             $valorUsado = $cbmReal;
 
-            // Ordenamos ascendente para aplicar lógica "Up To" (Hasta X CBM)
-            // Array original es descendente (20 -> 0.25). Reverse = (0.25 -> 20).
             $tarifasAsc = array_reverse($TARIFA_POR_CBM);
 
-            // Valor por defecto: el precio del tramo más alto (para > 20 CBM)
-            // El primer elemento original [0] es el de 20 CBM ($129).
             $costoFinal = $TARIFA_POR_CBM[0]['precio'];
 
             foreach ($tarifasAsc as $tramo) {
@@ -1075,18 +1149,27 @@ class CalculadoraMaritima extends Component
 
         $costoRecojo = $this->costoRecojo;
         $resultadoDestino = $this->calcularCostoDestino();
-        $costoDestino = $resultadoDestino['costo'] * $this->volumenTotal;
+        $costoDestino = $resultadoDestino['costo'] * $this->volumetricWeight;
         $nombreDestino = $resultadoDestino['nombre'];
 
-        $valorFacturado = 0;
         $unidad = str_contains($tipoCobro, 'Peso') ? 'kg' : 'm³';
-        if ($unidad == 'kg') {
-            $valorFacturado = ($costoFinal * $this->pesoKGTotal);
+        if ($unidad === 'kg') {
+            $valorFacturado = $costoFinal * $pesoKg;
         } else {
             $valorFacturado = $costoFinal * $cbmReal;
         }
+        $almacen = 3.59;
+        $documentacion = 17.24;
+        $formularios = 14.37;
 
-        $despacho = 33.70;
+
+        $despacho = $almacen + $documentacion + $formularios + $this->valorCBMKG;
+
+        Log::info('valorCBMKG: ' . $this->valorCBMKG);
+        Log::info('despacho: ' . $despacho);
+        Log::info('almacen: ' . $almacen);
+        Log::info('documentacion: ' . $documentacion);
+        Log::info('formularios: ' . $formularios);
 
         $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
 
@@ -1157,8 +1240,9 @@ class CalculadoraMaritima extends Component
             'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
             'Costo de Envío Interno' => number_format($this->costo_envio_interno, 2, '.', ''),
             'Costo de Envío Internacional' => number_format($valorFacturado, 2, '.', ''),
-            'Gestión Logística' => number_format($this->totalLogisticaChina, 2, '.', ''),
-            'Despacho' => number_format($despacho * $this->volumenTotal, 2, '.', ''),
+            'Gestión Logística en Bolivia' => number_format($this->totalLogisticaBolivia, 2, '.', ''),
+            'Brokers en China' => number_format($this->totalBrokersChina, 2, '.', ''),
+            'Despacho' => number_format($despacho, 2, '.', ''),
             'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
 
         ];
@@ -1166,8 +1250,8 @@ class CalculadoraMaritima extends Component
 
         $addServices = 0;
         if ($this->recojoAlmacen) {
-            $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumenTotal, 2, '.', '');
-            $addServices = (float) number_format($costoRecojo * $this->volumenTotal, 2, '.', '');
+            $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumetricWeight, 2, '.', '');
+            $addServices = (float) number_format($costoRecojo * $this->volumetricWeight, 2, '.', '');
         }
 
         $costoVerificacion = 0;
@@ -1178,6 +1262,14 @@ class CalculadoraMaritima extends Component
         if ($this->verificacionCalidad) {
             $this->desglose['Verificación de Calidad del Producto'] = 50.00;
             $costoVerificacion += 50.00;
+        }
+        if ($this->seguroCarga) {
+            $this->desglose['Seguro de la Carga'] = number_format($this->valorMercancia * 0.02, 2, '.', '');
+            $costoVerificacion += $this->valorMercancia * 0.02;
+        }
+        if ($this->examenPrevio) {
+            $this->desglose['Examen Previo'] = 35.00;
+            $costoVerificacion += 35.00;
         }
         if ($this->verificacionEmpresaDigital) {
             $this->desglose['Verificación de Empresa Digital'] = 100.00;
@@ -1195,13 +1287,15 @@ class CalculadoraMaritima extends Component
         if ($costoDestino > 0 && $nombreDestino) {
             $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
         }
-        if ($this->recojoAlmacen) $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumenTotal, 2, '.', '');
+        if ($this->recojoAlmacen) $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumetricWeight, 2, '.', '');
         $this->gastosAdicionales['Costo de Envío Interno'] = number_format($this->costo_envio_interno, 2, '.', '');
-        $this->gastosAdicionales['Despacho'] = number_format($despacho * $this->volumenTotal, 2, '.', '');
+        $this->gastosAdicionales['Despacho'] = number_format($despacho, 2, '.', '');
         $this->gastosAdicionales['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
 
         if ($this->verificacionProducto) $this->gastosAdicionales['Verificación de Producto'] = number_format($this->calculateVerificationCost(), 2, '.', '');
         if ($this->verificacionCalidad) $this->gastosAdicionales['Verificación de Calidad'] = 50.00;
+        if ($this->seguroCarga) $this->gastosAdicionales['Seguro de la Carga'] = number_format($this->valorMercancia * 0.02, 2, '.', '');
+        if ($this->examenPrevio) $this->gastosAdicionales['Examen Previo'] = 35.00;
         if ($this->verificacionEmpresaDigital) $this->gastosAdicionales['Verificación de Empresa Digital'] = 100.00;
         if ($this->verificacionEmpresaPresencial) $this->gastosAdicionales['Verificación Presencial de Empresa'] = 350.00;
         if ($this->verificacionSustanciasPeligrosas) $this->gastosAdicionales['Envio de producto peligroso'] = 250.00;
@@ -1215,153 +1309,6 @@ class CalculadoraMaritima extends Component
             'nombre_destino' => $nombreDestino,
             'valor_facturado' => $valorFacturado,
             'cbm_facturado' => $tipoCobro === 'CBM' ? $valorUsado : null,
-        ];
-    }
-
-    /**
-     * Calcula el costo del envío SOLO por CBM (volumen real)
-     * Ideal para LCL cuando ya tienes el volumen en m³
-     */
-    private function calculateShippingPackagePerDimensions(float $cbmReal): array
-    {
-        $TARIFA_POR_CBM = [
-            ['min' => 20,   'precio' => 164],
-            ['min' => 15,   'precio' => 174],
-            ['min' => 11,   'precio' => 184],
-            ['min' => 8,    'precio' => 194],
-            ['min' => 5,    'precio' => 204],
-            ['min' => 3,    'precio' => 214],
-            ['min' => 1,    'precio' => 224],
-            ['min' => 0.5,  'precio' => 137],
-            ['min' => 0.25, 'precio' => 70]
-        ];
-
-
-        $cbmFacturable = max($cbmReal, 0.25);
-
-
-        $precioPorCbm = 60;
-        $cbmAplicado = 0.25;
-
-        foreach ($TARIFA_POR_CBM as $tramo) {
-            if ($cbmFacturable >= $tramo['min']) {
-                $precioPorCbm = $tramo['precio'];
-                $cbmAplicado = $tramo['min'];
-                break;
-            }
-        }
-
-        $costoFleteTotal = $precioPorCbm * $this->cantidad;
-
-        // =====================================================
-        // DESGLOSE DETALLADO DEL FLETE MARÍTIMO PORCENTUAL
-        // =====================================================
-        $desgloseFleteMaritimo = [];
-
-
-        $distribucion = [
-            'grupo1' => 0.60,
-            'grupo2' => 0.25,
-            'grupo3' => 0.15,
-        ];
-
-        $grupo1 = $precioPorCbm * $distribucion['grupo1'];
-        $grupo2 = $precioPorCbm * $distribucion['grupo2'];
-        $grupo3 = $precioPorCbm * $distribucion['grupo3'];
-
-
-        $desgloseFleteMaritimo['─ Grupo 1: Costos Naviera y Documentación'] = null;
-        $desgloseFleteMaritimo['   ├─ Flete Marítimo Principal (Naviera)'] = number_format($grupo1 * 0.75, 2);
-        $desgloseFleteMaritimo['   ├─ MBL y Documentación Oficial'] = number_format($grupo1 * 0.15, 2);
-        $desgloseFleteMaritimo['   └─ Seguro de Flete Básico'] = number_format($grupo1 * 0.10, 2);
-        $desgloseFleteMaritimo['   Subtotal Grupo 1'] = number_format($grupo1, 2);
-
-        $desgloseFleteMaritimo['─ Grupo 2: Gastos Operativos en Origen'] = null;
-        $desgloseFleteMaritimo['   ├─ Handling, Gate In y THC'] = number_format($grupo2 * 0.40, 2);
-        $desgloseFleteMaritimo['   ├─ Comisión Giro China'] = number_format($grupo2 * 0.30, 2);
-        $desgloseFleteMaritimo['   └─ BL Fee y Otros Operativos'] = number_format($grupo2 * 0.30, 2);
-        $desgloseFleteMaritimo['   Subtotal Grupo 2'] = number_format($grupo2, 2);
-
-        $desgloseFleteMaritimo['─ Grupo 3: Margen y Comisiones'] = null;
-        $desgloseFleteMaritimo['   ├─ Comisión Logística / Margen'] = number_format($grupo3 * 0.50, 2);
-        $desgloseFleteMaritimo['   ├─ Comisiones Bancarias'] = number_format($grupo3 * 0.20, 2);
-        $desgloseFleteMaritimo['   ├─ Flete Interno Adicional'] = number_format($grupo3 * 0.20, 2);
-        $desgloseFleteMaritimo['   └─ Seguro Complementario'] = number_format($grupo3 * 0.10, 2);
-        $desgloseFleteMaritimo['   Subtotal Grupo 3'] = number_format($grupo3, 2);
-
-        // =====================================================
-        // CONSTRUCCIÓN DEL DESGLOSE GENERAL
-        // =====================================================
-        $this->desglose = [
-            'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
-            'Costo de Envío Internacional' => number_format($costoFleteTotal, 2, '.', ''),
-        ];
-
-
-        $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
-
-        $costoRecojo = $this->costoRecojo;
-        $resultadoDestino = $this->calcularCostoDestino();
-        $costoDestino = $resultadoDestino['costo'];
-        $nombreDestino = $resultadoDestino['nombre'];
-
-        $additional_services = 0;
-        if ($this->recojoAlmacen) {
-            $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumenTotal, 2, '.', ''); // ajustado por cantidad
-            $additional_services = $costoRecojo * $this->volumenTotal;
-        }
-
-        if ($costoDestino > 0 && $nombreDestino) {
-            $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
-        }
-
-        // =====================================================
-        // NUEVO: SEPARACIÓN DE GASTOS ADICIONALES
-        // =====================================================
-        $this->gastosAdicionales = [];
-        if ($this->recojoAlmacen) {
-            $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumenTotal, 2, '.', '');
-        }
-        if ($costoDestino > 0 && $nombreDestino) {
-            $this->gastosAdicionales["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
-        }
-        if ($this->verificacionProducto) $this->gastosAdicionales['Verificación de Producto'] = number_format($this->calculateVerificationCost(), 2, '.', '');
-        if ($this->verificacionCalidad) $this->gastosAdicionales['Verificación de Calidad'] = 50.00;
-        if ($this->verificacionEmpresaDigital) $this->gastosAdicionales['Verificación de Empresa Digital'] = 100.00;
-        if ($this->verificacionSustanciasPeligrosas) $this->gastosAdicionales['Envio de producto peligroso'] = 250.00;
-        if ($this->verificacionEmpresaPresencial) $this->gastosAdicionales['Verificación Presencial de Empresa'] = 350.00;
-
-        $costo_envio_interno = 15;
-        $despacho =  33.70;
-        $valorMercancia = floatval($this->valorMercancia);
-        $total_tiered_charge = $this->calculate_tiered_charge($valorMercancia);
-
-        $this->desglose['Costo de Envío Interno'] = number_format($costo_envio_interno, 2, '.', '');
-        $this->desglose['Despacho'] = number_format($despacho * $this->volumen, 2, '.', '');
-        $this->desglose['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
-        $this->gastosAdicionales['Costo de Envío Interno'] = number_format($costo_envio_interno, 2, '.', '');
-        $this->gastosAdicionales['Despacho'] = number_format($despacho * $this->volumen, 2, '.', '');
-        $this->gastosAdicionales['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
-
-
-
-        $total = $this->valorMercancia + $costoFleteTotal + $additional_services + $costoDestino + $costo_envio_interno + $despacho + $total_tiered_charge;
-
-        return [
-            'costo' => number_format($total, 2, '.', ''),
-            'tipo'  => 'CBM',
-            'unidad' => 'm³',
-            'valor_facturado' => $costoFleteTotal,
-            'cbm_facturado' => $cbmAplicado,
-            'costo_destino' => $costoDestino,
-            'nombre_destino' => $nombreDestino,
-            'detalle' => [
-                'cbm_real' => $cbmReal,
-                'cbm_facturado' => $cbmAplicado,
-                'precio_por_unidad' => $precioPorCbm,
-                'cantidad' => $this->cantidad,
-                'flete_total' => $costoFleteTotal
-            ]
         ];
     }
 
@@ -1916,6 +1863,8 @@ class CalculadoraMaritima extends Component
             'departamentoDestino',
             'verificacionProducto',
             'verificacionCalidad',
+            'seguroCarga',
+            'examenPrevio',
             'verificacionEmpresaDigital',
             'verificacionSustanciasPeligrosas',
             'verificacionEmpresaPresencial'
