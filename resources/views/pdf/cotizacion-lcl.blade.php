@@ -218,11 +218,13 @@
         $iva = (float)($gastosAdicionales['Impuesto IVA'] ?? 0);
         $despacho = (float)($gastosAdicionales['Despacho'] ?? 0);
 
+        $seguro = (float)($gastosAdicionales['Seguro de la Carga'] ?? 0);
+
+        $comisionPagoInternacional = (float)($gastosAdicionales['Comisión Pago Internacional'] ?? 0);
+
         $impuesto = (float) $gravamenArancelario + $iva;
 
         $agencia = (float)($gastosAdicionales['Agencia despachante'] ?? 0);
-
-        $recojoAlmacen = (float)($gastosAdicionales['Recojo Almacén'] ?? 0);
 
         // Lista de keys a EXCLUIR de la izquierda porque van a la derecha o no se muestran
         $excludedKeys = [
@@ -231,7 +233,9 @@
         'Base Imponible',
         'Despacho',
         'Agencia despachante',
-        'Impuesto' // Key vieja agregada
+        'Impuesto',
+        'Seguro de la Carga',
+        'Comisión Pago Internacional'
         ];
         $granTotalFinal = $impuesto + $despacho + $agencia;
         $granTotalFinalEnvio = $fleteInternacional + $subtotalGastos + $gestionLogisticaBolivia + $brokersChina;
@@ -275,6 +279,10 @@
                     <td>unids</td>
                     <td>$ {{ number_format($prod['valor_unitario'], 2) }}</td>
                     <td>${{ number_format($prod['total_valor'], 2) }}</td>
+                </tr>
+                <tr>
+                    <td colspan="6" style="text-align: right;">Valor Total de la compra: </td>
+                    <td>${{ number_format($prod['total_valor'] + $seguro + $comisionPagoInternacional, 2) }}</td>
                 </tr>
                 @endforeach
                 @elseif(!empty($desglose_reporte))
@@ -321,7 +329,7 @@
                                 <td style="text-align: right; padding: 8px 15px; font-weight: bold;">$ {{ number_format($fleteInternacional, 2) }}</td>
                             </tr>
                             <tr style="height: auto;">
-                                <td style="text-align: left; padding: 8px 15px;">Gestión Logística</td>
+                                <td style="text-align: left; padding: 8px 15px;">Gestión Logística en Bolivia</td>
                                 <td style="text-align: right; padding: 8px 15px; font-weight: bold;">$ {{ number_format($gestionLogisticaBolivia, 2) }}</td>
                             </tr>
                             <tr style="height: auto;">
@@ -421,7 +429,9 @@
         <div class="footer-note" style="margin-top: 20px;">
             <strong>NOTA:</strong><br>
             <ul class="footer-note-list">
+                @if(!empty($desglose_reporte['nombre_destino']) && !empty($desglose_reporte['costo_destino']))
                 <li style="font-weight: bold; font-size: 12px;">Costo de envío a {{ $desglose_reporte['nombre_destino'] }} tiene un costo de $ {{ number_format($desglose_reporte['costo_destino'], 2) }}</li>
+                @endif
                 <li style="font-weight: bold; font-size: 12px;">Esta cotizacion tiene una validez de 7 dias.</li>
                 <li style="font-weight: bold; font-size: 12px;">Esta cotizacion podria sufrir alteraciones en caso de alguna revaloracion por parte de la aduana.</li>
                 <li style="font-weight: bold; font-size: 12px;">Asume que el consignatario que tiene cualquier permiso que sea requerido por autoridades en el país de destino</li>

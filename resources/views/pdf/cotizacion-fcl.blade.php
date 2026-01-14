@@ -313,15 +313,39 @@
                     $valorCarga = $item['valorMercancia'] ?? 0;
                     $fleteMaritimo = $item['precio'] ?? 0;
                     // Costos fijos/hardcoded
-                    $seguroComisiones = ($fleteMaritimo + $valorCarga) * 0.07; // Aproximación basada en Booking 50%
+                    $seguroComisiones = ($fleteMaritimo + $valorCarga) * 0.06; // Aproximación basada en Booking 50%
                     $transporte_terrestre = $item['transporte_terrestre'] ?? 0;
                     $despachante = $item['despachante'] ?? 0;
                     $gravamenArancelario = $item['gravamen'] ?? 0;
                     $agencia_despachante = $item['agencia_despachante'] ?? 0;
                     $impuesto = $item['impuesto'] ?? 0;
 
-                    $costoAdicionalCargaPeligrosa = 0;
-                    $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoAdicionalCargaPeligrosa;
+
+                    // Retrieve boolean flags and costs
+                    $isCargaPeligrosa = $item['carga_peligrosa'] ?? false;
+                    $isExamenPrevio = $item['examen_previo'] ?? false;
+                    $isSeguroCarga = $item['seguro_carga'] ?? false;
+                    // representation and swift are handled differently but costs are aggregated in costo_adicionales?
+                    // Re-calculate or use passed values if available.
+                    // CalculadoraMaritima logic:
+                    // $costoAdicionales includes: Dangerous, Pre-exam, Swift, Insurance (partially/fully?)
+                    // Let's break it down or use specific logic for display
+
+                    $costoPeligrosa = $isCargaPeligrosa ? 250.00 : 0;
+                    $costoExamen = $isExamenPrevio ? 35.00 : 0;
+
+                    // Swift Commission
+                    $comisionSwiftType = $item['comision_swift'] ?? 'swift';
+                    $tasaSwift = ($comisionSwiftType === 'swift') ? 0.01 : 0.025;
+                    $costoSwift = $valorCarga * $tasaSwift;
+
+                    // Seguro Carga (Client cost)
+                    // Logic in Controller: $seguroEstimado = $this->seguroCargaFCL ? ($valorMercancia * 0.02) : 0;
+                    $costoSeguroCliente = $isSeguroCarga ? ($valorCarga * 0.02) : 0;
+
+                    $costoRepresentacion = 0;
+                    if ($item['representacion'] ?? false) { $costoRepresentacion = 3500; }
+
                     @endphp
 
                     <tr>
@@ -344,14 +368,34 @@
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE ENVIO MARITIMO {{ $origen }} - {{ $destino }}</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">${{ number_format($fleteMaritimo, 2) }}</td>
                     </tr>
+
+                    @if($isCargaPeligrosa)
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO ADICIONAL DE ENVIO POR CARGA PELIGROSA CON CERTIFICACION</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO ADICIONAL DE ENVIO POR CARGA PELIGROSA</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoPeligrosa, 2) }}</td>
                     </tr>
+                    @endif
+
+                    @if($isExamenPrevio)
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO ADICIONAL DE ENVIO POR CARGA PELIGROSA SIN CERTIFICACION</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoAdicionalCargaPeligrosa, 2) }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">EXAMEN PREVIO</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoExamen, 2) }}</td>
                     </tr>
+                    @endif
+
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SEGURO, GIRO INTERNACIONAL Y COMISIONES</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoSwift + $seguroComisiones + $costoSeguroCliente, 2) }}</td>
+                    </tr>
+
+
+                    @if($costoRepresentacion > 0)
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">REPRESENTACIÓN / USUARIO IMPORTACIÓN</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoRepresentacion, 2) }}</td>
+                    </tr>
+                    @endif
+
                     <tr>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">DESCONSOLIDACION</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
@@ -364,13 +408,10 @@
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">BOOKING</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($item['booking'] ?? 0, 2) }}</td>
                     </tr>
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SEGURO, GIRO INTERNACIONAL Y COMISIONES</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($seguroComisiones, 2) }}</td>
-                    </tr>
                     @php
-                    // Update total to include port fees and booking
-                    $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoAdicionalCargaPeligrosa + ($item['gestionPortuaria'] ?? 0) + ($item['booking'] ?? 0);
+                    // Update total to include new costs
+                    // Note: seguroComisiones was initially 7% of value+freight. Keeping it as is for "Gastos de Documentación y Otros" but separating the explicit additional costs.
+                    $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoPeligrosa + $costoExamen + $costoSwift + $costoSeguroCliente + $costoRepresentacion + ($item['gestionPortuaria'] ?? 0) + ($item['booking'] ?? 0);
                     $exchangeRateP2P = (isset($p2pPrice) && is_numeric($p2pPrice)) ? (float)$p2pPrice : 9.70;
                     @endphp
                     <tr>
@@ -392,19 +433,15 @@
                     $totalImpuesto = $gravamenArancelario + $transporte_terrestre + $impuesto + $despachante + $agencia_despachante;
                     @endphp
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">GRAVAMEN ARANCELARIO</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($gravamenArancelario, 2) }}</td>
-                    </tr>
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TRANSPORTE TERRESTRE(Puerto Iquique - Cbba)</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TRANSPORTE TERRESTRE (Puerto Iquique - {{ $clienteCiudad ?? '-' }})</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($transporte_terrestre, 2) }}</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">IMPUESTO</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($impuesto , 2) }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">CALCULO ESTIMADO DE IMPUESTOS</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($impuesto + $gravamenArancelario, 2) }}</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">DESPACHO</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">CARGOS DE IMPORTACION Y DESPACHO </td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($despachante, 2) }}</td>
                     </tr>
                     <tr>
@@ -435,7 +472,7 @@
         </tr>
     </table>
 
-    <div class="footer-note" style="margin-top: 40px;">
+    <div class="footer-note" style="margin-top: 20px;">
         <strong>NOTA:</strong><br>
         <ul class="footer-note-list">
             <li style="font-weight: bold; font-size: 12px;">La presente cotizacion tiene un plazo limite esteblecido.</li>

@@ -126,7 +126,7 @@
                         <!-- Image Upload (Square with Preview) -->
                         <div style="width: 150px; height: 150px; min-width: 150px; min-height: 150px;" class="shrink-0 relative group">
                             <label class="block w-full h-full rounded-lg border-2 border-dashed border-yellow-500/30 hover:border-yellow-500 bg-black/20 cursor-pointer overflow-hidden transition-all relative">
-                                <input type="file" wire:model="temp_manualImagen" class="hidden">
+                                <input type="file" wire:model="temp_manualImagen" accept="image/*" class="hidden">
                                 @if ($temp_manualImagen)
                                 <img src="{{ $temp_manualImagen->temporaryUrl() }}" class="absolute inset-0 w-full h-full object-cover">
                                 @elseif ($temp_imagen)
@@ -577,7 +577,7 @@
                                     class="mt-1 w-4 h-4 text-yellow-500 border-gray-600 focus:ring-yellow-500 bg-black/40">
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">Pago CON Swift</span>
+                                        <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">CON Swift Bancario / USD</span>
                                     </div>
                                     <p class="text-gray-500 text-xs mt-0.5">Transferencia bancaria internacional estándar (SWIFT).</p>
                                 </div>
@@ -589,7 +589,7 @@
                                     class="mt-1 w-4 h-4 text-yellow-500 border-gray-600 focus:ring-yellow-500 bg-black/40">
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">Pago SIN Swift / USDT / China</span>
+                                        <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">SIN Swift Bancario / USDT</span>
                                     </div>
                                     <p class="text-gray-500 text-xs mt-0.5">Pagos directos en China, USDT o sin uso de red SWIFT.</p>
                                 </div>
@@ -605,7 +605,7 @@
                                 <label for="seguroCarga" class="flex items-center justify-between cursor-pointer">
                                     <div>
                                         <h5 class="text-white font-semibold text-sm">¿Requiere seguro de la carga?</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">Seguro para todo tipo de riesgos de la carga.</p>
+                                        <p class="text-gray-400 text-xs mt-0.5">Seguro contra todo tipo de riesgo en la mercancia y transporte.</p>
                                     </div>
                                 </label>
                             </div>
@@ -619,7 +619,7 @@
                                 <label for="examenPrevio" class="flex items-center justify-between cursor-pointer">
                                     <div>
                                         <h5 class="text-white font-semibold text-sm">¿Requiere un examen previo?</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">-</p>
+                                        <p class="text-gray-400 text-xs mt-0.5">Solicite la revision de su mercancia. Solo para productos que requieren verificacion en instalaciones aduaneras.</p>
                                     </div>
                                 </label>
                             </div>

@@ -151,6 +151,125 @@
             </div>
         </div>
 
+        <div class="bg-white/5 border border-white/10 rounded-xl p-4 animate-fade-in">
+            <div class="p-6 shadow-xl">
+                <h3 class="text-yellow-500 font-bold mb-6 text-lg uppercase tracking-widest flex items-center">
+                    <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
+                    </svg>
+                    Servicios Adicionales
+                </h3>
+                <p class="text-gray-400 text-sm mb-6">Selecciona los servicios adicionales que requieras para tu envío</p>
+
+                <div class="space-y-6">
+                    <!-- Transporte Terrestre -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model="transporteTerrestreFCL" id="transporteTerrestreFCL"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="transporteTerrestreFCL" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">Requiere transporte terrestre para el translado de su mercancía?</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">----.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Verificación Sustancias Peligrosas -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model="verificacionSustanciasPeligrosasFCL" id="verificacionSustanciasPeligrosasFCL"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="verificacionSustanciasPeligrosasFCL" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">¿Los productos que envia contienen sustancias peligrosas?</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Envio de sustancias peligrosas como: explosivos, gases, liquidos y solidos infamable, etc.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pagos internacionales con swift 1% o sin swift 2.5%-->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <h5 class="text-white font-semibold text-sm mb-3">Método de Pago Internacional</h5>
+
+                        <div class="space-y-3">
+                            <!-- Opción Con Swift (1%) -->
+                            <label class="flex items-start space-x-3 cursor-pointer group">
+                                <input type="radio" wire:model="pagosInternacionalesSwiftFCL" value="swift"
+                                    class="mt-1 w-4 h-4 text-yellow-500 border-gray-600 focus:ring-yellow-500 bg-black/40">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">CON Swift Bancario / USD</span>
+                                    </div>
+                                    <p class="text-gray-500 text-xs mt-0.5">Transferencia bancaria internacional estándar (SWIFT).</p>
+                                </div>
+                            </label>
+
+                            <!-- Opción Sin Swift (2.5%) -->
+                            <label class="flex items-start space-x-3 cursor-pointer group">
+                                <input type="radio" wire:model="pagosInternacionalesSwiftFCL" value="sin_swift"
+                                    class="mt-1 w-4 h-4 text-yellow-500 border-gray-600 focus:ring-yellow-500 bg-black/40">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">SIN Swift Bancario / USDT</span>
+                                    </div>
+                                    <p class="text-gray-500 text-xs mt-0.5">Pagos directos en China, USDT o sin uso de red SWIFT.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Seguro de la carga -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model="seguroCargaFCL" id="seguroCargaFCL"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="seguroCargaFCL" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">¿Requiere seguro de la carga?</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Seguro contra todo tipo de riesgo en la mercancia y transporte.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model="examenPrevioFCL" id="examenPrevioFCL"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="examenPrevioFCL" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">¿Requiere un examen previo?</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Solicite la revision de su mercancia. Solo para productos que requieren verificacion en instalaciones aduaneras.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model="representacionImportacionFCL" id="representacionImportacionFCL"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="representacionImportacionFCL" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">¿Requiere representacion o usuario para su importacion?</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Solicite la representacion o usuario para su importacion.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
             <!-- Puerto Origen (POL) con Autocompletado -->
             <div class="relative">

@@ -137,6 +137,14 @@ class CalculadoraMaritima extends Component
     public $verificacionEmpresaPresencial = false;
     public $pagosInternacionalesSwift = 'swift';
 
+    // FCL Specific Properties
+    public $transporteTerrestreFCL = false;
+    public $verificacionSustanciasPeligrosasFCL = false;
+    public $pagosInternacionalesSwiftFCL = 'swift'; // 'swift' or 'sin_swift'
+    public $seguroCargaFCL = false;
+    public $examenPrevioFCL = false;
+    public $representacionImportacionFCL = false;
+
     public $selectedRateIndex = null;
 
     public $tipoCobroActual = '';
@@ -388,11 +396,14 @@ class CalculadoraMaritima extends Component
     public function agregarProducto()
     {
         $this->validate([
+            'temp_manualImagen' => 'nullable|image|max:1024', // 1MB Max
             'temp_producto' => 'required|min:3',
             'temp_cantidad' => 'required|numeric|min:1',
             'temp_valor_unitario' => 'required|numeric|min:0',
             'temp_peso_unitario' => 'required|numeric|gt:0',
         ], [
+            'temp_manualImagen.image' => 'El archivo debe ser una imagen',
+            'temp_manualImagen.max' => 'La imagen no debe pesar más de 1MB',
             'temp_producto.required' => 'El nombre es obligatorio',
             'temp_cantidad.required' => 'La cantidad es obligatoria',
             'temp_cantidad.min' => 'La cantidad debe ser mayor a 0',
@@ -537,10 +548,14 @@ class CalculadoraMaritima extends Component
                 $this->totalCBMCobrables += $cbm;
             } elseif ($largo > 0 && $ancho > 0 && $alto > 0) {
                 $volumenInfo = $this->obtenerVolumenTotal($largo, $ancho, $alto, 0, $cantidadTotal);
+                Log::info('volumenInfo: ' . json_encode($volumenInfo));
                 if ($volumenInfo['tipoCbm'] == 'CBM') {
                     $this->totalCBMCobrables += $volumenInfo['cbm'];
                     $this->valorCBMKG = $pesoTotal;
                     $this->tipoCobro = 'CBM';
+                    Log::info('totalCBMCobrables: ' . $this->totalCBMCobrables);
+                    Log::info('valorCBMKG: ' . $this->valorCBMKG);
+                    Log::info('tipoCobro: ' . $this->tipoCobro);
                 } else {
                     $this->totalCBMCobrables += $volumenInfo['kg'];
                     $this->valorCBMKG +=  $volumenInfo['kg'];
@@ -566,12 +581,6 @@ class CalculadoraMaritima extends Component
 
     function obtenerPesoVolumetrico($largo, $alto, $ancho, $peso, $cbm)
     {
-        Log::info("--------obtenerPesoVolumetrico--------");
-        Log::info("largo: " . $largo);
-        Log::info("alto: " . $alto);
-        Log::info("ancho: " . $ancho);
-        Log::info("peso: " . $peso);
-        Log::info("cbm: " . $cbm);
         if ($largo === 0 && $alto === 0 && $ancho === 0) {
             return $cbm;
         }
@@ -591,7 +600,7 @@ class CalculadoraMaritima extends Component
             return $cbm;
         }
 
-        $volumenCalculado = ($largo * $alto * $ancho) / 1_000_000;
+        $volumenCalculado = (($largo * $alto * $ancho) / 1_000_000) * $qty;
         if ($volumenCalculado < 0.01) {
             $cbmPorVolumen = (($largo * $alto * $ancho) / 5000) * $qty;
             return [
@@ -766,13 +775,21 @@ class CalculadoraMaritima extends Component
         $valorMercancia = floatval($this->valorMercancia);
         $agencia_despachante = $this->calculate_tiered_charge($valorMercancia);
         $despachante = 768.68;
-        $transporte_terrestre = 3600;
+
+        $transporte_terrestre = $this->transporteTerrestreFCL ? 3600 : 0;
         $transporte_terrestre_cif = $transporte_terrestre / 2;
-        $seguroEstimado = $valorMercancia * 0.02;
-        $baseCIF = $valorMercancia + $precioBase + $transporte_terrestre_cif + $seguroEstimado;
+
+        $seguroEstimado = $this->seguroCargaFCL ? ($valorMercancia * 0.02) : 0;
+        $seguroParaImpuestos = $valorMercancia * 0.02;
+
+        $valorFlete = $valorMercancia * 0.10;
+
+        $baseCIF = $valorMercancia + $valorFlete + $transporte_terrestre_cif + $seguroParaImpuestos;
+
         $gravamen = $baseCIF * ($this->temp_arancel / 100);
         $iva = ($baseCIF + $gravamen) * (14.94 / 100);
         $impuesto = $iva + $gravamen;
+
         if ($valorMercancia > 0) {
             $this->desglose['Valor de la Mercancía'] = number_format($valorMercancia, 2, '.', '');
         }
@@ -793,7 +810,39 @@ class CalculadoraMaritima extends Component
         $this->desglose['   Transporte Terrestre'] = number_format($transporte_terrestre, 2);
         $this->desglose['   Impuesto'] = number_format($impuesto, 2);
 
-        $this->resultado = $precioBase + $subtotalPortuaria + ($precioBase * 0.05) + $valorMercancia;
+        // Servicios Adicionales (FCL)
+        $costoAdicionales = 0;
+
+        if ($this->verificacionSustanciasPeligrosasFCL) {
+            $this->desglose['   Envio de producto peligroso'] = 250.00;
+            $costoAdicionales += 250.00;
+        }
+
+        if ($this->examenPrevioFCL) {
+            $this->desglose['   Examen Previo'] = 35.00;
+            $costoAdicionales += 35.00;
+        }
+
+        // Comisión Swift (1% o 2.5% del valor mercancía)
+        $tasaSwift = ($this->pagosInternacionalesSwiftFCL === 'swift') ? 0.01 : 0.025;
+        $costoSwift = $valorMercancia * $tasaSwift;
+        $this->desglose['   Comisión Pago Internacional'] = number_format($costoSwift, 2);
+        $costoAdicionales += $costoSwift;
+
+        if ($this->seguroCargaFCL) {
+            $this->desglose['   Seguro de Carga'] = number_format($seguroEstimado, 2);
+            $costoAdicionales += $seguroEstimado;
+        }
+
+        // Representación
+        if ($this->representacionImportacionFCL) {
+            // Costo a definir por el usuario, asumiremos un valor o 0 si no se especificó
+            // Por ahora $50 placeholder o lógica custom
+            // $this->desglose['   Representación Importación'] = 50.00;
+            // $costoAdicionales += 50.00; 
+        }
+
+        $this->resultado = $precioBase + $subtotalPortuaria + ($precioBase * 0.05) + $valorMercancia + $transporte_terrestre + $impuesto + $agencia_despachante + $despachante + $costoAdicionales;
 
         $this->desglose_reporte = [
             'ref' => $this->id_producto ?: 'FCL-' . strtoupper($container),
@@ -810,7 +859,15 @@ class CalculadoraMaritima extends Component
             'despachante' => $despachante,
             'transporte_terrestre' => $transporte_terrestre,
             'gravamen' => $gravamen,
-
+            'costo_adicionales' => $costoAdicionales, // Para uso en PDF si se requiere
+            'iva' => $iva,
+            'impuesto' => $impuesto,
+            'carga_peligrosa' => $this->verificacionSustanciasPeligrosasFCL,
+            'examen_previo' => $this->examenPrevioFCL,
+            'seguro_carga' => $this->seguroCargaFCL,
+            'representacion' => $this->representacionImportacionFCL,
+            'comision_swift' => $this->pagosInternacionalesSwiftFCL,
+            'seguro_carga' => $this->seguroCargaFCL,
         ];
         $this->tipoCobroActual = 'Contenedor Completo (FCL)';
         $this->unidadActual = "Contenedor " . $containerName;
@@ -958,43 +1015,12 @@ class CalculadoraMaritima extends Component
         // ---------------------------------------------------------
 
         if ($this->tipoCobro == 'CBM') {
-            $shippingPackage = $this->calculateShippingPackage($this->pesoKGTotal, $this->volumenUnitario);
+            $shippingPackage = $this->calculateShippingPackage($this->pesoKGTotal, $this->totalCBMCobrables);
         } else {
             $maxPeso = max($this->totalCBMCobrables, $this->pesoKGTotal);
-            $shippingPackage = $this->calculateShippingPackage($maxPeso, $this->volumenUnitario);
+            $shippingPackage = $this->calculateShippingPackage($maxPeso, $this->totalCBMCobrables);
         }
 
-        $totalArancel = 0;
-        $iva = 0;
-        $impuesto = 0;
-
-        foreach ($this->productos as $prod) {
-            $arancelPct = isset($prod['arancel']) ? floatval($prod['arancel']) : 0;
-            $seguro = $prod['total_valor'] * 0.02;
-            $totalArancel += ($prod['total_valor'] + $shippingPackage['valor_facturado'] + $seguro) * ($arancelPct / 100);
-            $subtotalArancel = $prod['total_valor'] + $shippingPackage['valor_facturado'] + $seguro;
-            $iva += ($subtotalArancel + $totalArancel) * (14.94 / 100);
-            $impuesto += ($totalArancel + $iva);
-            $this->totalLogisticaBolivia = ($prod['total_valor'] + $shippingPackage['valor_facturado']  + $this->costo_envio_interno) * 0.03;
-            $this->totalBrokersChina = ($prod['total_valor'] + $shippingPackage['valor_facturado']  + $this->costo_envio_interno) * 0.035;
-        }
-
-        // CÁLCULO DE COMISIÓN POR PAGO INTERNACIONAL
-        $swiftFee = 0;
-        $tasaSwift = 0;
-
-        if ($this->pagosInternacionalesSwift === 'swift') {
-            $tasaSwift = 0.01; // 1%
-        } elseif ($this->pagosInternacionalesSwift === 'sin_swift') {
-            $tasaSwift = 0.025; // 2.5%
-        }
-
-        $swiftFee = $this->valorMercancia * $tasaSwift;
-
-        $this->gastosAdicionales['Comisión Pago Internacional'] = number_format($swiftFee, 2, '.', '');
-        $this->desglose['Comisión Pago Internacional'] = number_format($swiftFee, 2, '.', '');
-        $this->gastosAdicionales['Gravamen Arancelario'] = number_format($totalArancel, 2, '.', '');
-        $this->gastosAdicionales['Impuesto IVA'] = number_format($iva, 2, '.', '');
         $this->resultado = (float) $shippingPackage['costo'];
         $this->tipoCobroActual = $shippingPackage['tipo'] ?? '';
         $this->unidadActual = $shippingPackage['unidad'] ?? '';
@@ -1157,19 +1183,51 @@ class CalculadoraMaritima extends Component
             $valorFacturado = $costoFinal * $pesoKg;
         } else {
             $valorFacturado = $costoFinal * $cbmReal;
+            Log::info('valorFacturado: ' . $valorFacturado);
+            Log::info('costoFinal: ' . $costoFinal);
+            Log::info('cbmReal: ' . $cbmReal);
         }
+
+
+        $totalArancel = 0;
+        $iva = 0;
+        $impuesto = 0;
+
+        foreach ($this->productos as $prod) {
+            $arancelPct = isset($prod['arancel']) ? floatval($prod['arancel']) : 0;
+            $seguro = $prod['total_valor'] * 0.02;
+            $valorFlete = $prod['total_valor'] * 0.20;
+            $totalArancel += ($prod['total_valor'] + $seguro + $valorFlete) * ($arancelPct / 100);
+            $subtotalArancel = $prod['total_valor'] + $seguro + $valorFlete;
+            $iva += ($subtotalArancel + $totalArancel) * (14.94 / 100);
+            $impuesto += ($totalArancel + $iva);
+            $this->totalLogisticaBolivia = ($prod['total_valor'] + $valorFacturado  + $this->costo_envio_interno) * 0.03;
+            $this->totalBrokersChina = ($prod['total_valor'] + $valorFacturado  + $this->costo_envio_interno) * 0.035;
+        }
+
+        // CÁLCULO DE COMISIÓN POR PAGO INTERNACIONAL
+        $swiftFee = 0;
+        $tasaSwift = 0;
+
+        if ($this->pagosInternacionalesSwift === 'swift') {
+            $tasaSwift = 0.01; // 1%
+        } elseif ($this->pagosInternacionalesSwift === 'sin_swift') {
+            $tasaSwift = 0.025; // 2.5%
+        }
+
+        $swiftFee = $this->valorMercancia * $tasaSwift;
+
+
+
+
         $almacen = 3.59;
         $documentacion = 17.24;
         $formularios = 14.37;
 
+        $representacion = ($this->valorMercancia * 3500) / 25000;
 
-        $despacho = $almacen + $documentacion + $formularios + $this->valorCBMKG;
 
-        Log::info('valorCBMKG: ' . $this->valorCBMKG);
-        Log::info('despacho: ' . $despacho);
-        Log::info('almacen: ' . $almacen);
-        Log::info('documentacion: ' . $documentacion);
-        Log::info('formularios: ' . $formularios);
+        $despacho = $almacen + $documentacion + $formularios + $this->valorCBMKG + $representacion;
 
         $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
 
@@ -1244,6 +1302,8 @@ class CalculadoraMaritima extends Component
             'Brokers en China' => number_format($this->totalBrokersChina, 2, '.', ''),
             'Despacho' => number_format($despacho, 2, '.', ''),
             'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
+            'Impuesto' => number_format($impuesto, 2, '.', ''),
+            'Comisión Pago Internacional' => number_format($swiftFee, 2, '.', ''),
 
         ];
         $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
@@ -1291,6 +1351,9 @@ class CalculadoraMaritima extends Component
         $this->gastosAdicionales['Costo de Envío Interno'] = number_format($this->costo_envio_interno, 2, '.', '');
         $this->gastosAdicionales['Despacho'] = number_format($despacho, 2, '.', '');
         $this->gastosAdicionales['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
+        $this->gastosAdicionales['Gravamen Arancelario'] = number_format($totalArancel, 2, '.', '');
+        $this->gastosAdicionales['Impuesto IVA'] = number_format($iva, 2, '.', '');
+        $this->gastosAdicionales['Comisión Pago Internacional'] = number_format($swiftFee, 2, '.', '');
 
         if ($this->verificacionProducto) $this->gastosAdicionales['Verificación de Producto'] = number_format($this->calculateVerificationCost(), 2, '.', '');
         if ($this->verificacionCalidad) $this->gastosAdicionales['Verificación de Calidad'] = 50.00;
@@ -1300,7 +1363,19 @@ class CalculadoraMaritima extends Component
         if ($this->verificacionEmpresaPresencial) $this->gastosAdicionales['Verificación Presencial de Empresa'] = 350.00;
         if ($this->verificacionSustanciasPeligrosas) $this->gastosAdicionales['Envio de producto peligroso'] = 250.00;
 
-        $total = $this->valorMercancia + $valorFacturado + $addServices + $costoDestino + $costoVerificacion + $total_tiered_charge + $despacho + $this->costo_envio_interno;
+        $total = $this->valorMercancia + $valorFacturado + $this->totalLogisticaBolivia + $this->totalBrokersChina + $addServices + $costoDestino + $costoVerificacion + $totalArancel + $iva + $total_tiered_charge + $despacho + $this->costo_envio_interno + $swiftFee;
+        Log::info($total);
+        Log::info("Valor Mercancia: " . $this->valorMercancia);
+        Log::info("Valor Facturado: " . $valorFacturado);
+        Log::info("Add Services: " . $addServices);
+        Log::info("Costo Destino: " . $costoDestino);
+        Log::info("Costo Verificacion: " . $costoVerificacion);
+        Log::info("Total Arancel: " . $totalArancel);
+        Log::info("IVA: " . $iva);
+        Log::info("Total Tiered Charge: " . $total_tiered_charge);
+        Log::info("Despacho: " . $despacho);
+        Log::info("Costo Envio Interno: " . $this->costo_envio_interno);
+        Log::info("Swift Fee: " . $swiftFee);
         return [
             'costo'  => number_format($total, 2, '.', ''),
             'tipo'   => $tipoCobro,
