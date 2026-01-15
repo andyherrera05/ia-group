@@ -70,6 +70,7 @@ class CalculadoraAerea extends Component
     // Nuevas propiedades para servicios adicionales
     public $verificacionSustanciasPeligrosas = false;
     public $pagosInternacionalesSwift = 'swift'; // 'swift' (1%) o 'sin_swift' (2.5%)
+    public $requierePagoInternacional = false;
     public $seguroCarga = false;
     public $examenPrevio = false;
 
@@ -611,13 +612,16 @@ class CalculadoraAerea extends Component
 
         // Lógica de Pagos Internacionales
         // Swift (1%) o Sin Swift (2.5%)
-        $tasaPagoInternacional = ($this->pagosInternacionalesSwift === 'swift') ? 0.01 : 0.025;
-        $costoPagoInternacional = $valorMercancia * $tasaPagoInternacional;
+        $costoPagoInternacional = 0;
+        if ($this->requierePagoInternacional) {
+            $tasaPagoInternacional = ($this->pagosInternacionalesSwift === 'swift') ? 0.01 : 0.025;
+            $costoPagoInternacional = $valorMercancia > 0 ? $valorMercancia * $tasaPagoInternacional : 0;
+        }
 
         // Seguro
         // 2% si está seleccionado (seguroCarga), sino 0
         $tasaSeguro = $this->seguroCarga ? 0.02 : 0;
-        $costoSeguro = $valorMercancia * $tasaSeguro;
+        $costoSeguro = $valorMercancia > 0 ? $valorMercancia * $tasaSeguro : 0;
 
         // Costos Fijos Adicionales
         $costoSustanciasPeligrosas = $this->verificacionSustanciasPeligrosas ? 250.00 : 0;
@@ -667,45 +671,53 @@ class CalculadoraAerea extends Component
         $despacho_destibador = ceil($pesoRedondeado);
         $despacho_representacion = (ceil($valorMercancia) * 3500) / 25000;
 
-        $total_tiered_charge = $this->calculate_tiered_charge($valorMercancia);
+        $total_tiered_charge = $valorMercancia == 0 ? 0 : $this->calculate_tiered_charge($valorMercancia);
         $totalDespacho = $despacho_almacenamiento + $despacho_documentos + $despacho_formulario + $despacho_destibador + $despacho_representacion;
+        $totalDespacho = $valorMercancia == 0 ? 0 : $totalDespacho;
 
         $costo_envio_interno = floatval($this->temp_costo_envio_interno);
         $impuestoTotal =  $totalArancel + $iva;
+        $impuestoTotal = $valorMercancia == 0 ? 0 : $impuestoTotal;
 
         $totalLogisticaChina = ($valorMercancia + $costoFinal + $costo_envio_interno) * $comision;
         $totalLogisticaBolivia = ($valorMercancia + $costoFinal + $costo_envio_interno) * $comisionBolivia;
 
         $precio_rebajado = $costoSeguro + $impuestos + ($valorMercancia * $comision) + $costoPagoInternacional + $almacen + $factura;
 
-        $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina + $totalServiciosAdicionales + $impuestoTotal + $costo_envio_interno + $totalDespacho + $total_tiered_charge;
-        $totalGeneralRebajado = $valorMercancia + $precio_rebajado + $totalLogisticaChina + $impuestoTotal + $costo_envio_interno + $totalDespacho + $total_tiered_charge;
+        $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina + $totalLogisticaBolivia + $totalServiciosAdicionales + $impuestoTotal + $costo_envio_interno + $totalDespacho + $total_tiered_charge;
+
+        $totalGeneralRebajado = $valorMercancia + $precio_rebajado + $totalLogisticaChina + $totalLogisticaBolivia + $impuestoTotal + $costo_envio_interno + $totalDespacho + $total_tiered_charge;
         $totalBaseImponible = $valorMercancia + $totalArancel;
+        if ($valorMercancia == 0) {
+            $this->desglose = [
+                'Costo de Envío Internacional' => number_format($costoFinal, 2, '.', ''),
+                'Costo de Envío Interno' => number_format($costo_envio_interno, 2, '.', ''),
+                'Brokers en China' => number_format($totalLogisticaChina, 2, '.', ''),
+                'Gestión Logística en Bolivia' => number_format($totalLogisticaBolivia, 2, '.', ''),
+            ];
+        } else {
+            $this->desglose = [
+                'Valor de Mercancía' => number_format($valorMercancia, 2, '.', ''),
+                'Costo de Envío Internacional' => number_format($costoFinal, 2, '.', ''),
+                'Costo de Envío Interno' => number_format($costo_envio_interno, 2, '.', ''),
+                'Brokers en China' => number_format($totalLogisticaChina, 2, '.', ''),
+                'Gestión Logística en Bolivia' => number_format($totalLogisticaBolivia, 2, '.', ''),
+                'Despacho' => number_format($totalDespacho, 2, '.', ''),
+                'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
+                'Impuesto' => number_format($impuestoTotal, 2, '.', ''),
+                'Comisión Pago Internacional' => number_format($costoPagoInternacional, 2, '.', ''),
+            ];
+        }
 
-        $this->desglose = [
-            'Valor de Mercancía' => number_format($valorMercancia, 2, '.', ''),
-            'Costo de Envío Internacional' => number_format($costoFinal, 2, '.', ''),
-            'Costo de Envío Interno' => number_format($costo_envio_interno, 2, '.', ''),
-            'Brokers en China' => number_format($totalLogisticaChina, 2, '.', ''),
-            'Gestión Logística en Bolivia' => number_format($totalLogisticaBolivia, 2, '.', ''),
-        ];
-
-        if ($this->seguroCarga) {
+        if ($this->seguroCarga && $valorMercancia > 0) {
             $this->desglose['Seguro de Carga'] = number_format($costoSeguro, 2, '.', '');
         }
-        $this->desglose[' Envio de producto peligroso'] = number_format($costoSustanciasPeligrosas, 2, '.', '');
-        $this->desglose[' Examen Previo'] = number_format($costoExamenPrevio, 2, '.', '');
-
-        $this->desglose = array_merge($this->desglose, [
-            'Despacho' => number_format($totalDespacho, 2, '.', ''),
-            'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
-            'Impuesto' => number_format($impuestoTotal, 2, '.', ''),
-
-            '─ DETALLE DE SERVICIOS EN ORIGEN' => null,
-            '   ├─ Brokers en China' => number_format($totalLogisticaChina, 2),
-            '   ├─ Documentación' => number_format($factura, 2),
-            '   ├─ Pago Internacional' => number_format($costoPagoInternacional, 2),
-        ]);
+        if ($this->verificacionSustanciasPeligrosas) {
+            $this->desglose[' Envio de producto peligroso'] = number_format($costoSustanciasPeligrosas, 2, '.', '');
+        }
+        if ($this->examenPrevio) {
+            $this->desglose[' Examen Previo'] = number_format($costoExamenPrevio, 2, '.', '');
+        }
 
         if ($this->seguroCarga) {
             $this->desglose['─ DETALLE DE FLETE Y SEGURO'] = null;
@@ -713,6 +725,10 @@ class CalculadoraAerea extends Component
         }
 
         $this->desglose = array_merge($this->desglose, [
+            '─ DETALLE DE SERVICIOS EN ORIGEN' => null,
+            '   ├─ Brokers en China' => number_format($totalLogisticaChina, 2),
+            '   ├─ Documentación' => number_format($factura, 2),
+            '   ├─ Pago Internacional' => number_format($costoPagoInternacional, 2),
             '─ DETALLE DE OPERACIÓN Y LOGÍSTICA' => null,
             '   ├─ Almacenaje (' . ($tarifaAlmacen ?? 0.5) . ' USD/día x' . ($dias ?? 7) . ' días)' => $aplicarAdicionales ? number_format($almacen, 2) : 'No aplica (< 5 kg)',
             '   └─ Tasas de Exportación' => $aplicarAdicionales ? number_format($impuestos, 2) : 'No aplica (< 5 kg)',

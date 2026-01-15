@@ -77,7 +77,6 @@ class CalculadoraMaritima extends Component
     public $podSuggestions = [];
     public $showPOLDropdown = false;
     public $showPODDropdown = false;
-    public $costo_envio_interno = 15;
 
     public $fclRates = [];
     public $perPage = 5;
@@ -107,6 +106,7 @@ class CalculadoraMaritima extends Component
     public $volumenTotal = 0;
     public $temp_hs_code = '';
     public $temp_arancel = 0;
+    public $temp_costo_interno = 0;
     public $arancelSuggestions = [];
 
     // Pallet properties (Estándar Asia: 110x110 cm, 15kg)
@@ -136,14 +136,32 @@ class CalculadoraMaritima extends Component
     public $verificacionSustanciasPeligrosas = false;
     public $verificacionEmpresaPresencial = false;
     public $pagosInternacionalesSwift = 'swift';
+    public $requierePagoInternacional = false;
 
     // FCL Specific Properties
     public $transporteTerrestreFCL = false;
     public $verificacionSustanciasPeligrosasFCL = false;
+    public $requierePagoInternacionalFCL = false;
     public $pagosInternacionalesSwiftFCL = 'swift'; // 'swift' or 'sin_swift'
     public $seguroCargaFCL = false;
     public $examenPrevioFCL = false;
     public $representacionImportacionFCL = false;
+
+    // Autos (Ro-Ro) Specific Properties
+    public $tipoVehiculo = '';
+    public $marca = '';
+    public $modelo = '';
+    public $anio = '';
+    public $largoVehiculo = 0;
+    public $anchoVehiculo = 0;
+    public $altoVehiculo = 0;
+    public $pesoVehiculo = 0;
+    public $combustible = 'gasolina'; // 'gasolina', 'diesel', 'hibrido', 'electrico'
+    public $polVehiculo = ''; // Puerto de Origen
+    public $requierePagoInternacionalAutos = false;
+    public $pagosInternacionalesSwiftAutos = 'swift';
+    public $seguroCargaAutos = false;
+    public $verificacionEstadoAutos = false; // "Examen Previo" equivalent
 
     public $selectedRateIndex = null;
 
@@ -477,6 +495,7 @@ class CalculadoraMaritima extends Component
             'total_valor' => $valorTotalItem,
             'hs_code' => $this->temp_hs_code,
             'arancel' => $this->temp_arancel,
+            'costo_interno' => $this->temp_costo_interno,
             'con_pallet' => $this->temp_con_pallet,
             'pallet_largo' => $this->temp_pallet_largo,
             'pallet_ancho' => $this->temp_pallet_ancho,
@@ -497,6 +516,7 @@ class CalculadoraMaritima extends Component
         $this->temp_valor_unitario = 0;
         $this->temp_hs_code = '';
         $this->temp_arancel = 0;
+        $this->temp_costo_interno = 0;
         $this->temp_con_pallet = false;
         $this->temp_pallet_largo = 110;
         $this->temp_pallet_ancho = 110;
@@ -703,6 +723,20 @@ class CalculadoraMaritima extends Component
     {
         $this->calcular();
     }
+    public function updatedRequierePagoInternacionalFCL()
+    {
+        // Si el usuario cambia el checkbox, debemos recalcular (aunque en FCL es selectRate el que hace el cálculo)
+        // Como 'selectRate' recalcula todo, si ya hay una tarifa seleccionada, podríamos intentar recalcular.
+        // Pero FCL parece funcionar un poco diferente (selecciona tarifa y calcula).
+        // Veremos si podemos re-ejecutar la lógica si ya hay tarifa seleccionada.
+        if ($this->selectedRateIndex !== null && $this->selectedContainer) {
+            $this->selectRate($this->selectedRateIndex, $this->selectedContainer);
+        }
+    }
+    public function updatedRequierePagoInternacional()
+    {
+        $this->calcular();
+    }
     public function selectRate($index, $container)
     {
         $this->validate([
@@ -805,12 +839,14 @@ class CalculadoraMaritima extends Component
         $this->desglose['   Valor de la Mercancía'] = number_format($valorMercancia, 2, '.', '');
         $this->desglose['   Gestión Portuaria'] = number_format($subtotalPortuaria, 2);
         $this->desglose['   Booking'] = number_format($precioBase * 0.05, 2);
-        $this->desglose['   Despachante'] = number_format($despachante, 2);
+        $this->desglose['   cargos de importacion y despacho'] = number_format($despachante, 2);
         $this->desglose['   Agencia Despachante'] = number_format($agencia_despachante, 2);
-        $this->desglose['   Transporte Terrestre'] = number_format($transporte_terrestre, 2);
         $this->desglose['   Impuesto'] = number_format($impuesto, 2);
 
-        // Servicios Adicionales (FCL)
+        if ($this->transporteTerrestreFCL) {
+            $this->desglose['   Transporte Terrestre'] = number_format($transporte_terrestre, 2);
+        }
+
         $costoAdicionales = 0;
 
         if ($this->verificacionSustanciasPeligrosasFCL) {
@@ -823,10 +859,12 @@ class CalculadoraMaritima extends Component
             $costoAdicionales += 35.00;
         }
 
-        // Comisión Swift (1% o 2.5% del valor mercancía)
-        $tasaSwift = ($this->pagosInternacionalesSwiftFCL === 'swift') ? 0.01 : 0.025;
-        $costoSwift = $valorMercancia * $tasaSwift;
-        $this->desglose['   Comisión Pago Internacional'] = number_format($costoSwift, 2);
+        $costoSwift = 0;
+        if ($this->requierePagoInternacionalFCL) {
+            $tasaSwift = ($this->pagosInternacionalesSwiftFCL === 'swift') ? 0.01 : 0.025;
+            $costoSwift = $valorMercancia * $tasaSwift;
+            $this->desglose['   Comisión Pago Internacional'] = number_format($costoSwift, 2);
+        }
         $costoAdicionales += $costoSwift;
 
         if ($this->seguroCargaFCL) {
@@ -834,12 +872,9 @@ class CalculadoraMaritima extends Component
             $costoAdicionales += $seguroEstimado;
         }
 
-        // Representación
         if ($this->representacionImportacionFCL) {
-            // Costo a definir por el usuario, asumiremos un valor o 0 si no se especificó
-            // Por ahora $50 placeholder o lógica custom
-            // $this->desglose['   Representación Importación'] = 50.00;
-            // $costoAdicionales += 50.00; 
+            $this->desglose['   Representación Importación'] = number_format(3500.00, 2);
+            $costoAdicionales += 3500.00;
         }
 
         $this->resultado = $precioBase + $subtotalPortuaria + ($precioBase * 0.05) + $valorMercancia + $transporte_terrestre + $impuesto + $agencia_despachante + $despachante + $costoAdicionales;
@@ -1197,25 +1232,26 @@ class CalculadoraMaritima extends Component
             $arancelPct = isset($prod['arancel']) ? floatval($prod['arancel']) : 0;
             $seguro = $prod['total_valor'] * 0.02;
             $valorFlete = $prod['total_valor'] * 0.20;
-            $totalArancel += ($prod['total_valor'] + $seguro + $valorFlete) * ($arancelPct / 100);
+            $totalArancel +=  ($prod['total_valor'] + $seguro + $valorFlete) * ($arancelPct / 100);
             $subtotalArancel = $prod['total_valor'] + $seguro + $valorFlete;
-            $iva += ($subtotalArancel + $totalArancel) * (14.94 / 100);
-            $impuesto += ($totalArancel + $iva);
-            $this->totalLogisticaBolivia = ($prod['total_valor'] + $valorFacturado  + $this->costo_envio_interno) * 0.03;
-            $this->totalBrokersChina = ($prod['total_valor'] + $valorFacturado  + $this->costo_envio_interno) * 0.035;
+            $iva += $this->valorMercancia == 0 ? 0 : ($subtotalArancel + $totalArancel) * (14.94 / 100);
+            $impuesto += $this->valorMercancia == 0 ? 0 : ($totalArancel + $iva);
+            $this->totalLogisticaBolivia = ($prod['total_valor'] + $valorFacturado  + $this->temp_costo_interno) * 0.03;
+            $this->totalBrokersChina = ($prod['total_valor'] + $valorFacturado  + $this->temp_costo_interno) * 0.035;
         }
 
         // CÁLCULO DE COMISIÓN POR PAGO INTERNACIONAL
         $swiftFee = 0;
         $tasaSwift = 0;
 
-        if ($this->pagosInternacionalesSwift === 'swift') {
-            $tasaSwift = 0.01; // 1%
-        } elseif ($this->pagosInternacionalesSwift === 'sin_swift') {
-            $tasaSwift = 0.025; // 2.5%
+        if ($this->requierePagoInternacional) {
+            if ($this->pagosInternacionalesSwift === 'swift') {
+                $tasaSwift = 0.01; // 1%
+            } elseif ($this->pagosInternacionalesSwift === 'sin_swift') {
+                $tasaSwift = 0.025; // 2.5%
+            }
+            $swiftFee = $this->valorMercancia == 0 ? 0 : $this->valorMercancia * $tasaSwift;
         }
-
-        $swiftFee = $this->valorMercancia * $tasaSwift;
 
 
 
@@ -1223,98 +1259,77 @@ class CalculadoraMaritima extends Component
         $almacen = 3.59;
         $documentacion = 17.24;
         $formularios = 14.37;
+        $addServices = 0;
+        $costoVerificacion = 0;
 
         $representacion = ($this->valorMercancia * 3500) / 25000;
 
 
-        $despacho = $almacen + $documentacion + $formularios + $this->valorCBMKG + $representacion;
+        $despacho = $this->valorMercancia == 0 ? 0 : $almacen + $documentacion + $formularios + $this->valorCBMKG + $representacion;
 
-        $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
+        $total_tiered_charge = $this->valorMercancia == 0 ? 0 : $this->calculate_tiered_charge($this->valorMercancia);
 
         // =====================================================
         // NUEVO: DESGLOSE DETALLADO DEL FLETE MARÍTIMO POR CBM
         // =====================================================
         $desgloseFleteMaritimo = [];
+        $distribucion = [
+            'grupo1' => 0.60,
+            'grupo2' => 0.25,
+            'grupo3' => 0.15,
+        ];
 
-        if ($tipoCobro === 'CBM') {
-            $distribucion = [
-                'grupo1' => 0.60,
-                'grupo2' => 0.25,
-                'grupo3' => 0.15,
-            ];
+        $grupo1 = $costoFinal * $distribucion['grupo1'];
+        $grupo2 = $costoFinal * $distribucion['grupo2'];
+        $grupo3 = $costoFinal * $distribucion['grupo3'];
 
-            $grupo1 = $costoFinal * $distribucion['grupo1'];
-            $grupo2 = $costoFinal * $distribucion['grupo2'];
-            $grupo3 = $costoFinal * $distribucion['grupo3'];
+        $desgloseFleteMaritimo['─ TRAMO INTERNACIONAL (MARÍTIMO)'] = null;
+        $desgloseFleteMaritimo['   ├─ Flete Puerto a Puerto (Ningbo - Iquique)'] = number_format($grupo1 * 0.85, 2); // Aumentamos flete
+        $desgloseFleteMaritimo['   ├─ Seguro y Garantía de Espacio'] = number_format($grupo1 * 0.15, 2); // Suena a "asegurar espacio"
+        $desgloseFleteMaritimo['   Subtotal Tramo Internacional (Marítimo)'] = number_format($grupo1, 2);
 
-            $desgloseFleteMaritimo['─ TRAMO INTERNACIONAL (MARÍTIMO)'] = null;
-            $desgloseFleteMaritimo['   ├─ Flete Puerto a Puerto (Ningbo - Iquique)'] = number_format($grupo1 * 0.85, 2); // Aumentamos flete
-            $desgloseFleteMaritimo['   ├─ Seguro y Garantía de Espacio'] = number_format($grupo1 * 0.15, 2); // Suena a "asegurar espacio"
-            $desgloseFleteMaritimo['   Subtotal Tramo Internacional (Marítimo)'] = number_format($grupo1, 2);
+        $desgloseFleteMaritimo['─ OPERACIÓN EN ORIGEN (CHINA)'] = null;
+        $desgloseFleteMaritimo['   ├─ Logística Interna (Shenzhen - Yiwu - Ningbo)'] = number_format($grupo2 * 0.80, 2);
+        $desgloseFleteMaritimo['   ├─ Gastos Portuarios y Documentación (BL)'] = number_format($grupo2 * 0.20, 2);
+        $desgloseFleteMaritimo['   Subtotal Operación en Origen (China)'] = number_format($grupo2, 2);
 
-            $desgloseFleteMaritimo['─ OPERACIÓN EN ORIGEN (CHINA)'] = null;
-            $desgloseFleteMaritimo['   ├─ Logística Interna (Shenzhen - Yiwu - Ningbo)'] = number_format($grupo2 * 0.80, 2);
-            $desgloseFleteMaritimo['   ├─ Gastos Portuarios y Documentación (BL)'] = number_format($grupo2 * 0.20, 2);
-            $desgloseFleteMaritimo['   Subtotal Operación en Origen (China)'] = number_format($grupo2, 2);
-
-            $desgloseFleteMaritimo['─ TRAMO FINAL Y ENTREGA (BOLIVIA)'] = null;
-            $desgloseFleteMaritimo['   ├─ Flete Terrestre (Iquique - Destino Bolivia)'] = number_format($grupo3 * 0.75, 2); // En lugar de "comisión"
-            $desgloseFleteMaritimo['   ├─ Maniobras y Despacho de Tránsito'] = number_format($grupo3 * 0.25, 2); // Suena a protección financiera
-            $desgloseFleteMaritimo['   Subtotal Tramo Final y Entrega (Bolivia)'] = number_format($grupo3, 2);
-        } else {
-            $distribucion = [
-                'grupo1' => 0.60,
-                'grupo2' => 0.25,
-                'grupo3' => 0.15,
-            ];
-
-            $grupo1 = $valorFacturado * $distribucion['grupo1'];
-            $grupo2 = $valorFacturado * $distribucion['grupo2'];
-            $grupo3 = $valorFacturado * $distribucion['grupo3'];
-
-            $desgloseFleteMaritimo['─ TRAMO INTERNACIONAL (MARÍTIMO)'] = null;
-            $desgloseFleteMaritimo['   ├─ Flete Puerto a Puerto (Ningbo - Iquique)'] = number_format($grupo1 * 0.85, 2);
-            $desgloseFleteMaritimo['   ├─ Seguro y Garantía de Espacio'] = number_format($grupo1 * 0.15, 2);
-            $desgloseFleteMaritimo['   Subtotal Tramo Internacional (Marítimo)'] = number_format($grupo1, 2);
-
-            $desgloseFleteMaritimo['─ OPERACIÓN EN ORIGEN (CHINA)'] = null;
-            $desgloseFleteMaritimo['   ├─ Logística Interna (Shenzhen - Yiwu - Ningbo)'] = number_format($grupo2 * 0.80, 2);
-            $desgloseFleteMaritimo['   ├─ Gastos Portuarios y Documentación (BL)'] = number_format($grupo2 * 0.20, 2);
-            $desgloseFleteMaritimo['   Subtotal Operación en Origen (China)'] = number_format($grupo2, 2);
-
-
-            $desgloseFleteMaritimo['─ TRAMO FINAL Y ENTREGA (BOLIVIA)'] = null;
-            $desgloseFleteMaritimo['   ├─ Flete Terrestre (Iquique - Destino Bolivia)'] = number_format($grupo3 * 0.75, 2);
-            $desgloseFleteMaritimo['   ├─ Maniobras y Despacho de Tránsito'] = number_format($grupo3 * 0.25, 2);
-            $desgloseFleteMaritimo['   Subtotal Tramo Final y Entrega (Bolivia)'] = number_format($grupo3, 2);
-        }
+        $desgloseFleteMaritimo['─ TRAMO FINAL Y ENTREGA (BOLIVIA)'] = null;
+        $desgloseFleteMaritimo['   ├─ Flete Terrestre (Iquique - Destino Bolivia)'] = number_format($grupo3 * 0.75, 2); // En lugar de "comisión"
+        $desgloseFleteMaritimo['   ├─ Maniobras y Despacho de Tránsito'] = number_format($grupo3 * 0.25, 2); // Suena a protección financiera
+        $desgloseFleteMaritimo['   Subtotal Tramo Final y Entrega (Bolivia)'] = number_format($grupo3, 2);
 
         // =====================================================
         // CONSTRUCCIÓN FINAL DEL DESGLOSE
         // =====================================================
 
         $this->gastosAdicionales = [];
-        $this->desglose = [
-            'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
-            'Costo de Envío Interno' => number_format($this->costo_envio_interno, 2, '.', ''),
-            'Costo de Envío Internacional' => number_format($valorFacturado, 2, '.', ''),
-            'Gestión Logística en Bolivia' => number_format($this->totalLogisticaBolivia, 2, '.', ''),
-            'Brokers en China' => number_format($this->totalBrokersChina, 2, '.', ''),
-            'Despacho' => number_format($despacho, 2, '.', ''),
-            'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
-            'Impuesto' => number_format($impuesto, 2, '.', ''),
-            'Comisión Pago Internacional' => number_format($swiftFee, 2, '.', ''),
+        if ($this->valorMercancia === 0 || $this->valorMercancia === null) {
+            $this->desglose = [
+                'Costo de Envío Interno' => number_format($this->temp_costo_interno, 2, '.', ''),
+                'Costo de Envío Internacional' => number_format($valorFacturado, 2, '.', ''),
+                'Gestión Logística en Bolivia' => number_format($this->totalLogisticaBolivia, 2, '.', ''),
+                'Brokers en China' => number_format($this->totalBrokersChina, 2, '.', ''),
+                'Comisión Pago Internacional' => number_format($swiftFee, 2, '.', ''),
+            ];
+        } else {
+            $this->desglose = [
+                'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
+                'Costo de Envío Interno' => number_format($this->temp_costo_interno, 2, '.', ''),
+                'Costo de Envío Internacional' => number_format($valorFacturado, 2, '.', ''),
+                'Gestión Logística en Bolivia' => number_format($this->totalLogisticaBolivia, 2, '.', ''),
+                'Brokers en China' => number_format($this->totalBrokersChina, 2, '.', ''),
+                'cargos de importacion y despacho' => number_format($despacho, 2, '.', ''),
+                'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
+                'Impuesto' => number_format($impuesto, 2, '.', ''),
 
-        ];
+            ];
+        }
         $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
 
-        $addServices = 0;
         if ($this->recojoAlmacen) {
             $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumetricWeight, 2, '.', '');
             $addServices = (float) number_format($costoRecojo * $this->volumetricWeight, 2, '.', '');
         }
-
-        $costoVerificacion = 0;
         if ($this->verificacionProducto) {
             $costoVerificacion = $this->calculateVerificationCost();
             $this->desglose['Verificación del Producto'] = number_format($costoVerificacion, 2, '.', '');
@@ -1323,7 +1338,7 @@ class CalculadoraMaritima extends Component
             $this->desglose['Verificación de Calidad del Producto'] = 50.00;
             $costoVerificacion += 50.00;
         }
-        if ($this->seguroCarga) {
+        if ($this->seguroCarga && $this->valorMercancia !== 0) {
             $this->desglose['Seguro de la Carga'] = number_format($this->valorMercancia * 0.02, 2, '.', '');
             $costoVerificacion += $this->valorMercancia * 0.02;
         }
@@ -1348,8 +1363,8 @@ class CalculadoraMaritima extends Component
             $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
         }
         if ($this->recojoAlmacen) $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumetricWeight, 2, '.', '');
-        $this->gastosAdicionales['Costo de Envío Interno'] = number_format($this->costo_envio_interno, 2, '.', '');
-        $this->gastosAdicionales['Despacho'] = number_format($despacho, 2, '.', '');
+        $this->gastosAdicionales['Costo de Envío Interno'] = number_format($this->temp_costo_interno, 2, '.', '');
+        $this->gastosAdicionales['cargos de importacion y despacho'] = number_format($despacho, 2, '.', '');
         $this->gastosAdicionales['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
         $this->gastosAdicionales['Gravamen Arancelario'] = number_format($totalArancel, 2, '.', '');
         $this->gastosAdicionales['Impuesto IVA'] = number_format($iva, 2, '.', '');
@@ -1363,19 +1378,8 @@ class CalculadoraMaritima extends Component
         if ($this->verificacionEmpresaPresencial) $this->gastosAdicionales['Verificación Presencial de Empresa'] = 350.00;
         if ($this->verificacionSustanciasPeligrosas) $this->gastosAdicionales['Envio de producto peligroso'] = 250.00;
 
-        $total = $this->valorMercancia + $valorFacturado + $this->totalLogisticaBolivia + $this->totalBrokersChina + $addServices + $costoDestino + $costoVerificacion + $totalArancel + $iva + $total_tiered_charge + $despacho + $this->costo_envio_interno + $swiftFee;
-        Log::info($total);
-        Log::info("Valor Mercancia: " . $this->valorMercancia);
-        Log::info("Valor Facturado: " . $valorFacturado);
-        Log::info("Add Services: " . $addServices);
-        Log::info("Costo Destino: " . $costoDestino);
-        Log::info("Costo Verificacion: " . $costoVerificacion);
-        Log::info("Total Arancel: " . $totalArancel);
-        Log::info("IVA: " . $iva);
-        Log::info("Total Tiered Charge: " . $total_tiered_charge);
-        Log::info("Despacho: " . $despacho);
-        Log::info("Costo Envio Interno: " . $this->costo_envio_interno);
-        Log::info("Swift Fee: " . $swiftFee);
+        $total = $this->valorMercancia + $valorFacturado + $this->totalLogisticaBolivia + $this->totalBrokersChina + $addServices + $costoDestino + $costoVerificacion + $totalArancel + $iva + $total_tiered_charge + $despacho + $this->temp_costo_interno + $swiftFee;
+
         return [
             'costo'  => number_format($total, 2, '.', ''),
             'tipo'   => $tipoCobro,

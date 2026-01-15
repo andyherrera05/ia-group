@@ -152,7 +152,11 @@
                                 class="w-full h-[105px] px-4 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-lg">
                             @error('temp_producto') <span class="text-red-400 text-[10px] ml-1">{{ $message }}</span> @enderror
 
-                            <div class="grid grid-cols-2 gap-2">
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="relative">
+                                    <input type="number" wire:model="temp_costo_interno" placeholder="Costo Interno "
+                                        class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
+                                </div>
                                 <div class="relative">
                                     <input type="text" wire:model.live="temp_hs_code" placeholder="HS Code"
                                         class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
@@ -568,9 +572,16 @@
                     </div>
                     <!-- Pagos internacionales con swift 1% o sin swift 2.5%-->
                     <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                        <h5 class="text-white font-semibold text-sm mb-3">Método de Pago Internacional</h5>
+                        <div class="flex items-center justify-between {{ $requierePagoInternacional ? 'mb-3' : '' }}">
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" wire:model.live="requierePagoInternacional"
+                                    class="w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-offset-0 focus:ring-yellow-500 transition-all">
+                                <h5 class="text-white font-semibold text-sm">¿Requiere Pago Internacional?</h5>
+                            </label>
+                        </div>
 
-                        <div class="space-y-3">
+                        @if($requierePagoInternacional)
+                        <div class="space-y-3 border-t border-yellow-500/20 pt-3 mt-3">
                             <!-- Opción Con Swift (1%) -->
                             <label class="flex items-start space-x-3 cursor-pointer group">
                                 <input type="radio" wire:model="pagosInternacionalesSwift" value="swift"
@@ -595,6 +606,7 @@
                                 </div>
                             </label>
                         </div>
+                        @endif
                     </div>
                     <!-- Seguro de la carga -->
                     <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">

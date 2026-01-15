@@ -86,11 +86,11 @@
 
                 <!-- Navegación de pestañas (más limpia con bucle) -->
                 <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-2 shadow-xl">
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-3 gap-2">
                         @foreach ([
                         'lcl' => ['title' => 'LCL', 'subtitle' => 'Carga Suelta'],
                         'fcl' => ['title' => 'FCL', 'subtitle' => 'Contenedor'],
-                        // 'uld' => ['title' => 'ULD', 'subtitle' => 'Aéreo'],
+                        'uld' => ['title' => 'AUTOS', 'subtitle' => 'Roll-on/Roll-off'],
                         ] as $key => $tab)
                         <button wire:click="setTipoCarga('{{ $key }}')"
                             wire:key="tab-{{ $key }}"
@@ -204,7 +204,7 @@
                             </div>
                             @endforeach
                         </div>
-                        @if (count($detailedItems) > 0)
+                        @if (count($detailedItems) > 0 && ($valorMercancia ?? 0) > 0)
                         <button @click="showDetailed = !showDetailed"
                             class="w-full flex items-center justify-between py-3 px-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-yellow-500 hover:bg-yellow-500/20 transition-all group">
                             <span class="text-sm font-bold uppercase tracking-wider">Ver Desglose Detallado de Flete</span>

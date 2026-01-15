@@ -545,9 +545,16 @@
                             </div>
                             <!-- Pagos internacionales con swift 1% o sin swift 2.5%-->
                             <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                                <h5 class="text-white font-semibold text-sm mb-3">Método de Pago Internacional</h5>
+                                <div class="flex items-center justify-between {{ $requierePagoInternacional ? 'mb-3' : '' }}">
+                                    <label class="flex items-center space-x-3 cursor-pointer">
+                                        <input type="checkbox" wire:model.live="requierePagoInternacional"
+                                            class="w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-offset-0 focus:ring-yellow-500 transition-all">
+                                        <h5 class="text-white font-semibold text-sm">¿Requiere Pago Internacional?</h5>
+                                    </label>
+                                </div>
 
-                                <div class="space-y-3">
+                                @if($requierePagoInternacional)
+                                <div class="space-y-3 border-t border-yellow-500/20 pt-3 mt-3">
                                     <!-- Opción Con Swift (1%) -->
                                     <label class="flex items-start space-x-3 cursor-pointer group">
                                         <input type="radio" wire:model="pagosInternacionalesSwift" value="swift"
@@ -556,7 +563,7 @@
                                             <div class="flex items-center justify-between">
                                                 <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">CON Swift Bancario / USD</span>
                                             </div>
-                                            <p class="text-gray-500 text-xs mt-0.5">Transferencia bancaria internacional estándar (SWIFT).</p>
+                                            <p class="text-gray-500 text-xs mt-0.5">¿Transferencia bancaria internacional estándar (SWIFT).</p>
                                         </div>
                                     </label>
 
@@ -572,6 +579,7 @@
                                         </div>
                                     </label>
                                 </div>
+                                @endif
                             </div>
                             <!-- Seguro de la carga -->
                             <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
@@ -685,11 +693,16 @@
                             </div>
                             @endforeach
                         </div>
-                        @if (count($detailedItems) > 0)
+                        @php
+                        $mercValue = 0;
+                        if(isset($desglose['Valor de Mercancía'])) {
+                        $mercValue = (float)str_replace(',', '', $desglose['Valor de Mercancía']);
+                        }
+                        @endphp
+                        @if (count($detailedItems) > 0 && $mercValue > 0)
                         <button @click="showDetailed = !showDetailed"
                             class="w-full flex items-center justify-between py-3 px-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-yellow-500 hover:bg-yellow-500/20 transition-all group">
-                            <span class="text-sm font-bold uppercase tracking-wider">Ver Desglose
-                                Detallado</span>
+                            <span class="text-sm font-bold uppercase tracking-wider">Ver Desglose Detallado de Flete</span>
                             <svg class="w-5 h-5 transform transition-transform duration-300"
                                 :class="showDetailed ? 'rotate-180' : ''" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
