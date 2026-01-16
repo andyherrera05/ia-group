@@ -1243,7 +1243,7 @@ class CalculadoraMaritima extends Component
             'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
             'Costo de Envío Interno' => number_format($this->costo_envio_interno, 2, '.', ''),
             'Costo de Envío Internacional' => number_format($valorFacturado, 2, '.', ''),
-            'Gestión Logística en Bolivia' => number_format($this->totalLogisticaBolivia, 2, '.', ''),
+            'Gestión Logística' => number_format($this->totalLogisticaBolivia, 2, '.', ''),
             'Brokers en China' => number_format($this->totalBrokersChina, 2, '.', ''),
             'Despacho' => number_format($despacho, 2, '.', ''),
             'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),

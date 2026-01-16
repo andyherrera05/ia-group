@@ -210,13 +210,13 @@
         $subtotalGastos = 0;
         $fleteInternacional = (float)($desglose['Costo de Envío Internacional'] ?? 0);
         $valorMercancia = (float)($desglose['Valor de Mercancía'] ?? 0);
-        $gestionLogisticaBolivia = (float)($desglose['Gestión Logística en Bolivia'] ?? 0);
+        $gestionLogisticaBolivia = (float)($desglose['Gestión Logística'] ?? 0);
         $brokersChina = (float)($desglose['Brokers en China'] ?? 0);
 
         // Extraer valores de aduana para usarlos en la derecha y no duplicarlos aquí
         $gravamenArancelario = (float)($gastosAdicionales['Gravamen Arancelario'] ?? 0);
         $iva = (float)($gastosAdicionales['Impuesto IVA'] ?? 0);
-        $despacho = (float)($gastosAdicionales['Despacho'] ?? 0);
+        $despacho = (float)($gastosAdicionales['Cargos de importacion y despacho'] ?? 0);
 
         $seguro = (float)($gastosAdicionales['Seguro de la Carga'] ?? 0);
 
@@ -231,11 +231,10 @@
         'Gravamen Arancelario',
         'Impuesto IVA',
         'Base Imponible',
-        'Despacho',
         'Agencia despachante',
+        'Cargos de importacion y despacho',
+        'Costo de Envío Interno',
         'Impuesto',
-        'Seguro de la Carga',
-        'Comisión Pago Internacional'
         ];
         $granTotalFinal = $impuesto + $despacho + $agencia;
         $granTotalFinalEnvio = $fleteInternacional + $subtotalGastos + $gestionLogisticaBolivia + $brokersChina;
@@ -281,8 +280,16 @@
                     <td>${{ number_format($prod['total_valor'], 2) }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" style="text-align: right;">Valor Total de la compra: </td>
-                    <td>${{ number_format($prod['total_valor'] + $seguro + $comisionPagoInternacional, 2) }}</td>
+                    <td colspan="6" style="text-align: right;">Costo de Envío Interno: </td>
+                    <td>${{ number_format($gastosAdicionales['Costo de Envío Interno'], 2) }}</td>
+                </tr>
+                <tr>
+                    <td colspan="6" style="text-align: right;">Costo de la compra: </td>
+                    <td>${{ number_format($prod['total_valor'], 2) }}</td>
+                </tr>
+                <tr>
+                    <td colspan="6" style="text-align: right;">Costo Total de la compra: </td>
+                    <td>${{ number_format($prod['total_valor'] + $gastosAdicionales['Costo de Envío Interno'], 2) }}</td>
                 </tr>
                 @endforeach
                 @elseif(!empty($desglose_reporte))
@@ -310,7 +317,7 @@
         </table>
 
         <!-- Tabla de Gastos Adicionales -->
-        <table style="width: 100%; border-collapse: collapse; margin-top: 25px; margin-bottom: 20px;">
+        <table style="width: 100%; border-collapse: collapse; margin-top: 25px; margin-bottom: 10px;">
             <tr>
                 <!-- Columna Izquierda: Gastos de Logística y Envío -->
                 <td style="width: 58%; vertical-align: top; padding-right: 2%;">
@@ -329,7 +336,7 @@
                                 <td style="text-align: right; padding: 8px 15px; font-weight: bold;">$ {{ number_format($fleteInternacional, 2) }}</td>
                             </tr>
                             <tr style="height: auto;">
-                                <td style="text-align: left; padding: 8px 15px;">Gestión Logística en Bolivia</td>
+                                <td style="text-align: left; padding: 8px 15px;">Gestión Logística</td>
                                 <td style="text-align: right; padding: 8px 15px; font-weight: bold;">$ {{ number_format($gestionLogisticaBolivia, 2) }}</td>
                             </tr>
                             <tr style="height: auto;">
@@ -411,7 +418,7 @@
             </tr>
         </table>
 
-        <table style="width: 70%; border-collapse: collapse;">
+        <table style="width: 55%; border-collapse: collapse;">
             @php
             $totalGralUSD = $granTotalFinal + $totalEnvioUSD;
             $totalGralBS = ($granTotalFinal * 6.96) + ($totalEnvioUSD * $exchangeRateP2P);
@@ -426,18 +433,18 @@
             </tr>
         </table>
 
-        <div class="footer-note" style="margin-top: 20px;">
+        <div class="footer-note" style="margin-top: 5px;">
             <strong>NOTA:</strong><br>
             <ul class="footer-note-list">
                 @if(!empty($desglose_reporte['nombre_destino']) && !empty($desglose_reporte['costo_destino']))
-                <li style="font-weight: bold; font-size: 12px;">Costo de envío a {{ $desglose_reporte['nombre_destino'] }} tiene un costo de $ {{ number_format($desglose_reporte['costo_destino'], 2) }}</li>
+                <li style="font-weight: bold; font-size: 10px;">Costo de envío a {{ $desglose_reporte['nombre_destino'] }} tiene un costo de $ {{ number_format($desglose_reporte['costo_destino'], 2) }}</li>
                 @endif
-                <li style="font-weight: bold; font-size: 12px;">Esta cotizacion tiene una validez de 7 dias.</li>
-                <li style="font-weight: bold; font-size: 12px;">Esta cotizacion podria sufrir alteraciones en caso de alguna revaloracion por parte de la aduana.</li>
-                <li style="font-weight: bold; font-size: 12px;">Asume que el consignatario que tiene cualquier permiso que sea requerido por autoridades en el país de destino</li>
-                <li style="font-weight: bold; font-size: 12px;">Contamos con nuestra Propia Agencia Despachante de manera opcional.</li>
-                <li style="font-weight: bold; font-size: 12px;">El PAGO DE ADUANAS es una ves llegue la carga a Almacenes Aduaneros de Bolivia.</li>
-                <li style="font-weight: bold; font-size: 12px;">Cotización en base a datos enviados por el cliente, al llegar a almacén, se verificarán peso y dimensiones.</li>
+                <li style="font-weight: bold; font-size: 10px;">Esta cotizacion tiene una validez de 7 dias.</li>
+                <li style="font-weight: bold; font-size: 10px;">Esta cotizacion podria sufrir alteraciones en caso de alguna revaloracion por parte de la aduana.</li>
+                <li style="font-weight: bold; font-size: 10px;">Asume que el consignatario que tiene cualquier permiso que sea requerido por autoridades en el país de destino</li>
+                <li style="font-weight: bold; font-size: 10px;">Contamos con nuestra Propia Agencia Despachante de manera opcional.</li>
+                <li style="font-weight: bold; font-size: 10px;">El PAGO DE ADUANAS es una ves llegue la carga a Almacenes Aduaneros de Bolivia.</li>
+                <li style="font-weight: bold; font-size: 10px;">Cotización en base a datos enviados por el cliente, al llegar a almacén, se verificarán peso y dimensiones.</li>
             </ul>
         </div>
 

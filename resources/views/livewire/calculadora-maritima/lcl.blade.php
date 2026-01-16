@@ -55,15 +55,61 @@
                     </div>
                     @enderror
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Teléfono</label>
-                    <input type="text" wire:model.live="clienteTelefono" placeholder="72732422"
-                        class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteTelefono')
-                    <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
-                        {{ $message }}
+                <div
+                    x-data="{ 
+                                open: false, 
+                                countryCode: @entangle('codigoPais'),
+                                get currentFlag() {
+                                    return this.$refs[this.countryCode]?.dataset.flag || '🌍';
+                                }
+                            }"
+                    class="flex items-center w-full bg-black/40 border border-yellow-500/10 rounded-lg focus-within:ring-1 focus-within:ring-yellow-500 transition-all relative">
+
+                    <div class="relative">
+
+                        <button
+                            type="button"
+                            @click="open = !open"
+                            class="px-2 flex items-center gap-2 pl-3 pr-2 py-2 text-gray-300 hover:text-white border-r border-yellow-500/10 transition-colors text-sm focus:outline-none min-w-[90px]">
+                            <span x-text="currentFlag"></span>
+                            <span x-text="countryCode"></span>
+
+                            <svg class="w-3 h-3 text-gray-500 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div
+                            x-show="open"
+                            @click.outside="open = false"
+                            x-transition.opacity.duration.200ms
+                            class="absolute z-50 top-full left-0 mt-1 w-48 bg-gray-900 border border-yellow-500/20 rounded-md shadow-xl py-1 max-h-60 overflow-y-auto custom-scrollbar"
+                            style="display: none;">
+                            @foreach($this->paises as $pais)
+                            <button
+                                type="button"
+                                x-ref="{{ $pais['code'] }}"
+                                data-flag="{{ $pais['flag'] }}"
+                                @click="countryCode = '{{ $pais['code'] }}'; open = false"
+                                class="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-300 hover:bg-yellow-500/20 hover:text-white text-left transition-colors"
+                                :class="countryCode === '{{ $pais['code'] }}' ? 'bg-yellow-500/10 text-yellow-500' : ''" style="background-color: #1a170c;">
+                                <span class="text-lg">{{ $pais['flag'] }}</span>
+                                <span class="font-mono text-gray-400">{{ $pais['code'] }}</span>
+                                <span class="truncate ml-auto text-xs text-gray-500">{{ $pais['name'] }}</span>
+                            </button>
+                            @endforeach
+                        </div>
+                        @error('clienteTelefono')
+                        <span
+                            class="text-red-400 text-[10px] block mt-0.5 leading-none">{{ $message }}</span>
+                        @enderror
                     </div>
-                    @enderror
+
+                    <input
+                        type="tel"
+                        wire:model.live="clienteTelefono"
+                        placeholder="72732422"
+                        class="w-full px-3 py-2 bg-transparent border-none text-white placeholder-gray-600 focus:ring-0 focus:outline-none text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Ciudad</label>
@@ -148,58 +194,42 @@
 
                         <!-- Name Input & Extra Fields -->
                         <div class="flex-1 flex flex-col gap-2">
+                            <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 12px;">Nombre del Producto</label>
                             <input type="text" wire:model="temp_producto" placeholder="Nombre del Producto (Ej: Zapatillas)"
                                 class="w-full h-[105px] px-4 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-lg">
                             @error('temp_producto') <span class="text-red-400 text-[10px] ml-1">{{ $message }}</span> @enderror
 
-                            <div class="grid grid-cols-3 gap-2">
-                                <div class="relative">
-                                    <input type="number" wire:model="temp_costo_interno" placeholder="Costo Interno "
-                                        class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 9px;">Cantidad de piezas por cartones</label>
+                                    <input type="number" wire:model="temp_piezas_por_carton" placeholder="1" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                                    @error('temp_piezas_por_carton') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
                                 </div>
-                                <div class="relative">
-                                    <input type="text" wire:model.live="temp_hs_code" placeholder="HS Code"
-                                        class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
+                                <div>
+                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 9px;">Cantidad de cartones</label>
+                                    <input type="number" wire:model="temp_cantidad" placeholder="1" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                                    @error('temp_cantidad') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 9px;">Valor unitario ($)</label>
+                                    <input type="number" wire:model="temp_valor_unitario" placeholder="0.00" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                                    @error('temp_valor_unitario') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
+                                </div>
 
-                                    @if(!empty($arancelSuggestions))
-                                    <div class="absolute top-full left-0 w-full z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto mt-1" @click.away="$wire.limpiarArancelSearch()" style="background-color: rgba(0, 0, 0, 0.9);">
-                                        @foreach($arancelSuggestions as $suggestion)
-                                        <div wire:click="selectArancel('{{ $suggestion['codigo_hs'] }}', {{ $suggestion['arancel'] }})"
-                                            class="p-2 hover:bg-gray-800 cursor-pointer text-xs border-b border-gray-800 last:border-0">
-                                            <div class="font-bold text-yellow-500">{{ $suggestion['codigo_hs'] }}</div>
-                                            <div class="text-gray-300">{{ $suggestion['descripcion'] }}</div>
-                                            <div class="text-gray-500 text-[10px]">Arancel: {{ $suggestion['arancel'] }}%</div>
-                                        </div>
-                                        @endforeach
-                                    </div>
-                                    @endif
+                            </div>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1">Peso unitario (Kg)</label>
+                                    <input type="number" wire:model="temp_peso_unitario" placeholder="0.00" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                                    @error('temp_peso_unitario') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
                                 </div>
-                                <div class="relative">
-                                    <input type="number" wire:model="temp_arancel" placeholder="Arancel %"
-                                        class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
-                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">%</span>
+                                <div>
+                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1">Costo Interno</label>
+                                    <input type="number" wire:model="temp_costo_interno" placeholder="Costo Interno "
+                                        class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                                    @error('temp_costo_interno') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Row 2: Basic Metrics -->
-                    <div class="grid grid-cols-3 gap-3">
-
-                        <div>
-                            <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1">Cantidad</label>
-                            <input type="number" wire:model="temp_cantidad" placeholder="1" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
-                            @error('temp_cantidad') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1">Valor Unit. ($)</label>
-                            <input type="number" wire:model="temp_valor_unitario" placeholder="0.00" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
-                            @error('temp_valor_unitario') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1">Peso Unit. (Kg)</label>
-                            <input type="number" wire:model="temp_peso_unitario" placeholder="0.00" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
-                            @error('temp_peso_unitario') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
@@ -255,11 +285,50 @@
                             @error('temp_dimensiones') <div class="absolute -bottom-4 left-0 w-full text-center"><span class="text-red-400 text-xs bg-black/80 px-1 rounded">{{ $message }}</span></div> @enderror
                         </div>
 
+                        <!-- Arancel Option -->
+                        <div class="md:col-span-2 bg-black/20 rounded-lg p-3 border border-white/5">
+                            <div class="flex items-center gap-2 mb-2">
+                                <input type="checkbox" wire:model.live="temp_con_arancel" id="temp_con_arancel" class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                                <label for="temp_con_arancel" class="text-gray-400 cursor-pointer uppercase tracking-wider" style="font-size:14px">¿La carga tiene arancel?</label>
+                            </div>
+
+                            @if($temp_con_arancel)
+                            <div class="mt-2 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg space-y-3">
+                                <div class="grid grid-cols-2 gap-2 bg-black/20 rounded-lg p-2 border border-white/5">
+                                    <div class="relative">
+                                        <label for="temp_hs_code" class="block text-[4px] text-gray-500 text-center mb-1 uppercase">HS Code</label>
+                                        <input type="text" wire:model.live="temp_hs_code" placeholder="HS Code"
+                                            class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
+
+                                        @if(!empty($arancelSuggestions))
+                                        <div class="absolute top-full left-0 w-full z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto mt-1" @click.away="$wire.limpiarArancelSearch()" style="background-color: rgba(0, 0, 0, 0.9);">
+                                            @foreach($arancelSuggestions as $suggestion)
+                                            <div wire:click="selectArancel('{{ $suggestion['codigo_hs'] }}', {{ $suggestion['arancel'] }})"
+                                                class="p-2 hover:bg-gray-800 cursor-pointer text-xs border-b border-gray-800 last:border-0">
+                                                <div class="font-bold text-yellow-500">{{ $suggestion['codigo_hs'] }}</div>
+                                                <div class="text-gray-300">{{ $suggestion['descripcion'] }}</div>
+                                                <div class="text-gray-500 text-[10px]">Arancel: {{ $suggestion['arancel'] }}%</div>
+                                            </div>
+                                            @endforeach
+                                        </div>
+                                        @endif
+                                    </div>
+                                    <div class="relative">
+                                        <label for="temp_arancel" class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Arancel</label>
+                                        <input type="number" wire:model="temp_arancel" placeholder="Arancel %"
+                                            class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+
                         <!-- Pallet Option -->
                         <div class="md:col-span-2 bg-black/20 rounded-lg p-3 border border-white/5">
                             <div class="flex items-center gap-2 mb-2">
                                 <input type="checkbox" wire:model.live="temp_con_pallet" id="temp_con_pallet" class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                                <label for="temp_con_pallet" class="text-[10px] text-gray-400 cursor-pointer uppercase tracking-wider">¿La carga viene con pallet?</label>
+                                <label for="temp_con_pallet" class="text-gray-400 cursor-pointer uppercase tracking-wider" style="font-size:14px">¿La carga viene con pallet?</label>
                             </div>
 
                             @if($temp_con_pallet)
@@ -589,6 +658,7 @@
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">CON Swift Bancario / USD</span>
+                                        <span class="text-white text-xs font-medium px-2 py-1 rounded" style="background-color: #FA9F00;">Alta Comision</span>
                                     </div>
                                     <p class="text-gray-500 text-xs mt-0.5">Transferencia bancaria internacional estándar (SWIFT).</p>
                                 </div>
@@ -601,6 +671,7 @@
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">SIN Swift Bancario / USDT</span>
+                                        <span class="text-white text-xs font-medium px-2 py-1 rounded" style="background-color: #FA9F00;">Baja Comision</span>
                                     </div>
                                     <p class="text-gray-500 text-xs mt-0.5">Pagos directos en China, USDT o sin uso de red SWIFT.</p>
                                 </div>
@@ -618,20 +689,6 @@
                                     <div>
                                         <h5 class="text-white font-semibold text-sm">¿Requiere seguro de la carga?</h5>
                                         <p class="text-gray-400 text-xs mt-0.5">Seguro contra todo tipo de riesgo en la mercancia y transporte.</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                        <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model="examenPrevio" id="examenPrevio"
-                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                            <div class="flex-1">
-                                <label for="examenPrevio" class="flex items-center justify-between cursor-pointer">
-                                    <div>
-                                        <h5 class="text-white font-semibold text-sm">¿Requiere un examen previo?</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">Solicite la revision de su mercancia. Solo para productos que requieren verificacion en instalaciones aduaneras.</p>
                                     </div>
                                 </label>
                             </div>

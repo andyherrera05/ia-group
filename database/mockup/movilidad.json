@@ -1,0 +1,150 @@
+{
+    "result": [
+        {
+            "codigo": "15",
+            "descripcion": "AMBULANCIA"
+        },
+        {
+            "codigo": "1",
+            "descripcion": "AUTOMOVIL"
+        },
+        {
+            "codigo": "52",
+            "descripcion": "BUS URBANO"
+        },
+        {
+            "codigo": "5",
+            "descripcion": "CAMION"
+        },
+        {
+            "codigo": "53",
+            "descripcion": "CAMION CISTERNA"
+        },
+        {
+            "codigo": "54",
+            "descripcion": "CAMION CON BRAZO HIDRAULICO"
+        },
+        {
+            "codigo": "77",
+            "descripcion": "CAMION DE BOMBEROS"
+        },
+        {
+            "codigo": "2",
+            "descripcion": "CAMIONETA"
+        },
+        {
+            "codigo": "55",
+            "descripcion": "CAMION FURGONADO"
+        },
+        {
+            "codigo": "30",
+            "descripcion": "CAMION GRUA"
+        },
+        {
+            "codigo": "31",
+            "descripcion": "CAMION HORMIGONERO"
+        },
+        {
+            "codigo": "57",
+            "descripcion": "CAMION VOLQUETA"
+        },
+        {
+            "codigo": "39",
+            "descripcion": "CHASIS CABINADO"
+        },
+        {
+            "codigo": "16",
+            "descripcion": "CUADRATRACK"
+        },
+        {
+            "codigo": "11",
+            "descripcion": "FURGON"
+        },
+        {
+            "codigo": "3",
+            "descripcion": "JEEP"
+        },
+        {
+            "codigo": "8",
+            "descripcion": "MINIBUS"
+        },
+        {
+            "codigo": "61",
+            "descripcion": "MOTOCICLETA - CHOPERA"
+        },
+        {
+            "codigo": "62",
+            "descripcion": "MOTOCICLETA - CUB"
+        },
+        {
+            "codigo": "63",
+            "descripcion": "MOTOCICLETA - ENDURO O DEPORTIVA"
+        },
+        {
+            "codigo": "64",
+            "descripcion": "MOTOCICLETA - NINJA"
+        },
+        {
+            "codigo": "65",
+            "descripcion": "MOTOCICLETA - SCOOTER"
+        },
+        {
+            "codigo": "66",
+            "descripcion": "MOTOCICLETA - SEMIPISTERA"
+        },
+        {
+            "codigo": "67",
+            "descripcion": "MOTOCICLETA - SIDECAR"
+        },
+        {
+            "codigo": "68",
+            "descripcion": "MOTOCICLETA - TRABAJO"
+        },
+        {
+            "codigo": "69",
+            "descripcion": "MOTONAUTICA"
+        },
+        {
+            "codigo": "6",
+            "descripcion": "OMNIBUS"
+        },
+        {
+            "codigo": "70",
+            "descripcion": "TRACTOCAMION"
+        },
+        {
+            "codigo": "71",
+            "descripcion": "TRIMOTO - CARGA"
+        },
+        {
+            "codigo": "72",
+            "descripcion": "TRIMOTO - CHOPERA"
+        },
+        {
+            "codigo": "73",
+            "descripcion": "TRIMOTO - CUB"
+        },
+        {
+            "codigo": "74",
+            "descripcion": "TRIMOTO - DEPORTIVA"
+        },
+        {
+            "codigo": "75",
+            "descripcion": "TRIMOTO - SCOOTER"
+        },
+        {
+            "codigo": "50",
+            "descripcion": "UTV"
+        },
+        {
+            "codigo": "4",
+            "descripcion": "VAGONETA"
+        },
+        {
+            "codigo": "76",
+            "descripcion": "VEHICULO PARA INTERIOR MINA"
+        }
+    ],
+    "success": true,
+    "mensaje": "ok<br>"
+}

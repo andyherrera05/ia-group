@@ -96,6 +96,7 @@ class CalculadoraMaritima extends Component
     public $temp_imagen = '';
     public $temp_manualImagen;
     public $temp_cantidad = 1;
+    public $temp_piezas_por_carton = 1;
     public $temp_peso_unitario = 0;
     public $temp_largo = 0;
     public $temp_ancho = 0;
@@ -106,8 +107,10 @@ class CalculadoraMaritima extends Component
     public $volumenTotal = 0;
     public $temp_hs_code = '';
     public $temp_arancel = 0;
-    public $temp_costo_interno = 0;
     public $arancelSuggestions = [];
+    public $temp_con_arancel = false;
+    public $temp_costo_interno = 0;
+
 
     // Pallet properties (Estándar Asia: 110x110 cm, 15kg)
     public $temp_con_pallet = false;
@@ -131,7 +134,6 @@ class CalculadoraMaritima extends Component
     public $verificacionProducto = false;
     public $verificacionCalidad = false;
     public $seguroCarga = false;
-    public $examenPrevio = false;
     public $verificacionEmpresaDigital = false;
     public $verificacionSustanciasPeligrosas = false;
     public $verificacionEmpresaPresencial = false;
@@ -148,20 +150,47 @@ class CalculadoraMaritima extends Component
     public $representacionImportacionFCL = false;
 
     // Autos (Ro-Ro) Specific Properties
+    public $claseVehiculo = '';
+    public $marcaVehiculo = '';
     public $tipoVehiculo = '';
-    public $marca = '';
-    public $modelo = '';
-    public $anio = '';
+    public $subtipoVehiculo = '';
+    public $cilindradaVehiculo = '';
+    public $traccionVehiculo = '';
+    public $transmisionVehiculo = '';
+    public $paisVehiculo = '';
+    public $combustibleVehiculo = '';
+    public $anioVehiculo = '';
+    public $otrasCaracteristicasVehiculo = '';
     public $largoVehiculo = 0;
     public $anchoVehiculo = 0;
     public $altoVehiculo = 0;
     public $pesoVehiculo = 0;
-    public $combustible = 'gasolina'; // 'gasolina', 'diesel', 'hibrido', 'electrico'
     public $polVehiculo = ''; // Puerto de Origen
+    public $clasesVehiculoOptions = [];
+    public $marcasVehiculoOptions = [];
+    public $tiposVehiculoOptions = [];
+    public $subtiposVehiculoOptions = [];
+    public $cilindradaVehiculoOptions = [];
+    public $traccionVehiculoOptions = [];
+    public $transmisionVehiculoOptions = [];
+    public $combustibleVehiculoOptions = [];
+    public $anioVehiculoOptions = [];
+    public $paisVehiculoOptions = [];
+    public $otrasCaracteristicasVehiculoOptions = [];
     public $requierePagoInternacionalAutos = false;
     public $pagosInternacionalesSwiftAutos = 'swift';
     public $seguroCargaAutos = false;
-    public $verificacionEstadoAutos = false; // "Examen Previo" equivalent
+    public $valorMercanciaRoRo = 0;
+    public $temp_con_arancelRoRo = false;
+    public $temp_hs_codeRoRo = '';
+    public $temp_arancelRoRo = 0;
+    public $arancelSuggestionsRoRo = [];
+    public $verificacionProductoRoRo = false;
+    public $verificacionCalidadRoRo = false;
+    public $verificacionEmpresaDigitalRoRo = false;
+    public $verificacionSustanciasPeligrosasRoRo = false;
+    public $verificacionEmpresaPresencialRoRo = false;
+
 
     public $selectedRateIndex = null;
 
@@ -174,6 +203,7 @@ class CalculadoraMaritima extends Component
     public $clienteNombre = '';
     public $clienteEmail = '';
     public $clienteTelefono = '';
+    public $codigoPais = '+591';
     public $clienteDireccion = '';
     public $clienteCiudad = '';
     public $agenteId = '';
@@ -268,6 +298,7 @@ class CalculadoraMaritima extends Component
 
     public function mount()
     {
+        $this->loadClasesVehiculo();
         $qParam = request()->query('q') ?? $this->q;
 
         if ($qParam) {
@@ -279,6 +310,7 @@ class CalculadoraMaritima extends Component
                     $this->temp_imagen = $decoded['imagen'] ?? '';
 
                     $this->temp_cantidad = isset($decoded['cantidad']) ? floatval($decoded['cantidad']) : 1;
+                    $this->temp_piezas_por_carton = isset($decoded['piezas_por_carton']) ? floatval($decoded['piezas_por_carton']) : 1;
 
                     // El payload trae PESO UNITARIO y CBM UNITARIO
                     $this->temp_peso_unitario = isset($decoded['peso']) ? floatval($decoded['peso']) : 0;
@@ -402,8 +434,11 @@ class CalculadoraMaritima extends Component
     public function selectArancel($codigo, $arancel)
     {
         $this->temp_hs_code = $codigo;
+        $this->temp_hs_codeRoRo = $codigo;
         $this->temp_arancel = $arancel;
+        $this->temp_arancelRoRo = $arancel;
         $this->arancelSuggestions = [];
+        $this->arancelSuggestionsRoRo = [];
     }
 
     public function limpiarArancelSearch()
@@ -461,8 +496,10 @@ class CalculadoraMaritima extends Component
             $pesoAdicionalPallet = $this->temp_pallet_peso;
         }
 
-        $pesoTotalItem = ($this->temp_peso_unitario + $pesoAdicionalPallet) * $this->temp_cantidad;
-        $valorTotalItem = $this->temp_valor_unitario * $this->temp_cantidad;
+        $cantidadTotalItem = $this->temp_cantidad * $this->temp_piezas_por_carton;
+
+        $pesoTotalItem = ($this->temp_peso_unitario + $pesoAdicionalPallet) * $cantidadTotalItem;
+        $valorTotalItem = $this->temp_valor_unitario * $cantidadTotalItem;
 
 
         if ($this->temp_largo > 0 && $this->temp_ancho > 0 && $this->temp_alto > 0) {
@@ -483,6 +520,7 @@ class CalculadoraMaritima extends Component
             'producto' => $this->temp_producto,
             'imagen' => $imagenUrl,
             'cantidad' => $this->temp_cantidad,
+            'piezas_por_carton' => $this->temp_piezas_por_carton,
             'peso_unitario' => $this->temp_peso_unitario,
             'largo' => $this->temp_largo,
             'ancho' => $this->temp_ancho,
@@ -495,6 +533,8 @@ class CalculadoraMaritima extends Component
             'total_valor' => $valorTotalItem,
             'hs_code' => $this->temp_hs_code,
             'arancel' => $this->temp_arancel,
+            'con_arancel' => $this->temp_con_arancel,
+
             'costo_interno' => $this->temp_costo_interno,
             'con_pallet' => $this->temp_con_pallet,
             'pallet_largo' => $this->temp_pallet_largo,
@@ -508,6 +548,7 @@ class CalculadoraMaritima extends Component
         $this->temp_imagen = '';
         $this->temp_manualImagen = null;
         $this->temp_cantidad = 1;
+        $this->temp_piezas_por_carton = 1;
         $this->temp_peso_unitario = 0;
         $this->temp_largo = 0;
         $this->temp_ancho = 0;
@@ -549,15 +590,20 @@ class CalculadoraMaritima extends Component
         $this->volumenTotal = 0; // Resetear acumulador
         $valorTotal = 0;
         $cantidadTotal = 0;
+        $cantidadTotalPiezas = 0;
+        $costoInterno = 0;
 
         $this->totalCBMCobrables = 0; // Reset
         $this->valorCBMKG = 0;
 
         foreach ($this->productos as $prod) {
-            $pesoTotal += $prod['peso_unitario'] * $prod['cantidad'];
-            $this->volumenTotal += $prod['volumen_unitario'] * $prod['cantidad'];
+            $costoInterno += $prod['costo_interno'];
+            $cantidadTotalPiezas += $prod['piezas_por_carton'] * $prod['cantidad'];
+            $pesoTotal += $prod['peso_unitario'] * $cantidadTotalPiezas;
+            $this->volumenTotal += $prod['volumen_unitario'] * $cantidadTotalPiezas;
             $valorTotal += $prod['total_valor'];
-            $cantidadTotal += $prod['cantidad'];
+            $cantidadTotal += $cantidadTotalPiezas;
+
 
             $largo = $prod['largo'] ?? 0;
             $ancho = $prod['ancho'] ?? 0;
@@ -568,14 +614,10 @@ class CalculadoraMaritima extends Component
                 $this->totalCBMCobrables += $cbm;
             } elseif ($largo > 0 && $ancho > 0 && $alto > 0) {
                 $volumenInfo = $this->obtenerVolumenTotal($largo, $ancho, $alto, 0, $cantidadTotal);
-                Log::info('volumenInfo: ' . json_encode($volumenInfo));
                 if ($volumenInfo['tipoCbm'] == 'CBM') {
                     $this->totalCBMCobrables += $volumenInfo['cbm'];
                     $this->valorCBMKG = $pesoTotal;
                     $this->tipoCobro = 'CBM';
-                    Log::info('totalCBMCobrables: ' . $this->totalCBMCobrables);
-                    Log::info('valorCBMKG: ' . $this->valorCBMKG);
-                    Log::info('tipoCobro: ' . $this->tipoCobro);
                 } else {
                     $this->totalCBMCobrables += $volumenInfo['kg'];
                     $this->valorCBMKG +=  $volumenInfo['kg'];
@@ -640,6 +682,11 @@ class CalculadoraMaritima extends Component
         $this->calcular();
         $this->mostrarDesglose = true;
         $this->dispatch('scroll-to-result');
+    }
+    public function calcularResultadoRoRo()
+    {
+        $this->calcularRoRo();
+        $this->mostrarDesglose = true;
     }
 
 
@@ -707,10 +754,6 @@ class CalculadoraMaritima extends Component
     {
         $this->calcular();
     }
-    public function updatedExamenPrevio()
-    {
-        $this->calcular();
-    }
     public function updatedVerificacionEmpresaDigital()
     {
         $this->calcular();
@@ -725,10 +768,6 @@ class CalculadoraMaritima extends Component
     }
     public function updatedRequierePagoInternacionalFCL()
     {
-        // Si el usuario cambia el checkbox, debemos recalcular (aunque en FCL es selectRate el que hace el cálculo)
-        // Como 'selectRate' recalcula todo, si ya hay una tarifa seleccionada, podríamos intentar recalcular.
-        // Pero FCL parece funcionar un poco diferente (selecciona tarifa y calcula).
-        // Veremos si podemos re-ejecutar la lógica si ya hay tarifa seleccionada.
         if ($this->selectedRateIndex !== null && $this->selectedContainer) {
             $this->selectRate($this->selectedRateIndex, $this->selectedContainer);
         }
@@ -820,7 +859,7 @@ class CalculadoraMaritima extends Component
 
         $baseCIF = $valorMercancia + $valorFlete + $transporte_terrestre_cif + $seguroParaImpuestos;
 
-        $gravamen = $baseCIF * ($this->temp_arancel / 100);
+        $gravamen =  $baseCIF * ($this->temp_arancel / 100);
         $iva = ($baseCIF + $gravamen) * (14.94 / 100);
         $impuesto = $iva + $gravamen;
 
@@ -839,7 +878,7 @@ class CalculadoraMaritima extends Component
         $this->desglose['   Valor de la Mercancía'] = number_format($valorMercancia, 2, '.', '');
         $this->desglose['   Gestión Portuaria'] = number_format($subtotalPortuaria, 2);
         $this->desglose['   Booking'] = number_format($precioBase * 0.05, 2);
-        $this->desglose['   cargos de importacion y despacho'] = number_format($despachante, 2);
+        // $this->desglose['   cargos de importacion y despacho'] = number_format($despachante, 2);
         $this->desglose['   Agencia Despachante'] = number_format($agencia_despachante, 2);
         $this->desglose['   Impuesto'] = number_format($impuesto, 2);
 
@@ -896,7 +935,7 @@ class CalculadoraMaritima extends Component
             'gravamen' => $gravamen,
             'costo_adicionales' => $costoAdicionales, // Para uso en PDF si se requiere
             'iva' => $iva,
-            'impuesto' => $impuesto,
+            'impuestos' => $impuesto,
             'carga_peligrosa' => $this->verificacionSustanciasPeligrosasFCL,
             'examen_previo' => $this->examenPrevioFCL,
             'seguro_carga' => $this->seguroCargaFCL,
@@ -992,6 +1031,20 @@ class CalculadoraMaritima extends Component
             'potosi' => ['costo' => 80.00, 'nombre' => 'Potosí'],
             'oruro' => ['costo' => 48.48, 'nombre' => 'Oruro'],
             'tarija' => ['costo' => 80.00, 'nombre' => 'Tarija'],
+        ];
+    }
+
+    public function getPaisesProperty()
+    {
+        return [
+            ['code' => '+591', 'flag' => '🇧🇴', 'name' => 'Bolivia'],
+            ['code' => '+54',  'flag' => '🇦🇷', 'name' => 'Argentina'],
+            ['code' => '+55',  'flag' => '🇧🇷', 'name' => 'Brasil'],
+            ['code' => '+56',  'flag' => '🇨🇱', 'name' => 'Chile'],
+            ['code' => '+57',  'flag' => '🇨🇴', 'name' => 'Colombia'],
+            ['code' => '+51',  'flag' => '🇵🇪', 'name' => 'Perú'],
+            ['code' => '+52',  'flag' => '🇲🇽', 'name' => 'México'],
+            ['code' => '+1',   'flag' => '🇺🇸', 'name' => 'USA'],
         ];
     }
 
@@ -1093,6 +1146,64 @@ class CalculadoraMaritima extends Component
         }
 
         session()->flash('success', 'Cálculo completado exitosamente.');
+    }
+
+    public function calcularRoRo()
+    {
+        $this->mostrarPregunta = false;
+        $this->respuestaUsuario = null;
+
+        $this->fecha = now()->toDateTimeString();
+
+        $detalleRoRo = $this->obtenerDetalleRoRo();
+
+        $this->resultado = $detalleRoRo['costo'];
+
+        $this->mostrarPregunta = true;
+
+        session()->flash('success', 'Cálculo completado exitosamente.');
+    }
+
+    public function obtenerDetalleRoRo()
+    {
+        $costoVerificacion = 0;
+        $this->desglose = [
+            'Costo de Envío Interno' => 3,
+        ];
+        $mercancia = 1;
+        if ($this->verificacionProductoRoRo) {
+            $costoVerificacion = $this->calculateVerificationCost();
+            $this->desglose['Verificación del Producto'] = number_format($costoVerificacion, 2, '.', '');
+        }
+        if ($this->verificacionCalidadRoRo) {
+            $this->desglose['Verificación de Calidad del Producto'] = 50.00;
+            $costoVerificacion += 50.00;
+        }
+
+        if ($this->verificacionEmpresaDigitalRoRo) {
+            $this->desglose['Verificación de Empresa Digital'] = 100.00;
+            $costoVerificacion += 100.00;
+        }
+        if ($this->verificacionEmpresaPresencialRoRo) {
+            $this->desglose['Verificación Presencial de Empresa'] = 350.00;
+            $costoVerificacion += 350.00;
+        }
+        if ($this->verificacionSustanciasPeligrosasRoRo) {
+            $this->desglose['Envio de producto peligroso'] = 250.00;
+            $costoVerificacion += 250.00;
+        }
+        if ($this->verificacionSustanciasPeligrosasRoRo) {
+            $this->desglose['Envio de producto peligroso'] = 250.00;
+            $costoVerificacion += 250.00;
+        }
+        if ($this->seguroCargaAutos && $this->valorMercancia !== 0) {
+            $this->desglose['Seguro de la Carga'] = number_format($this->valorMercancia * 0.02, 2, '.', '');
+            $costoVerificacion += $this->valorMercancia * 0.02;
+        }
+        $total = $mercancia + $costoVerificacion;
+        return [
+            'costo' => (float) number_format($total, 2, '.', ''),
+        ];
     }
 
     public function aplicarDimensiones($tipo)
@@ -1227,17 +1338,19 @@ class CalculadoraMaritima extends Component
         $totalArancel = 0;
         $iva = 0;
         $impuesto = 0;
+        $costoInterno = 0;
 
         foreach ($this->productos as $prod) {
-            $arancelPct = isset($prod['arancel']) ? floatval($prod['arancel']) : 0;
+            $arancelPct = $prod['con_arancel'] ? (isset($prod['arancel']) ? floatval($prod['arancel']) : 0) : 0;
             $seguro = $prod['total_valor'] * 0.02;
             $valorFlete = $prod['total_valor'] * 0.20;
             $totalArancel +=  ($prod['total_valor'] + $seguro + $valorFlete) * ($arancelPct / 100);
             $subtotalArancel = $prod['total_valor'] + $seguro + $valorFlete;
-            $iva += $this->valorMercancia == 0 ? 0 : ($subtotalArancel + $totalArancel) * (14.94 / 100);
-            $impuesto += $this->valorMercancia == 0 ? 0 : ($totalArancel + $iva);
-            $this->totalLogisticaBolivia = ($prod['total_valor'] + $valorFacturado  + $this->temp_costo_interno) * 0.03;
-            $this->totalBrokersChina = ($prod['total_valor'] + $valorFacturado  + $this->temp_costo_interno) * 0.035;
+            $iva += ($prod['con_arancel'] && $this->valorMercancia != 0) ? ($subtotalArancel + $totalArancel) * 0.1494 : 0;
+            $impuesto += ($prod['con_arancel'] && $this->valorMercancia != 0) ? ($totalArancel + $iva) : 0;
+            $costoInterno += $prod['costo_interno'];
+            $this->totalLogisticaBolivia = ($prod['total_valor'] + $valorFacturado  + $costoInterno) * 0.03;
+            $this->totalBrokersChina = ($prod['total_valor'] + $valorFacturado  + $costoInterno) * 0.035;
         }
 
         // CÁLCULO DE COMISIÓN POR PAGO INTERNACIONAL
@@ -1259,13 +1372,14 @@ class CalculadoraMaritima extends Component
         $almacen = 3.59;
         $documentacion = 17.24;
         $formularios = 14.37;
+        $examenPrevio = 35;
         $addServices = 0;
         $costoVerificacion = 0;
 
         $representacion = ($this->valorMercancia * 3500) / 25000;
 
 
-        $despacho = $this->valorMercancia == 0 ? 0 : $almacen + $documentacion + $formularios + $this->valorCBMKG + $representacion;
+        $despacho = $this->valorMercancia == 0 ? 0 : $almacen + $documentacion + $formularios + $this->valorCBMKG + $representacion + $examenPrevio;
 
         $total_tiered_charge = $this->valorMercancia == 0 ? 0 : $this->calculate_tiered_charge($this->valorMercancia);
 
@@ -1305,24 +1419,27 @@ class CalculadoraMaritima extends Component
         $this->gastosAdicionales = [];
         if ($this->valorMercancia === 0 || $this->valorMercancia === null) {
             $this->desglose = [
-                'Costo de Envío Interno' => number_format($this->temp_costo_interno, 2, '.', ''),
+                'Costo de Envío Interno' => number_format($costoInterno, 2, '.', ''),
                 'Costo de Envío Internacional' => number_format($valorFacturado, 2, '.', ''),
-                'Gestión Logística en Bolivia' => number_format($this->totalLogisticaBolivia, 2, '.', ''),
+                'Gestión Logística' => number_format($this->totalLogisticaBolivia, 2, '.', ''),
                 'Brokers en China' => number_format($this->totalBrokersChina, 2, '.', ''),
-                'Comisión Pago Internacional' => number_format($swiftFee, 2, '.', ''),
+
             ];
         } else {
             $this->desglose = [
                 'Valor de Mercancía' => number_format($this->valorMercancia, 2, '.', ''),
-                'Costo de Envío Interno' => number_format($this->temp_costo_interno, 2, '.', ''),
+                'Costo de Envío Interno' => number_format($costoInterno, 2, '.', ''),
+                'Pago Internacional' => number_format($swiftFee, 2, '.', ''),
                 'Costo de Envío Internacional' => number_format($valorFacturado, 2, '.', ''),
-                'Gestión Logística en Bolivia' => number_format($this->totalLogisticaBolivia, 2, '.', ''),
+                'Gestión Logística' => number_format($this->totalLogisticaBolivia, 2, '.', ''),
                 'Brokers en China' => number_format($this->totalBrokersChina, 2, '.', ''),
-                'cargos de importacion y despacho' => number_format($despacho, 2, '.', ''),
+                'Cargos de importacion y despacho' => number_format($despacho, 2, '.', ''),
                 'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
-                'Impuesto' => number_format($impuesto, 2, '.', ''),
 
             ];
+            if ($impuesto !== 0) {
+                $this->desglose['Impuestos'] = number_format($impuesto, 2, '.', '');
+            }
         }
         $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
 
@@ -1342,10 +1459,7 @@ class CalculadoraMaritima extends Component
             $this->desglose['Seguro de la Carga'] = number_format($this->valorMercancia * 0.02, 2, '.', '');
             $costoVerificacion += $this->valorMercancia * 0.02;
         }
-        if ($this->examenPrevio) {
-            $this->desglose['Examen Previo'] = 35.00;
-            $costoVerificacion += 35.00;
-        }
+
         if ($this->verificacionEmpresaDigital) {
             $this->desglose['Verificación de Empresa Digital'] = 100.00;
             $costoVerificacion += 100.00;
@@ -1363,12 +1477,12 @@ class CalculadoraMaritima extends Component
             $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
         }
         if ($this->recojoAlmacen) $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumetricWeight, 2, '.', '');
-        $this->gastosAdicionales['Costo de Envío Interno'] = number_format($this->temp_costo_interno, 2, '.', '');
-        $this->gastosAdicionales['cargos de importacion y despacho'] = number_format($despacho, 2, '.', '');
+        $this->gastosAdicionales['Costo de Envío Interno'] = number_format($costoInterno, 2, '.', '');
+        $this->gastosAdicionales['Cargos de importacion y despacho'] = number_format($despacho, 2, '.', '');
         $this->gastosAdicionales['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
         $this->gastosAdicionales['Gravamen Arancelario'] = number_format($totalArancel, 2, '.', '');
         $this->gastosAdicionales['Impuesto IVA'] = number_format($iva, 2, '.', '');
-        $this->gastosAdicionales['Comisión Pago Internacional'] = number_format($swiftFee, 2, '.', '');
+        $this->gastosAdicionales['Pago Internacional'] = number_format($swiftFee, 2, '.', '');
 
         if ($this->verificacionProducto) $this->gastosAdicionales['Verificación de Producto'] = number_format($this->calculateVerificationCost(), 2, '.', '');
         if ($this->verificacionCalidad) $this->gastosAdicionales['Verificación de Calidad'] = 50.00;
@@ -1378,7 +1492,7 @@ class CalculadoraMaritima extends Component
         if ($this->verificacionEmpresaPresencial) $this->gastosAdicionales['Verificación Presencial de Empresa'] = 350.00;
         if ($this->verificacionSustanciasPeligrosas) $this->gastosAdicionales['Envio de producto peligroso'] = 250.00;
 
-        $total = $this->valorMercancia + $valorFacturado + $this->totalLogisticaBolivia + $this->totalBrokersChina + $addServices + $costoDestino + $costoVerificacion + $totalArancel + $iva + $total_tiered_charge + $despacho + $this->temp_costo_interno + $swiftFee;
+        $total = $this->valorMercancia + $valorFacturado + $this->totalLogisticaBolivia + $this->totalBrokersChina + $addServices + $costoDestino + $costoVerificacion + $totalArancel + $iva + $total_tiered_charge + $despacho + $costoInterno + $swiftFee;
 
         return [
             'costo'  => number_format($total, 2, '.', ''),
@@ -1446,6 +1560,317 @@ class CalculadoraMaritima extends Component
     {
         $this->searchPOL = $value;
         $this->updatedSearchPOL($value);
+    }
+
+    private function loadClasesVehiculo()
+    {
+        try {
+            $response = Http::withoutVerifying()->get('https://anapp.aduana.gob.bo:8443/wsprbctp-consultas/vtm1/distinctclasevehiculo');
+            if ($response->successful()) {
+                $this->clasesVehiculoOptions = $response->json()['result'] ?? [];
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al cargar clases de vehículo: " . $e->getMessage());
+            $this->clasesVehiculoOptions = [];
+        }
+    }
+
+    public function updatedClaseVehiculo($value)
+    {
+        $this->marcaVehiculo = '';
+        $this->marcasVehiculoOptions = [];
+        Log::info("Cargando marcas de vehículo para clase3: " . $value);
+        if ($value) {
+            $this->loadMarcasVehiculo($value);
+            Log::info("Cargando marcas de vehículo para clase1: " . $value);
+        }
+    }
+
+    private function loadMarcasVehiculo($claseId)
+    {
+        Log::info("Cargando marcas de vehículo para clase2: " . $claseId);
+        try {
+            $response = Http::withoutVerifying()->get("https://anapp.aduana.gob.bo:8443/wsprbctp-consultas/vtm1/distinctmarcavehiculo/{$claseId}");
+            if ($response->successful()) {
+                $this->marcasVehiculoOptions = $response->json()['result'] ?? [];
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al cargar marcas de vehículo: " . $e->getMessage());
+            $this->marcasVehiculoOptions = [];
+        }
+    }
+
+    public function updatedMarcaVehiculo($value)
+    {
+        $this->tipoVehiculo = '';
+        $this->tiposVehiculoOptions = [];
+        Log::info("Marca seleccionada (codigo): " . $value);
+
+        if ($value && $this->claseVehiculo) {
+            $this->loadTiposVehiculo($this->claseVehiculo, $value);
+        }
+    }
+
+    private function loadTiposVehiculo($claseId, $marcaId)
+    {
+        Log::info("Cargando tipos de vehículo para clase: $claseId y marca: $marcaId");
+        try {
+            $response = Http::withoutVerifying()->get("https://anapp.aduana.gob.bo:8443/wsprbctp-consultas/vtm1/distincttipovehiculo/{$claseId}/{$marcaId}");
+            if ($response->successful()) {
+                $this->tiposVehiculoOptions = $response->json()['result'] ?? [];
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al cargar tipos de vehículo: " . $e->getMessage());
+            $this->tiposVehiculoOptions = [];
+        }
+    }
+
+    public function updatedTipoVehiculo($value)
+    {
+        $this->subtipoVehiculo = '';
+        $this->subtiposVehiculoOptions = [];
+        Log::info("Tipo seleccionado (codigo): " . $value);
+
+        if ($value && $this->claseVehiculo && $this->marcaVehiculo) {
+            $this->loadSubtiposVehiculo($this->claseVehiculo, $this->marcaVehiculo, $value);
+        }
+    }
+
+    private function loadSubtiposVehiculo($claseId, $marcaId, $tipoId)
+    {
+        Log::info("Cargando subtipos de vehículo para clase: $claseId, marca: $marcaId, tipo: $tipoId");
+        try {
+            $response = Http::withoutVerifying()->get("https://anapp.aduana.gob.bo:8443/wsprbctp-consultas/vtm1/distinctsubtipovehiculo/{$claseId}/{$marcaId}/{$tipoId}");
+            if ($response->successful()) {
+                $this->subtiposVehiculoOptions = $response->json()['result'] ?? [];
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al cargar subtipos de vehículo: " . $e->getMessage());
+            $this->subtiposVehiculoOptions = [];
+        }
+    }
+
+    public function updatedSubtipoVehiculo($value)
+    {
+        $this->cilindradaVehiculo = '';
+        $this->cilindradaVehiculoOptions = [];
+        Log::info("Subtipo seleccionado (codigo): " . $value);
+
+        if ($value && $this->claseVehiculo && $this->marcaVehiculo && $this->tipoVehiculo) {
+            $this->loadCilindradaVehiculo($this->claseVehiculo, $this->marcaVehiculo, $this->tipoVehiculo, $value);
+        }
+    }
+
+    private function loadCilindradaVehiculo($claseId, $marcaId, $tipoId, $subtipoId)
+    {
+        Log::info("Cargando cilindradas de vehículo para clase: $claseId, marca: $marcaId, tipo: $tipoId, subtipo: $subtipoId");
+        try {
+            $response = Http::withoutVerifying()->get("https://anapp.aduana.gob.bo:8443/wsprbctp-consultas/vtm1/distinctcilindradavehiculo/{$claseId}/{$marcaId}/{$tipoId}/{$subtipoId}");
+            if ($response->successful()) {
+                $result = $response->json()['result'] ?? [];
+                Log::info("Cilindrada response: " . json_encode($result));
+                $this->cilindradaVehiculoOptions = $result;
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al cargar cilindradas de vehículo: " . $e->getMessage());
+            $this->cilindradaVehiculoOptions = [];
+        }
+    }
+
+    public function updatedCilindradaVehiculo($value)
+    {
+        $this->traccionVehiculo = '';
+        $this->traccionVehiculoOptions = [];
+        Log::info("Cilindrada seleccionada (codigo): " . $value);
+
+        if ($value !== '' && $this->claseVehiculo && $this->marcaVehiculo && $this->tipoVehiculo && $this->subtipoVehiculo) {
+            $this->loadTraccionVehiculo($this->claseVehiculo, $this->marcaVehiculo, $this->tipoVehiculo, $this->subtipoVehiculo, $value);
+        }
+    }
+
+    private function loadTraccionVehiculo($claseId, $marcaId, $tipoId, $subtipoId, $cilindradaId)
+    {
+        Log::info("Cargando tracción de vehículo para clase: $claseId, marca: $marcaId, tipo: $tipoId, subtipo: $subtipoId, cilindrada: $cilindradaId");
+        try {
+            $response = Http::withoutVerifying()->get("https://anapp.aduana.gob.bo:8443/wsprbctp-consultas/vtm1/distincttraccionvehiculo/{$claseId}/{$marcaId}/{$tipoId}/{$subtipoId}/{$cilindradaId}");
+            if ($response->successful()) {
+                $result = $response->json()['result'] ?? [];
+                Log::info("Tracción response: " . json_encode($result));
+                $this->traccionVehiculoOptions = $result;
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al cargar tracción de vehículo: " . $e->getMessage());
+            $this->traccionVehiculoOptions = [];
+        }
+    }
+
+    public function updatedTraccionVehiculo($value)
+    {
+        $this->transmisionVehiculo = '';
+        $this->transmisionVehiculoOptions = [];
+        Log::info("Tracción seleccionada (codigo): " . $value);
+
+        if ($value !== '' && $this->claseVehiculo && $this->marcaVehiculo && $this->tipoVehiculo && $this->subtipoVehiculo && $this->cilindradaVehiculo !== '') {
+            $this->loadTransmisionVehiculo($this->claseVehiculo, $this->marcaVehiculo, $this->tipoVehiculo, $this->subtipoVehiculo, $this->cilindradaVehiculo, $value);
+        }
+    }
+
+    public function updatedAnioVehiculo($value)
+    {
+        $this->paisVehiculo = '';
+        $this->paisVehiculoOptions = [];
+        Log::info("Año seleccionado (codigo): " . $value);
+
+        if ($value !== '' && $this->claseVehiculo && $this->marcaVehiculo && $this->tipoVehiculo && $this->subtipoVehiculo && $this->cilindradaVehiculo !== '' && $this->traccionVehiculo !== '' && $this->transmisionVehiculo !== '' && $this->combustibleVehiculo !== '') {
+            $this->loadPaisVehiculo($this->claseVehiculo, $this->marcaVehiculo, $this->tipoVehiculo, $this->subtipoVehiculo, $this->cilindradaVehiculo, $this->traccionVehiculo, $this->transmisionVehiculo, $this->combustibleVehiculo, $value);
+        }
+    }
+
+    private function loadPaisVehiculo($claseId, $marcaId, $tipoId, $subtipoId, $cilindradaId, $traccionId, $transmisionId, $combustibleId, $anioId)
+    {
+        Log::info("Cargando país de vehículo para clase: $claseId, marca: $marcaId, tipo: $tipoId, subtipo: $subtipoId, cilindrada: $cilindradaId, traccion: $traccionId, transmision: $transmisionId, combustible: $combustibleId, anio: $anioId");
+        try {
+            $response = Http::withoutVerifying()->get("https://anapp.aduana.gob.bo:8443/wsprbctp-consultas/vtm1/distinctpaisorigenvehiculo/{$claseId}/{$marcaId}/{$tipoId}/{$subtipoId}/{$cilindradaId}/{$traccionId}/{$transmisionId}/{$combustibleId}/{$anioId}");
+            if ($response->successful()) {
+                $result = $response->json()['result'] ?? [];
+                Log::info("País response: " . json_encode($result));
+                $this->paisVehiculoOptions = $result;
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al cargar país de vehículo: " . $e->getMessage());
+            $this->paisVehiculoOptions = [];
+        }
+    }
+
+    public function updatedPaisVehiculo($value)
+    {
+        $this->otrasCaracteristicasVehiculo = '';
+        $this->otrasCaracteristicasVehiculoOptions = [];
+        Log::info("País seleccionado (codigo): " . $value);
+
+        if ($value !== '' && $this->claseVehiculo && $this->marcaVehiculo && $this->tipoVehiculo && $this->subtipoVehiculo && $this->cilindradaVehiculo !== '' && $this->traccionVehiculo !== '' && $this->transmisionVehiculo !== '' && $this->combustibleVehiculo !== '' && $this->anioVehiculo !== '') {
+            $this->loadOtrasCaracteristicasVehiculo($this->claseVehiculo, $this->marcaVehiculo, $this->tipoVehiculo, $this->subtipoVehiculo, $this->cilindradaVehiculo, $this->traccionVehiculo, $this->transmisionVehiculo, $this->combustibleVehiculo, $this->anioVehiculo, $value);
+        }
+    }
+
+    public function updatedOtrasCaracteristicasVehiculo($value)
+    {
+        Log::info("Otras características seleccionada (codigo): " . $value);
+        if ($value !== '' && $this->claseVehiculo && $this->marcaVehiculo && $this->tipoVehiculo && $this->subtipoVehiculo && $this->cilindradaVehiculo !== '' && $this->traccionVehiculo !== '' && $this->transmisionVehiculo !== '' && $this->combustibleVehiculo !== '' && $this->anioVehiculo !== '' && $this->paisVehiculo !== '') {
+            $this->loadValorMercanciaVehiculo($this->claseVehiculo, $this->marcaVehiculo, $this->tipoVehiculo, $this->subtipoVehiculo, $this->cilindradaVehiculo, $this->traccionVehiculo, $this->transmisionVehiculo, $this->combustibleVehiculo, $this->anioVehiculo, $this->paisVehiculo, $value);
+        }
+    }
+
+    private function loadValorMercanciaVehiculo($claseId, $marcaId, $tipoId, $subtipoId, $cilindradaId, $traccionId, $transmisionId, $combustibleId, $anioId, $paisId, $otrasId)
+    {
+        Log::info("Cargando valor mercancía para vehículo: $claseId, $marcaId, $tipoId, $subtipoId, $cilindradaId, $traccionId, $transmisionId, $combustibleId, $anioId, $paisId, $otrasId");
+        try {
+            $response = Http::withoutVerifying()->get("https://anapp.aduana.gob.bo:8443/wsprbctp-consultas/vtm1/listavehiculoconsulta/{$claseId}/{$marcaId}/{$tipoId}/{$subtipoId}/{$cilindradaId}/{$traccionId}/{$transmisionId}/{$combustibleId}/{$anioId}/{$paisId}/{$otrasId}");
+            if ($response->successful()) {
+                $result = $response->json()['result'] ?? [];
+                Log::info("Valor mercancía response count: " . count($result));
+
+                $maxValor = 0;
+                foreach ($result as $item) {
+                    if (isset($item['valorSus']) && $item['valorSus'] > $maxValor) {
+                        $maxValor = $item['valorSus'];
+                    }
+                }
+
+                if ($maxValor > 0) {
+                    $this->valorMercanciaRoRo = $maxValor;
+                    Log::info("Valor mercancía asignado: " . $this->valorMercanciaRoRo);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al cargar valor mercancía de vehículo: " . $e->getMessage());
+        }
+    }
+
+    private function loadOtrasCaracteristicasVehiculo($claseId, $marcaId, $tipoId, $subtipoId, $cilindradaId, $traccionId, $transmisionId, $combustibleId, $anioId, $paisId)
+    {
+        Log::info("Cargando otras características de vehículo para clase: $claseId, marca: $marcaId, tipo: $tipoId, subtipo: $subtipoId, cilindrada: $cilindradaId, traccion: $traccionId, transmision: $transmisionId, combustible: $combustibleId, anio: $anioId, pais: $paisId");
+        try {
+            $response = Http::withoutVerifying()->get("https://anapp.aduana.gob.bo:8443/wsprbctp-consultas/vtm1/distinctotrascaracteristicasvehiculo/{$claseId}/{$marcaId}/{$tipoId}/{$subtipoId}/{$cilindradaId}/{$traccionId}/{$transmisionId}/{$combustibleId}/{$anioId}/{$paisId}");
+            if ($response->successful()) {
+                $result = $response->json()['result'] ?? [];
+                Log::info("Otras características response: " . json_encode($result));
+                $this->otrasCaracteristicasVehiculoOptions = $result;
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al cargar otras características de vehículo: " . $e->getMessage());
+            $this->otrasCaracteristicasVehiculoOptions = [];
+        }
+    }
+
+    private function loadTransmisionVehiculo($claseId, $marcaId, $tipoId, $subtipoId, $cilindradaId, $traccionId)
+    {
+        Log::info("Cargando transmisión de vehículo para clase: $claseId, marca: $marcaId, tipo: $tipoId, subtipo: $subtipoId, cilindrada: $cilindradaId, traccion: $traccionId");
+        try {
+            $response = Http::withoutVerifying()->get("https://anapp.aduana.gob.bo:8443/wsprbctp-consultas/vtm1/distincttransmisionvehiculo/{$claseId}/{$marcaId}/{$tipoId}/{$subtipoId}/{$cilindradaId}/{$traccionId}");
+            if ($response->successful()) {
+                $result = $response->json()['result'] ?? [];
+                Log::info("Transmisión response: " . json_encode($result));
+                $this->transmisionVehiculoOptions = $result;
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al cargar transmisión de vehículo: " . $e->getMessage());
+            $this->transmisionVehiculoOptions = [];
+        }
+    }
+
+    public function updatedTransmisionVehiculo($value)
+    {
+        $this->combustibleVehiculo = '';
+        $this->combustibleVehiculoOptions = [];
+        Log::info("Transmisión seleccionada (codigo): " . $value);
+
+        if ($value !== '' && $this->claseVehiculo && $this->marcaVehiculo && $this->tipoVehiculo && $this->subtipoVehiculo && $this->cilindradaVehiculo !== '' && $this->traccionVehiculo !== '') {
+            $this->loadCombustibleVehiculo($this->claseVehiculo, $this->marcaVehiculo, $this->tipoVehiculo, $this->subtipoVehiculo, $this->cilindradaVehiculo, $this->traccionVehiculo, $value);
+        }
+    }
+
+    private function loadCombustibleVehiculo($claseId, $marcaId, $tipoId, $subtipoId, $cilindradaId, $traccionId, $transmisionId)
+    {
+        Log::info("Cargando combustible de vehículo para clase: $claseId, marca: $marcaId, tipo: $tipoId, subtipo: $subtipoId, cilindrada: $cilindradaId, traccion: $traccionId, transmision: $transmisionId");
+        try {
+            $response = Http::withoutVerifying()->get("https://anapp.aduana.gob.bo:8443/wsprbctp-consultas/vtm1/distinctcombustiblevehiculo/{$claseId}/{$marcaId}/{$tipoId}/{$subtipoId}/{$cilindradaId}/{$traccionId}/{$transmisionId}");
+            if ($response->successful()) {
+                $result = $response->json()['result'] ?? [];
+                Log::info("Combustible response: " . json_encode($result));
+                $this->combustibleVehiculoOptions = $result;
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al cargar combustible de vehículo: " . $e->getMessage());
+            $this->combustibleVehiculoOptions = [];
+        }
+    }
+
+    public function updatedCombustibleVehiculo($value)
+    {
+        $this->anioVehiculo = '';
+        $this->anioVehiculoOptions = [];
+        Log::info("Combustible seleccionado (codigo): " . $value);
+
+        if ($value !== '' && $this->claseVehiculo && $this->marcaVehiculo && $this->tipoVehiculo && $this->subtipoVehiculo && $this->cilindradaVehiculo !== '' && $this->traccionVehiculo !== '' && $this->transmisionVehiculo !== '') {
+            $this->loadAnioVehiculo($this->claseVehiculo, $this->marcaVehiculo, $this->tipoVehiculo, $this->subtipoVehiculo, $this->cilindradaVehiculo, $this->traccionVehiculo, $this->transmisionVehiculo, $value);
+        }
+    }
+
+    private function loadAnioVehiculo($claseId, $marcaId, $tipoId, $subtipoId, $cilindradaId, $traccionId, $transmisionId, $combustibleId)
+    {
+        Log::info("Cargando año de vehículo para clase: $claseId, marca: $marcaId, tipo: $tipoId, subtipo: $subtipoId, cilindrada: $cilindradaId, traccion: $traccionId, transmision: $transmisionId, combustible: $combustibleId");
+        try {
+            $response = Http::withoutVerifying()->get("https://anapp.aduana.gob.bo:8443/wsprbctp-consultas/vtm1/distinctaniomodelovehiculo/{$claseId}/{$marcaId}/{$tipoId}/{$subtipoId}/{$cilindradaId}/{$traccionId}/{$transmisionId}/{$combustibleId}");
+            if ($response->successful()) {
+                $result = $response->json()['result'] ?? [];
+                Log::info("Año response: " . json_encode($result));
+                $this->anioVehiculoOptions = $result;
+            }
+        } catch (\Exception $e) {
+            Log::error("Error al cargar año de vehículo: " . $e->getMessage());
+            $this->anioVehiculoOptions = [];
+        }
     }
 
     /**
@@ -1943,7 +2368,6 @@ class CalculadoraMaritima extends Component
             'verificacionProducto',
             'verificacionCalidad',
             'seguroCarga',
-            'examenPrevio',
             'verificacionEmpresaDigital',
             'verificacionSustanciasPeligrosas',
             'verificacionEmpresaPresencial'

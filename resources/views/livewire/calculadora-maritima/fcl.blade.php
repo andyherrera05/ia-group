@@ -212,6 +212,7 @@
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">CON Swift Bancario / USD</span>
+                                        <span class="text-white text-xs font-medium px-2 py-1 rounded" style="background-color: #FA9F00;">Alta Comision</span>
                                     </div>
                                     <p class="text-gray-500 text-xs mt-0.5">Transferencia bancaria internacional estándar (SWIFT).</p>
                                 </div>
@@ -224,6 +225,7 @@
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">SIN Swift Bancario / USDT</span>
+                                        <span class="text-white text-xs font-medium px-2 py-1 rounded" style="background-color: #FA9F00;">Baja Comision</span>
                                     </div>
                                     <p class="text-gray-500 text-xs mt-0.5">Pagos directos en China, USDT o sin uso de red SWIFT.</p>
                                 </div>
@@ -241,20 +243,6 @@
                                     <div>
                                         <h5 class="text-white font-semibold text-sm">¿Requiere seguro de la carga?</h5>
                                         <p class="text-gray-400 text-xs mt-0.5">Seguro contra todo tipo de riesgo en la mercancia y transporte.</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                        <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model="examenPrevioFCL" id="examenPrevioFCL"
-                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                            <div class="flex-1">
-                                <label for="examenPrevioFCL" class="flex items-center justify-between cursor-pointer">
-                                    <div>
-                                        <h5 class="text-white font-semibold text-sm">¿Requiere un examen previo?</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">Solicite la revision de su mercancia. Solo para productos que requieren verificacion en instalaciones aduaneras.</p>
                                     </div>
                                 </label>
                             </div>
