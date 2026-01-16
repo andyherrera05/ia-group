@@ -192,7 +192,7 @@
                             <div class="flex justify-between items-center py-2 px-4 bg-white/5 rounded-lg border border-white/5">
                                 <div class="flex items-center gap-2">
                                     <span class="text-gray-300 text-sm font-medium" style="width: 175px;">{{ trim($concepto) }}</span>
-                                    @if(in_array(trim($concepto), ['Seguro de la Carga','Agencia despachante', 'Cargos de importacion y despacho', 'Impuestos', 'Gravamen Arancelario', 'Seguro']))
+                                    @if(in_array(trim($concepto), ['Seguro de la Carga','Agencia despachante', 'Cargos de importacion y despacho', 'Impuestos', 'Gravamen Arancelario', 'Iva', 'Poliza de Importacion', 'ICE', 'IVA']))
                                     <span class="px-1.5 py-0.5 rounded font-bold bg-green-500/20 text-green-400 border border-green-500/30" style="font-size:9px">TC OF</span>
                                     @else
                                     <span class="px-1.5 py-0.5 rounded font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30" style="font-size:9px">TC BLUE</span>

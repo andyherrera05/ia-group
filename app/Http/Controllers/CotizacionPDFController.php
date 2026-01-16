@@ -144,7 +144,42 @@ class CotizacionPDFController extends Controller
             $data['productos'] = $productos;
         }
 
-        $view = (strtolower($data['tipoCarga']) === 'fcl') ? 'pdf.cotizacion-fcl' : 'pdf.cotizacion-lcl';
+        // Procesar vehiculo (RoRo)
+        $vehiculo = json_decode($request->vehiculo, true);
+        if (is_array($vehiculo)) {
+            // Reutilizamos contexto
+            $ctx = stream_context_create(['http' => ['timeout' => 3]]);
+
+            if (!empty($vehiculo['imagen'])) {
+                $url = $vehiculo['imagen'];
+                $isLocal = str_contains($url, '127.0.0.1') || str_contains($url, 'localhost');
+                if (!$isLocal) {
+                    try {
+                        $imageData = @file_get_contents($url, false, $ctx);
+                        if ($imageData !== false && !empty($imageData)) {
+                            $ext = strtolower(pathinfo($url, PATHINFO_EXTENSION));
+                            $ext = explode('?', $ext)[0]; // Limpieza
+                            $mime = match ($ext) {
+                                'png' => 'image/png',
+                                'gif' => 'image/gif',
+                                'svg' => 'image/svg+xml',
+                                'webp' => 'image/webp',
+                                default => 'image/jpeg'
+                            };
+                            $vehiculo['imagen'] = 'data:' . $mime . ';base64,' . base64_encode($imageData);
+                        }
+                    } catch (\Exception $e) {
+                    }
+                }
+            }
+            $data['vehiculo'] = $vehiculo;
+        }
+
+        $view = match (strtolower($data['tipoCarga'])) {
+            'fcl' => 'pdf.cotizacion-fcl',
+            'uld' => 'pdf.cotizacion-roro',
+            default => 'pdf.cotizacion-lcl',
+        };
         $pdf = Pdf::loadView($view, $data)->setOptions(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true]);
 
         return $pdf->download('cotizacion-' . strtolower($data['tipoCarga']) . '-' . date('Ymd-His') . '.pdf');

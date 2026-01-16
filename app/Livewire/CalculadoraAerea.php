@@ -690,21 +690,21 @@ class CalculadoraAerea extends Component
         $totalBaseImponible = $valorMercancia + $totalArancel;
         if ($valorMercancia == 0) {
             $this->desglose = [
-                'Costo de Envío Internacional' => number_format($costoFinal, 2, '.', ''),
                 'Costo de Envío Interno' => number_format($costo_envio_interno, 2, '.', ''),
+                'Costo de Envío Internacional' => number_format($costoFinal, 2, '.', ''),
                 'Brokers en China' => number_format($totalLogisticaChina, 2, '.', ''),
                 'Gestión Logística' => number_format($totalLogisticaBolivia, 2, '.', ''),
             ];
         } else {
             $this->desglose = [
                 'Valor de Mercancía' => number_format($valorMercancia, 2, '.', ''),
-                'Costo de Envío Internacional' => number_format($costoFinal, 2, '.', ''),
                 'Costo de Envío Interno' => number_format($costo_envio_interno, 2, '.', ''),
+                'Costo de Envío Internacional' => number_format($costoFinal, 2, '.', ''),
                 'Brokers en China' => number_format($totalLogisticaChina, 2, '.', ''),
                 'Gestión Logística' => number_format($totalLogisticaBolivia, 2, '.', ''),
                 'Despacho' => number_format($totalDespacho, 2, '.', ''),
                 'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
-                'Impuesto' => number_format($impuestoTotal, 2, '.', ''),
+                'Impuestos' => number_format($impuestoTotal, 2, '.', ''),
                 'Comisión Pago Internacional' => number_format($costoPagoInternacional, 2, '.', ''),
             ];
         }
