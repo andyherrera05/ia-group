@@ -28,6 +28,11 @@ class CalculadoraAerea extends Component
     // Configura aquí tu moneda (USD, PEN, ARS, MXN, COP, etc.)
     public $fiat = 'BOB';
 
+    public $verificacionProducto = false;
+    public $verificacionCalidad = false;
+    public $verificacionEmpresaDigital = false;
+    public $verificacionEmpresaPresencial = false;
+
     // Propiedades temporales para el formulario de agregar (Estilo LCL)
     public $temp_producto = '';
     public $temp_imagen = '';
@@ -44,8 +49,10 @@ class CalculadoraAerea extends Component
     public $temp_medida_unidad = 'cm';
     public $temp_hs_code = '';
     public $temp_arancel = 0;
+    public $temp_con_arancel = false;
     public $temp_costo_envio_interno = '';
     public $arancelSuggestions = [];
+    public $codigoPais = '+591';
 
     // Estado local
     public $urgente = false;
@@ -72,7 +79,7 @@ class CalculadoraAerea extends Component
     public $pagosInternacionalesSwift = 'swift'; // 'swift' (1%) o 'sin_swift' (2.5%)
     public $requierePagoInternacional = false;
     public $seguroCarga = false;
-    public $examenPrevio = false;
+
 
     // Propiedades para PDF / Cliente
     public $clienteNombre = '';
@@ -105,7 +112,7 @@ class CalculadoraAerea extends Component
             'id' => 4,
             'nombre' => 'Ivana',
             'email' => 'agentes@iagroups.com',
-            'telefono' => '64583783'
+            'telefono' => '72976032'
         ],
         [
             'id' => 5,
@@ -220,6 +227,19 @@ class CalculadoraAerea extends Component
                 'clienteTelefono.min' => 'El teléfono debe tener al menos 7 caracteres.',
             ]);
         }
+    }
+    public function getPaisesProperty()
+    {
+        return [
+            ['code' => '+591', 'flag' => '🇧🇴', 'name' => 'Bolivia'],
+            ['code' => '+54',  'flag' => '🇦🇷', 'name' => 'Argentina'],
+            ['code' => '+55',  'flag' => '🇧🇷', 'name' => 'Brasil'],
+            ['code' => '+56',  'flag' => '🇨🇱', 'name' => 'Chile'],
+            ['code' => '+57',  'flag' => '🇨🇴', 'name' => 'Colombia'],
+            ['code' => '+51',  'flag' => '🇵🇪', 'name' => 'Perú'],
+            ['code' => '+52',  'flag' => '🇲🇽', 'name' => 'México'],
+            ['code' => '+1',   'flag' => '🇺🇸', 'name' => 'USA'],
+        ];
     }
 
 
@@ -549,7 +569,7 @@ class CalculadoraAerea extends Component
             ['maxKg' => 200, 'tarifa' => 14.80],
             ['maxKg' => PHP_INT_MAX, 'tarifa' => 14.80]
         ];
-
+        $costoAdicionales = 0;
         $errores = [];
         $advertencias = [];
 
@@ -625,11 +645,9 @@ class CalculadoraAerea extends Component
 
         // Costos Fijos Adicionales
         $costoSustanciasPeligrosas = $this->verificacionSustanciasPeligrosas ? 250.00 : 0;
-        $costoExamenPrevio = $this->examenPrevio ? 35.00 : 0;
+        $costoExamenPrevio = 35.00;
 
         $totalServiciosAdicionales = $costoSeguro + $costoPagoInternacional + $costoSustanciasPeligrosas + $costoExamenPrevio;
-
-
         $almacen       = 0;
         $impuestos     = 0;
 
@@ -647,8 +665,6 @@ class CalculadoraAerea extends Component
                 $tarifaAlmacen = 1.50;
             }
             $almacen = $tarifaAlmacen * $dias;
-
-            $impuestos     = 25;
         }
         // Calcular Gravamen Arancelario e IVA (Basado en lógica marítima)
         $totalArancel = 0;
@@ -677,35 +693,39 @@ class CalculadoraAerea extends Component
 
         $costo_envio_interno = floatval($this->temp_costo_envio_interno);
         $impuestoTotal =  $totalArancel + $iva;
+        Log::info($impuestoTotal);
+        Log::info($totalArancel);
+        Log::info($iva);
         $impuestoTotal = $valorMercancia == 0 ? 0 : $impuestoTotal;
 
         $totalLogisticaChina = ($valorMercancia + $costoFinal + $costo_envio_interno) * $comision;
         $totalLogisticaBolivia = ($valorMercancia + $costoFinal + $costo_envio_interno) * $comisionBolivia;
 
-        $precio_rebajado = $costoSeguro + $impuestos + ($valorMercancia * $comision) + $costoPagoInternacional + $almacen + $factura;
+        $precio_rebajado = $costoSeguro + $impuestoTotal + ($valorMercancia * $comision) + $costoPagoInternacional + $almacen + $factura;
 
-        $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina + $totalLogisticaBolivia + $totalServiciosAdicionales + $impuestoTotal + $costo_envio_interno + $totalDespacho + $total_tiered_charge;
+        $totalGeneral = $valorMercancia + $costoFinal + $totalLogisticaChina + $totalLogisticaBolivia + $totalServiciosAdicionales + $impuestoTotal + $costo_envio_interno + $totalDespacho + $total_tiered_charge + $costoAdicionales;
 
-        $totalGeneralRebajado = $valorMercancia + $precio_rebajado + $totalLogisticaChina + $totalLogisticaBolivia + $impuestoTotal + $costo_envio_interno + $totalDespacho + $total_tiered_charge;
+        $totalGeneralRebajado = $valorMercancia + $precio_rebajado + $totalLogisticaChina + $totalLogisticaBolivia + $impuestoTotal + $costo_envio_interno + $totalDespacho + $total_tiered_charge + $costoAdicionales;
         $totalBaseImponible = $valorMercancia + $totalArancel;
         if ($valorMercancia == 0) {
             $this->desglose = [
                 'Costo de Envío Interno' => number_format($costo_envio_interno, 2, '.', ''),
                 'Costo de Envío Internacional' => number_format($costoFinal, 2, '.', ''),
-                'Brokers en China' => number_format($totalLogisticaChina, 2, '.', ''),
                 'Gestión Logística' => number_format($totalLogisticaBolivia, 2, '.', ''),
+                'Brokers en China' => number_format($totalLogisticaChina, 2, '.', ''),
             ];
         } else {
             $this->desglose = [
                 'Valor de Mercancía' => number_format($valorMercancia, 2, '.', ''),
                 'Costo de Envío Interno' => number_format($costo_envio_interno, 2, '.', ''),
                 'Costo de Envío Internacional' => number_format($costoFinal, 2, '.', ''),
-                'Brokers en China' => number_format($totalLogisticaChina, 2, '.', ''),
                 'Gestión Logística' => number_format($totalLogisticaBolivia, 2, '.', ''),
-                'Despacho' => number_format($totalDespacho, 2, '.', ''),
-                'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
+                'Brokers en China' => number_format($totalLogisticaChina, 2, '.', ''),
+
+                'Cargos de importacion y despacho' => number_format($totalDespacho, 2, '.', ''),
+                'Agencia Despachante' => number_format($total_tiered_charge, 2, '.', ''),
                 'Impuestos' => number_format($impuestoTotal, 2, '.', ''),
-                'Comisión Pago Internacional' => number_format($costoPagoInternacional, 2, '.', ''),
+                'Pago Internacional' => number_format($costoPagoInternacional, 2, '.', ''),
             ];
         }
 
@@ -715,13 +735,26 @@ class CalculadoraAerea extends Component
         if ($this->verificacionSustanciasPeligrosas) {
             $this->desglose[' Envio de producto peligroso'] = number_format($costoSustanciasPeligrosas, 2, '.', '');
         }
-        if ($this->examenPrevio) {
-            $this->desglose[' Examen Previo'] = number_format($costoExamenPrevio, 2, '.', '');
-        }
 
         if ($this->seguroCarga) {
             $this->desglose['─ DETALLE DE FLETE Y SEGURO'] = null;
             $this->desglose['   └─ Seguro'] = number_format($costoSeguro, 2);
+        }
+        if ($this->verificacionProducto) {
+            $costoAdicionales += 30.00;
+            $this->desglose['Verificación del Producto'] = number_format(30.00, 2, '.', '');
+        }
+        if ($this->verificacionCalidad) {
+            $costoAdicionales += 50.00;
+            $this->desglose['Verificación de Calidad del Producto'] = number_format(50.00, 2, '.', '');
+        }
+        if ($this->verificacionEmpresaDigital) {
+            $costoAdicionales += 100.00;
+            $this->desglose['Verificación de Empresa Digital'] = number_format(100.00, 2, '.', '');
+        }
+        if ($this->verificacionEmpresaPresencial) {
+            $costoAdicionales += 350.00;
+            $this->desglose['Verificación Presencial de Empresa'] = number_format(350.00, 2, '.', '');
         }
 
         $this->desglose = array_merge($this->desglose, [
@@ -738,29 +771,36 @@ class CalculadoraAerea extends Component
         if ($this->verificacionSustanciasPeligrosas) {
             $this->desglose['   └─ Envio de producto peligroso'] = number_format($costoSustanciasPeligrosas, 2);
         }
-        if ($this->examenPrevio) {
-            $this->desglose['   └─ Examen Previo'] = number_format($costoExamenPrevio, 2);
-        }
 
         // Poblar gastosAdicionales para el PDF (con todo el detalle)
         $this->gastosAdicionales = [
             'Costo de Envío Interno' => $costo_envio_interno,
-            'Despacho' => $totalDespacho,
-            'Agencia despachante' => $total_tiered_charge,
+            'Cargos de importacion y despacho' => $totalDespacho,
+            'Agencia Despachante' => $total_tiered_charge,
             // Desglosados para la tabla de aduana
             'Gravamen Arancelario' => $totalArancel,
             'Impuesto IVA' => $iva,
             'Base Imponible' => $totalBaseImponible,
             // Additional Services
-            'Comisión Pago Internacional' => $costoPagoInternacional,
+            'Pago Internacional' => $costoPagoInternacional,
 
         ];
 
         if ($this->verificacionSustanciasPeligrosas) {
             $this->gastosAdicionales['Envio de producto peligroso'] = $costoSustanciasPeligrosas;
         }
-        if ($this->examenPrevio) {
-            $this->gastosAdicionales['Examen Previo'] = $costoExamenPrevio;
+
+        if ($this->verificacionProducto) {
+            $this->gastosAdicionales['Verificación del Producto'] = 30.00;
+        }
+        if ($this->verificacionCalidad) {
+            $this->gastosAdicionales['Verificación de Calidad del Producto'] = 50.00;
+        }
+        if ($this->verificacionEmpresaDigital) {
+            $this->gastosAdicionales['Verificación de Empresa Digital'] = 100.00;
+        }
+        if ($this->verificacionEmpresaPresencial) {
+            $this->gastosAdicionales['Verificación Presencial de Empresa'] = 350.00;
         }
 
 
@@ -884,8 +924,8 @@ class CalculadoraAerea extends Component
         $resumenPDF = [
             'Valor de Mercancía' => $this->desglose['Valor de Mercancía'] ?? 0,
             'Costo de Envío Internacional' => $this->desglose['Costo de Envío Internacional'] ?? 0,
-            'Brokers en China' => $this->desglose['Brokers en China'] ?? 0,
             'Gestión Logística' => $this->desglose['Gestión Logística'] ?? 0,
+            'Brokers en China' => $this->desglose['Brokers en China'] ?? 0,
         ];
 
         return redirect()->route('cotizacion.pdf', [

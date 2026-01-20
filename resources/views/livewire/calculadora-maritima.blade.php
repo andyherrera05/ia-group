@@ -192,7 +192,7 @@
                             <div class="flex justify-between items-center py-2 px-4 bg-white/5 rounded-lg border border-white/5">
                                 <div class="flex items-center gap-2">
                                     <span class="text-gray-300 text-sm font-medium" style="width: 175px;">{{ trim($concepto) }}</span>
-                                    @if(in_array(trim($concepto), ['Seguro de la Carga','Agencia despachante', 'Cargos de importacion y despacho', 'Impuestos', 'Gravamen Arancelario', 'Iva', 'Poliza de Importacion', 'ICE', 'IVA']))
+                                    @if(in_array(trim($concepto), ['Seguro de la Carga','Agencia Despachante', 'Cargos de importacion y despacho', 'Impuestos', 'Gravamen Arancelario', 'Iva', 'Poliza de Importacion', 'ICE', 'IVA', 'Transporte Terrestre']))
                                     <span class="px-1.5 py-0.5 rounded font-bold bg-green-500/20 text-green-400 border border-green-500/30" style="font-size:9px">TC OF</span>
                                     @else
                                     <span class="px-1.5 py-0.5 rounded font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30" style="font-size:9px">TC BLUE</span>
@@ -333,6 +333,59 @@
                             instantánea</p>
                     </div>
                     @endif
+
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <!-- Card 1: Single Unit Tip -->
+                    <div class="relative group overflow-hidden bg-gradient-to-br from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-xl p-4 hover:border-yellow-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/10">
+                        <div class="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity transform rotate-12">
+                            <svg class="w-24 h-24 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="flex items-start gap-3 relative z-10">
+                            <div class="flex-shrink-0 p-2.5 bg-yellow-500/20 rounded-lg text-yellow-500 ring-1 ring-yellow-500/30">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h5 class="text-yellow-500 font-bold text-[10px] uppercase tracking-widest mb-1 flex items-center gap-2">
+                                    Tip de Cálculo
+                                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
+                                </h5>
+                                <p class="text-gray-300 text-xs leading-relaxed font-medium">
+                                    Si envías productos similares, registra las especificaciones de <strong class="text-white border-b border-yellow-500/50">una sola unidad</strong>. Nuestro sistema multiplicará automáticamente.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Decimal Formatting Tip -->
+                    <div class="relative group overflow-hidden bg-gradient-to-br from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-xl p-4 hover:border-yellow-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/10">
+                        <div class="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity transform -rotate-12">
+                            <svg class="w-24 h-24 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="flex items-start gap-3 relative z-10">
+                            <div class="flex-shrink-0 p-2.5 bg-yellow-500/20 rounded-lg text-yellow-500 ring-1 ring-yellow-500/30">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h5 class="text-yellow-500 font-bold text-[10px] uppercase tracking-widest mb-1 flex items-center gap-2">
+                                    Formato Numérico
+                                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
+                                </h5>
+                                <p class="text-gray-300 text-xs leading-relaxed font-medium">
+                                    Para decimales, usa siempre el <strong class="text-white border-b border-yellow-500/50">Punto (.)</strong>
+                                    <span class="block mt-1 opacity-70 text-[10px]">Ejemplo: <span class="text-white">0.5</span> (Correcto) vs 0,5 (Incorrecto)</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -360,7 +413,9 @@
                 </div>
             </div>
         </div>
+
     </div>
+
 </div>
 </div>
 

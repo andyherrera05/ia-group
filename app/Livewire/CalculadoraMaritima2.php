@@ -181,7 +181,7 @@ class CalculadoraMaritima extends Component
             'id' => 4,
             'nombre' => 'Ivana',
             'email' => 'agentes@iagroups.com',
-            'telefono' => '64583783'
+            'telefono' => '72976032'
         ],
         [
             'id' => 5,
@@ -1246,7 +1246,7 @@ class CalculadoraMaritima extends Component
             'Gestión Logística' => number_format($this->totalLogisticaBolivia, 2, '.', ''),
             'Brokers en China' => number_format($this->totalBrokersChina, 2, '.', ''),
             'Despacho' => number_format($despacho, 2, '.', ''),
-            'Agencia despachante' => number_format($total_tiered_charge, 2, '.', ''),
+            'Agencia Despachante' => number_format($total_tiered_charge, 2, '.', ''),
             'Impuesto' => number_format($impuesto, 2, '.', ''),
             'Comisión Pago Internacional' => number_format($swiftFee, 2, '.', ''),
 
@@ -1295,7 +1295,7 @@ class CalculadoraMaritima extends Component
         if ($this->recojoAlmacen) $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumetricWeight, 2, '.', '');
         $this->gastosAdicionales['Costo de Envío Interno'] = number_format($this->costo_envio_interno, 2, '.', '');
         $this->gastosAdicionales['Despacho'] = number_format($despacho, 2, '.', '');
-        $this->gastosAdicionales['Agencia despachante'] = number_format($total_tiered_charge, 2, '.', '');
+        $this->gastosAdicionales['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
         $this->gastosAdicionales['Gravamen Arancelario'] = number_format($totalArancel, 2, '.', '');
         $this->gastosAdicionales['Impuesto IVA'] = number_format($iva, 2, '.', '');
         $this->gastosAdicionales['Comisión Pago Internacional'] = number_format($swiftFee, 2, '.', '');

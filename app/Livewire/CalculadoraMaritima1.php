@@ -360,7 +360,7 @@ class CalculadoraMaritima extends Component
             5    => 168,
             3    => 179,
             1    => 188,
-            0.5  => 116,
+            0.5  => 137,
             0.25 => 60
         ];
 
@@ -413,7 +413,7 @@ class CalculadoraMaritima extends Component
         } else {
             $valorFacturado = $costoFinal * $this->cantidad;
         }
-        
+
         $total_costs_import = $this->costs_import();
         $total_tiered_charge = $this->calculate_tiered_charge($this->valorMercancia);
         $total = $this->valorMercancia + $valorFacturado + $total_costs_import + $total_tiered_charge + $costoRecojo + $costoDestino;
@@ -636,7 +636,7 @@ class CalculadoraMaritima extends Component
         $this->js('$wire.$refresh()');
     }
 
-        private function searchPortsPOD($query)
+    private function searchPortsPOD($query)
     {
         $ports = [
             ['code' => 'CLIQQ', 'name' => 'Iquique', 'country' => 'Chile', 'region' => 'América Central y del Sur'],

@@ -201,12 +201,12 @@
 
                             <div class="grid grid-cols-3 gap-3">
                                 <div>
-                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 9px;">Cantidad de piezas por cartones</label>
+                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 9px;">Cantidad de piezas por caja</label>
                                     <input type="number" wire:model="temp_piezas_por_carton" placeholder="1" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
                                     @error('temp_piezas_por_carton') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
-                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 9px;">Cantidad de cartones</label>
+                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 9px;">Cantidad de cajas</label>
                                     <input type="number" wire:model="temp_cantidad" placeholder="1" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
                                     @error('temp_cantidad') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
                                 </div>

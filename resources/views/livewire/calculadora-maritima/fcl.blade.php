@@ -39,15 +39,61 @@
                     </div>
                     @enderror
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Teléfono</label>
-                    <input type="text" wire:model.live="clienteTelefono" placeholder="72732422"
-                        class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteTelefono')
-                    <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
-                        {{ $message }}
+                <div
+                    x-data="{ 
+                                open: false, 
+                                countryCode: @entangle('codigoPais'),
+                                get currentFlag() {
+                                    return this.$refs[this.countryCode]?.dataset.flag || '🌍';
+                                }
+                            }"
+                    class="flex items-center w-full bg-black/40 border border-yellow-500/10 rounded-lg focus-within:ring-1 focus-within:ring-yellow-500 transition-all relative">
+
+                    <div class="relative">
+
+                        <button
+                            type="button"
+                            @click="open = !open"
+                            class="px-2 flex items-center gap-2 pl-3 pr-2 py-2 text-gray-300 hover:text-white border-r border-yellow-500/10 transition-colors text-sm focus:outline-none min-w-[90px]">
+                            <span x-text="currentFlag"></span>
+                            <span x-text="countryCode"></span>
+
+                            <svg class="w-3 h-3 text-gray-500 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div
+                            x-show="open"
+                            @click.outside="open = false"
+                            x-transition.opacity.duration.200ms
+                            class="absolute z-50 top-full left-0 mt-1 w-48 bg-gray-900 border border-yellow-500/20 rounded-md shadow-xl py-1 max-h-60 overflow-y-auto custom-scrollbar"
+                            style="display: none;">
+                            @foreach($this->paises as $pais)
+                            <button
+                                type="button"
+                                x-ref="{{ $pais['code'] }}"
+                                data-flag="{{ $pais['flag'] }}"
+                                @click="countryCode = '{{ $pais['code'] }}'; open = false"
+                                class="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-300 hover:bg-yellow-500/20 hover:text-white text-left transition-colors"
+                                :class="countryCode === '{{ $pais['code'] }}' ? 'bg-yellow-500/10 text-yellow-500' : ''" style="background-color: #1a170c;">
+                                <span class="text-lg">{{ $pais['flag'] }}</span>
+                                <span class="font-mono text-gray-400">{{ $pais['code'] }}</span>
+                                <span class="truncate ml-auto text-xs text-gray-500">{{ $pais['name'] }}</span>
+                            </button>
+                            @endforeach
+                        </div>
+                        @error('clienteTelefono')
+                        <span
+                            class="text-red-400 text-[10px] block mt-0.5 leading-none">{{ $message }}</span>
+                        @enderror
                     </div>
-                    @enderror
+
+                    <input
+                        type="tel"
+                        wire:model.live="clienteTelefono"
+                        placeholder="72732422"
+                        class="w-full px-3 py-2 bg-transparent border-none text-white placeholder-gray-600 focus:ring-0 focus:outline-none text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Ciudad</label>
@@ -91,6 +137,52 @@
                 </div>
             </div>
         </div>
+        <!-- Desconsolidacion / Consolidacion Selection -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <!-- Consolidation Button -->
+            <button type="button" wire:click="$set('desconsolidacionFCL', '1')"
+                class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionFCL == '1' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
+                <div class="flex flex-col items-center justify-center gap-3">
+                    <div class="p-3 rounded-full {{ $desconsolidacionFCL == '1' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <span class="block text-sm font-bold {{ $desconsolidacionFCL == '1' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Consolidación</span>
+                        <span class="block text-[10px] text-gray-500 mt-1">Agrupar carga</span>
+                    </div>
+                </div>
+                <!-- Active Check Indicator -->
+                @if($desconsolidacionFCL == '1')
+                <div class="absolute top-2 right-2">
+                    <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
+                </div>
+                @endif
+            </button>
+
+            <!-- Deconsolidation Button -->
+            <button type="button" wire:click="$set('desconsolidacionFCL', '0')"
+                class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionFCL == '0' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
+                <div class="flex flex-col items-center justify-center gap-3">
+                    <div class="p-3 rounded-full {{ $desconsolidacionFCL == '0' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <span class="block text-sm font-bold {{ $desconsolidacionFCL == '0' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Desconsolidación</span>
+                        <span class="block text-[10px] text-gray-500 mt-1">Separar carga</span>
+                    </div>
+                </div>
+                <!-- Active Check Indicator -->
+                @if($desconsolidacionFCL == '0')
+                <div class="absolute top-2 right-2">
+                    <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
+                </div>
+                @endif
+            </button>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-50">
             <!-- Valor de Carga (Nuevo) -->
             <div class="relative z-[40]">
@@ -103,52 +195,88 @@
                 <input type="number" wire:model="valorMercancia" placeholder="Ej: 5000"
                     class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
             </div>
-            <!-- HS Code Search -->
             <div class="relative z-[40]">
                 <label class="block text-sm font-medium text-gray-300 mb-2">
                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                     </svg>
-                    Buscador Arancelario
+                    Peso de la carga
+                    <span class="text-xs text-gray-500">(Toneladas)</span>
                 </label>
-                <input type="text" wire:model.live.debounce.300ms="temp_hs_code"
-                    placeholder="HS Code"
+                <input type="number" wire:model="pesoMercanciaFCL" placeholder="Ej: 20"
                     class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
-                <span class="block uppercase font-bold text-gray-500 mt-1"
-                    style="font-size: 9px;">Colocar una palabra genérica que identifique al
-                    producto</span>
+            </div>
+            <div class="relative z-[40]">
+                <label class="block text-sm font-medium text-gray-300 mb-2">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    Volumen de la carga
+                    <span class="text-xs text-gray-500">(m³)</span>
+                </label>
+                <input type="number" wire:model="volumenMercanciaFCL" placeholder="Ej: 1.25"
+                    class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+            </div>
+        </div>
+        <!-- Arancel Option -->
+        <div class="md:col-span-2 bg-black/20 rounded-lg p-3 border border-white/5">
+            <div class="flex items-center gap-2 mb-2">
+                <input type="checkbox" wire:model.live="temp_con_arancelFCL" id="temp_con_arancelFCL" class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                <label for="temp_con_arancelFCL" class="text-gray-400 cursor-pointer uppercase tracking-wider" style="font-size:14px">¿La carga tiene arancel?</label>
+            </div>
 
-                @if (!empty($arancelSuggestions))
-                <div class="absolute z-50 left-0 w-[150%] mt-1 bg-gray-900 border border-yellow-500/30 rounded-lg shadow-2xl max-h-48 overflow-y-auto custom-scrollbar"
-                    style="background-color: rgba(0, 0, 0, 0.9); z-index: 1000;">
-                    @foreach ($arancelSuggestions as $sug)
-                    <div wire:click="selectArancel('{{ $sug['codigo_hs'] }}', {{ $sug['arancel'] }})"
-                        class="p-2 hover:bg-yellow-500/10 cursor-pointer border-b border-white/5 last:border-0 transition-colors" style="font-size: 12px">
-                        <div class="flex justify-between items-start">
-                            <span
-                                class="text-yellow-500 text-[9px] font-bold">{{ $sug['codigo_hs'] }}</span>
-                            <span
-                                class="bg-yellow-500/20 text-yellow-500 text-[7px] px-1 rounded">{{ $sug['arancel'] }}%</span>
+            @if($temp_con_arancelFCL)
+            <div class="mt-2 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg space-y-3">
+                <div class="grid grid-cols-2 gap-2 bg-black/20 rounded-lg p-2 border border-white/5">
+                    <!-- HS Code Search -->
+                    <div class="relative z-[40]">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            Buscador Arancelario
+                        </label>
+                        <input type="text" wire:model.live.debounce.300ms="temp_hs_code"
+                            placeholder="HS Code"
+                            class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+                        <span class="block uppercase font-bold text-gray-500 mt-1"
+                            style="font-size: 9px;">Colocar una palabra genérica que identifique al
+                            producto</span>
+
+                        @if (!empty($arancelSuggestions))
+                        <div class="absolute z-50 left-0 w-[150%] mt-1 bg-gray-900 border border-yellow-500/30 rounded-lg shadow-2xl max-h-48 overflow-y-auto custom-scrollbar"
+                            style="background-color: rgba(0, 0, 0, 0.9); z-index: 1000;">
+                            @foreach ($arancelSuggestions as $sug)
+                            <div wire:click="selectArancel('{{ $sug['codigo_hs'] }}', {{ $sug['arancel'] }})"
+                                class="p-2 hover:bg-yellow-500/10 cursor-pointer border-b border-white/5 last:border-0 transition-colors" style="font-size: 12px">
+                                <div class="flex justify-between items-start">
+                                    <span
+                                        class="text-yellow-500 text-[9px] font-bold">{{ $sug['codigo_hs'] }}</span>
+                                    <span
+                                        class="bg-yellow-500/20 text-yellow-500 text-[7px] px-1 rounded">{{ $sug['arancel'] }}%</span>
+                                </div>
+                                <p class="text-[8px] text-gray-400 truncate">
+                                    {{ $sug['descripcion'] }}
+                                </p>
+                            </div>
+                            @endforeach
                         </div>
-                        <p class="text-[8px] text-gray-400 truncate">
-                            {{ $sug['descripcion'] }}
-                        </p>
+                        @endif
                     </div>
-                    @endforeach
+                    <!-- Arancel % -->
+                    <div class="relative z-[40]">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            Arancel %
+                        </label>
+                        <input type="number" wire:model="temp_arancel" placeholder="GA %"
+                            class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+                    </div>
                 </div>
-                @endif
             </div>
-            <!-- Arancel % -->
-            <div class="relative z-[40]">
-                <label class="block text-sm font-medium text-gray-300 mb-2">
-                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                    Arancel %
-                </label>
-                <input type="number" wire:model="temp_arancel" placeholder="GA %"
-                    class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
-            </div>
+            @endif
         </div>
 
         <div class="bg-white/5 border border-white/10 rounded-xl p-4 animate-fade-in">
@@ -163,6 +291,69 @@
                 <p class="text-gray-400 text-sm mb-6">Selecciona los servicios adicionales que requieras para tu envío</p>
 
                 <div class="space-y-6">
+                    <!-- Verificación de Producto -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model="verificacionProducto" id="verificacionProducto"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="verificacionProducto" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">Verificación de Producto por modelo</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Obtención de video real y fotos del producto real.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verificación de Calidad -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model="verificacionCalidad" id="verificacionCalidad"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="verificacionCalidad" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">Verificación de la Calidad del producto</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Recepción en almacén y pruebas de funcionamiento/uso.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verificación de Empresa Digital -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model="verificacionEmpresaDigital" id="verificacionEmpresaDigital"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="verificacionEmpresaDigital" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">Verificación de Empresa Digital</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Investigación de veracidad de licencias y establecimiento.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verificación Presencial de Empresa -->
+                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" wire:model="verificacionEmpresaPresencial" id="verificacionEmpresaPresencial"
+                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                            <div class="flex-1">
+                                <label for="verificacionEmpresaPresencial" class="flex items-center justify-between cursor-pointer">
+                                    <div>
+                                        <h5 class="text-white font-semibold text-sm">Verificación in situ de la Empresa(Física/Digital)</h5>
+                                        <p class="text-gray-400 text-xs mt-0.5">Realización de viaje y visita técnica a la fábrica.</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Transporte Terrestre -->
                     <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
                         <div class="flex items-start space-x-3">
@@ -172,7 +363,7 @@
                                 <label for="transporteTerrestreFCL" class="flex items-center justify-between cursor-pointer">
                                     <div>
                                         <h5 class="text-white font-semibold text-sm">Requiere transporte terrestre para el translado de su mercancía?</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">----.</p>
+                                        <p class="text-gray-400 text-xs mt-0.5">Transporte terrestre para el traslado de su mercancía.</p>
                                     </div>
                                 </label>
                             </div>

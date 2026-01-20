@@ -10,26 +10,6 @@
         </h3>
         <p class="text-gray-400 text-sm mb-6">Transporte internacional de vehículos (Roll-on/Roll-off)</p>
 
-        <!-- desconsolidacion -->
-        <div class="flex items-center gap-2 mb-2">
-            <button type="button" wire:click="$set('desconsolidacion', '1')"
-                class="group relative overflow-hidden px-2 py-3 border-2 rounded-xl transition-all border-yellow-500 bg-yellow-500/10">
-                <div class="relative z-10">
-                    <span class="block text-center text-xs font-bold text-gray-400 group-hover:text-yellow-400">
-                        Consolidacion
-                    </span>
-                </div>
-            </button>
-            <button type="button" wire:click="$set('desconsolidacion', '0')"
-                class="group relative overflow-hidden px-2 py-3 border-2 rounded-xl transition-all border-yellow-500/10 hover:border-yellow-500/50">
-                <div class="relative z-10">
-                    <span class="block text-center text-xs font-bold text-gray-400 group-hover:text-yellow-400">
-                        Desconsolidacion
-                    </span>
-                </div>
-            </button>
-        </div>
-
         <!-- Información del Cliente -->
         <div class="mb-8 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl">
             <h4 class="text-yellow-500 font-bold mb-4 text-xs uppercase tracking-widest flex items-center">
@@ -158,6 +138,52 @@
                 </div>
             </div>
         </div>
+        <!-- Desconsolidacion / Consolidacion Selection -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <!-- Consolidation Button -->
+            <button type="button" wire:click="$set('desconsolidacionAutos', '1')"
+                class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '1' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
+                <div class="flex flex-col items-center justify-center gap-3">
+                    <div class="p-3 rounded-full {{ $desconsolidacionAutos == '1' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <span class="block text-sm font-bold {{ $desconsolidacionAutos == '1' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Consolidación</span>
+                        <span class="block text-[10px] text-gray-500 mt-1">Agrupar carga</span>
+                    </div>
+                </div>
+                <!-- Active Check Indicator -->
+                @if($desconsolidacionAutos == '1')
+                <div class="absolute top-2 right-2">
+                    <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
+                </div>
+                @endif
+            </button>
+
+            <!-- Deconsolidation Button -->
+            <button type="button" wire:click="$set('desconsolidacionAutos', '0')"
+                class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '0' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
+                <div class="flex flex-col items-center justify-center gap-3">
+                    <div class="p-3 rounded-full {{ $desconsolidacionAutos == '0' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <span class="block text-sm font-bold {{ $desconsolidacionAutos == '0' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Desconsolidación</span>
+                        <span class="block text-[10px] text-gray-500 mt-1">Separar carga</span>
+                    </div>
+                </div>
+                <!-- Active Check Indicator -->
+                @if($desconsolidacionAutos == '0')
+                <div class="absolute top-2 right-2">
+                    <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
+                </div>
+                @endif
+            </button>
+        </div>
         <!-- Tipo de Vehiculos -->
         <div class="mb-8 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl">
             <h4 class="text-yellow-500 font-bold mb-4 text-sm uppercase tracking-widest">Tipo de Vehículo</h4>
@@ -180,27 +206,49 @@
                     <!-- Using 'codigo' as value because the API for vehicle types needs the brand ID -->
                     <option value="{{ $option['codigo'] }}" style="background-color:#1a170c;">{{ $option['descripcion'] }}</option>
                     @endforeach
+                    <option value="NINGUNA" style="background-color:#1a170c;">NINGUNA DE LAS ANTERIORES</option>
                 </select>
             </div>
+            @if($marcaVehiculo === 'NINGUNA')
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <label for="paisVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">País</label>
+                <select wire:model.live="paisVehiculo"
+                    class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                    <option value="" style="background-color:#1a170c;">-- Seleccionar País --</option>
+                    @foreach($paisVehiculoOptions as $option)
+                    @if(is_array($option))
+                    <option value="{{ $option['codigo'] }}" style="background-color:#1a170c;">{{ $option['descripcion'] }}</option>
+                    @else
+                    <!-- Handle case where option is just a value (e.g., integer or string) -->
+                    <option value="{{ $option }}" style="background-color:#1a170c;">{{ $option }}</option>
+                    @endif
+                    @endforeach
+                </select>
+            </div>
+            @endif
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <label for="tipoVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Tipo de Vehículo</label>
                 <select wire:model.live="tipoVehiculo"
-                    class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                    @if($marcaVehiculo==='NINGUNA' ) disabled @endif
+                    class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm {{ $marcaVehiculo === 'NINGUNA' ? 'opacity-50 cursor-not-allowed' : '' }}">
                     <option value="" style="background-color:#1a170c;">-- Seleccionar Tipo de Vehículo --</option>
                     @foreach($tiposVehiculoOptions as $option)
                     <!-- Using 'codigo' as value for subsequent API calls (subtypes) -->
                     <option value="{{ $option['codigo'] }}" style="background-color:#1a170c;">{{ $option['descripcion'] }}</option>
                     @endforeach
+                    <option value="NINGUNA" style="background-color:#1a170c;">NINGUNA DE LAS ANTERIORES</option>
                 </select>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <label for="subtipoVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Subtipo de Vehículo</label>
                 <select wire:model.live="subtipoVehiculo"
-                    class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                    @if($tipoVehiculo==='NINGUNA' || $marcaVehiculo==='NINGUNA' ) disabled @endif
+                    class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm {{ ($tipoVehiculo === 'NINGUNA' || $marcaVehiculo === 'NINGUNA') ? 'opacity-50 cursor-not-allowed' : '' }}">
                     <option value="" style="background-color:#1a170c;">-- Seleccionar Subtipo de Vehículo --</option>
                     @foreach($subtiposVehiculoOptions as $option)
                     <option value="{{ $option['codigo'] }}" style="background-color:#1a170c;">{{ $option['descripcion'] }}</option>
                     @endforeach
+                    <option value="NINGUNA" style="background-color:#1a170c;">NINGUNA DE LAS ANTERIORES</option>
                 </select>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -278,6 +326,7 @@
                     @endforeach
                 </select>
             </div>
+            @if($marcaVehiculo !== 'NINGUNA')
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <label for="paisVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">País</label>
                 <select wire:model.live="paisVehiculo"
@@ -293,6 +342,7 @@
                     @endforeach
                 </select>
             </div>
+            @endif
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <label for="otrasCaracteristicasVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Otras Características</label>
                 <select wire:model.live="otrasCaracteristicasVehiculo"
@@ -308,6 +358,53 @@
                     @endforeach
                 </select>
             </div>
+
+            <!-- Vehicle Selection Table -->
+            @if(count($vehiculosEncontrados) > 0)
+            <div class="col-span-1 sm:col-span-3 mt-4 overflow-x-auto">
+                <label class="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-tighter">Vehículos Encontrados (Seleccione uno)</label>
+                <div class="border border-yellow-500/20 rounded-lg overflow-hidden">
+                    <table class="w-full divide-y divide-yellow-500/10">
+                        <thead class="bg-yellow-500/10">
+                            <tr>
+                                <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-yellow-500 uppercase tracking-wider">Marca/Modelo</th>
+                                <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-yellow-500 uppercase tracking-wider">Detalles</th>
+                                <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-yellow-500 uppercase tracking-wider">Valor REF.</th>
+                                <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-yellow-500 uppercase tracking-wider">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-black/20 divide-y divide-yellow-500/5">
+                            @foreach($vehiculosEncontrados as $index => $vehiculo)
+                            <tr class="hover:bg-yellow-500/5 transition-colors cursor-pointer {{ $selectedVehicleIndex === $index ? 'bg-yellow-500/10' : '' }}" wire:click="seleccionarVehiculo({{ $index }})">
+                                <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-300">
+                                    <div class="font-bold">{{ $vehiculo['codigoMarcaDescripcion'] ?? '' }}</div>
+                                    <div>{{ $vehiculo['codigoTipoDescripcion'] ?? '' }}</div>
+                                    <div class="text-gray-500">{{ $vehiculo['codigoSubtipoDescripcion'] ?? '' }}</div>
+                                </td>
+                                <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-400">
+                                    <div>Año: <span class="text-gray-300">{{ $vehiculo['anioModelo'] ?? '' }}</span></div>
+                                    <div>Cil: {{ $vehiculo['cilindrada'] ?? '' }} | Trac: {{ $vehiculo['codigoTraccionDescripcion'] ?? '' }}</div>
+                                    <div>Trans: {{ $vehiculo['codigoTransmisionDescripcion'] ?? '' }} | Comb: {{ $vehiculo['codigoCombustibleDescripcion'] ?? '' }}</div>
+                                </td>
+                                <td class="px-3 py-2 whitespace-nowrap text-xs text-white font-mono">
+                                    $ {{ number_format($vehiculo['valorSus'] ?? 0, 2) }}
+                                </td>
+                                <td class="px-3 py-2 whitespace-nowrap text-xs">
+                                    @if($selectedVehicleIndex === $index)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-500/20 text-yellow-500 border border-yellow-500/50">
+                                        Seleccionado
+                                    </span>
+                                    @else
+                                    <span class="text-gray-500 hover:text-yellow-500">Seleccionar</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @endif
             <div class="mt-4 flex flex-col sm:flex-row gap-3 w-full">
                 <!-- Image Upload (Square with Preview) -->
                 <div style="width: 150px; height: 150px; min-width: 150px; min-height: 150px;" class="shrink-0 relative group">
@@ -373,7 +470,7 @@
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Peso (kg)</label>
+                <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Peso (Toneladas)</label>
                 <input type="number" wire:model="pesoVehiculo" step="1" placeholder="Ej: 2100"
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
             </div>

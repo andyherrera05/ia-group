@@ -224,14 +224,14 @@
 
         $impuesto = (float) $gravamenArancelario + $iva;
 
-        $agencia = (float)($gastosAdicionales['Agencia despachante'] ?? 0);
+        $agencia = (float)($gastosAdicionales['Agencia Despachante'] ?? 0);
 
         // Lista de keys a EXCLUIR de la izquierda porque van a la derecha o no se muestran
         $excludedKeys = [
         'Gravamen Arancelario',
         'Impuesto IVA',
         'Base Imponible',
-        'Agencia despachante',
+        'Agencia Despachante',
         'Cargos de importacion y despacho',
         'Costo de Envío Interno',
         'Impuesto',
