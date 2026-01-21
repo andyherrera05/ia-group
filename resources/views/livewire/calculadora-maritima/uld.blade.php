@@ -137,57 +137,106 @@
                     </select>
                 </div>
             </div>
-        </div>
-        <!-- Desconsolidacion / Consolidacion Selection -->
-        <div class="grid grid-cols-2 gap-4 mb-6">
-            <!-- Consolidation Button -->
-            <button type="button" wire:click="$set('desconsolidacionAutos', '1')"
-                class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '1' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
-                <div class="flex flex-col items-center justify-center gap-3">
-                    <div class="p-3 rounded-full {{ $desconsolidacionAutos == '1' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
-                    </div>
-                    <div class="text-center">
-                        <span class="block text-sm font-bold {{ $desconsolidacionAutos == '1' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Consolidación</span>
-                        <span class="block text-[10px] text-gray-500 mt-1">Agrupar carga</span>
-                    </div>
-                </div>
-                <!-- Active Check Indicator -->
-                @if($desconsolidacionAutos == '1')
-                <div class="absolute top-2 right-2">
-                    <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
-                </div>
-                @endif
-            </button>
 
-            <!-- Deconsolidation Button -->
-            <button type="button" wire:click="$set('desconsolidacionAutos', '0')"
-                class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '0' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
-                <div class="flex flex-col items-center justify-center gap-3">
-                    <div class="p-3 rounded-full {{ $desconsolidacionAutos == '0' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                        </svg>
+            <!-- Desconsolidacion / Carga Suelta / Consolidacion Selection -->
+            <div class="py-4 grid grid-cols-3 gap-4 mb-6">
+                <!-- Consolidation Button -->
+                <button type="button" wire:click="$set('desconsolidacionAutos', '2'); $set('verificacionEmisionesGasesRoRo', false); $set('requiereReexpidicionVehiculoRoRo', false)"
+                    class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '2' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
+                    <div class="flex flex-col items-center justify-center gap-3">
+                        <div class="p-3 rounded-full {{ $desconsolidacionAutos == '2' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <span class="block text-sm font-bold {{ $desconsolidacionAutos == '2' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Consolidación</span>
+                            <span class="block text-[10px] text-gray-500 mt-1">Agrupar carga</span>
+                        </div>
                     </div>
-                    <div class="text-center">
-                        <span class="block text-sm font-bold {{ $desconsolidacionAutos == '0' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Desconsolidación</span>
-                        <span class="block text-[10px] text-gray-500 mt-1">Separar carga</span>
+                    <!-- Active Check Indicator -->
+                    @if($desconsolidacionAutos == '2')
+                    <div class="absolute top-2 right-2">
+                        <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
                     </div>
-                </div>
-                <!-- Active Check Indicator -->
-                @if($desconsolidacionAutos == '0')
-                <div class="absolute top-2 right-2">
-                    <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
-                </div>
-                @endif
-            </button>
+                    @endif
+                </button>
+                <!-- Carga Suelta Button -->
+                <button type="button" wire:click="$set('desconsolidacionAutos', '1'); $set('verificacionEmisionesGasesRoRo', false); $set('verificacionSustanciasPeligrosasRoRo', false)"
+                    class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '1' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
+                    <div class="flex flex-col items-center justify-center gap-3">
+                        <div class="p-3 rounded-full {{ $desconsolidacionAutos == '1' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <span class="block text-sm font-bold {{ $desconsolidacionAutos == '1' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Carga Suelta</span>
+                            <span class="block text-[10px] text-gray-500 mt-1">Carga individual</span>
+                        </div>
+                    </div>
+                    <!-- Active Check Indicator -->
+                    @if($desconsolidacionAutos == '1')
+                    <div class="absolute top-2 right-2">
+                        <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
+                    </div>
+                    @endif
+                </button>
+
+                <!-- Deconsolidation Button -->
+                <button type="button" wire:click="$set('desconsolidacionAutos', '0'); $set('verificacionSustanciasPeligrosasRoRo', false)"
+                    class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '0' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
+                    <div class="flex flex-col items-center justify-center gap-3">
+                        <div class="p-3 rounded-full {{ $desconsolidacionAutos == '0' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <span class="block text-sm font-bold {{ $desconsolidacionAutos == '0' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Desconsolidación</span>
+                            <span class="block text-[10px] text-gray-500 mt-1">Separar carga</span>
+                        </div>
+                    </div>
+                    <!-- Active Check Indicator -->
+                    @if($desconsolidacionAutos == '0')
+                    <div class="absolute top-2 right-2">
+                        <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
+                    </div>
+                    @endif
+                </button>
+            </div>
+            <h4 class="text-yellow-500 font-bold mb-4 text-sm uppercase tracking-widest">Tipo de Vehículo</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                @foreach([
+                ['id' => 'sedan', 'name' => 'Sedan', 'icon' => 'icon_type-sedan.svg'],
+                ['id' => 'suv', 'name' => 'SUV', 'icon' => 'icon_type-suv.svg'],
+                ['id' => 'pickup', 'name' => 'Pick-up', 'icon' => 'icon_type-pick-up.svg'],
+                ['id' => 'hatchback', 'name' => 'Hatchback', 'icon' => 'icon_type-hatchback.svg'],
+                ['id' => 'coupe', 'name' => 'Coupe', 'icon' => 'icon_type-coupe.svg'],
+                ['id' => 'convertible', 'name' => 'Convertible', 'icon' => 'icon_type-convertible.svg'],
+                ['id' => 'wagon', 'name' => 'Wagon', 'icon' => 'icon_type-wagon.svg'],
+                ['id' => 'minivan', 'name' => 'Mini Van', 'icon' => 'icon_type-mini-van.svg'],
+                ['id' => 'van', 'name' => 'Van/Furgoneta', 'icon' => 'icon_type-van.svg'],
+                ['id' => 'truck', 'name' => 'Camión', 'icon' => 'icon_type-truck.svg'],
+                ['id' => 'bus', 'name' => 'Bus', 'icon' => 'icon_type-bus.svg'],
+                ['id' => 'heavy', 'name' => 'Maquinaria', 'icon' => 'icon_type-heavy-equipment.svg'],
+                ] as $v)
+                <button type="button" wire:click="$set('tipoCarroceria', '{{ $v['id'] }}')"
+                    class="group relative overflow-hidden px-2 py-3 border-2 rounded-xl transition-all {{ $tipoCarroceria === $v['id'] ? 'border-yellow-500 bg-yellow-500/10' : 'border-yellow-500/10 hover:border-yellow-500/50' }}">
+                    <div class="relative z-10">
+                        <img src="{{ asset('images/movilidades/' . $v['icon']) }}" class="w-10 h-10 mx-auto mb-2 opacity-80 group-hover:opacity-100 transition-opacity" alt="{{ $v['name'] }}">
+                        <span class="block text-center text-xs font-bold {{ $tipoCarroceria === $v['id'] ? 'text-yellow-400' : 'text-gray-400 group-hover:text-yellow-400' }}">
+                            {{ $v['name'] }}
+                        </span>
+                    </div>
+                </button>
+                @endforeach
+            </div>
         </div>
         <!-- Tipo de Vehiculos -->
         <div class="mb-8 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl">
             <h4 class="text-yellow-500 font-bold mb-4 text-sm uppercase tracking-widest">Tipo de Vehículo</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label for="claseVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Tipo de Vehículo</label>
                 <select wire:model.live="claseVehiculo"
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
@@ -197,7 +246,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label for="marcaVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Marca</label>
                 <select wire:model.live="marcaVehiculo"
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
@@ -210,7 +259,7 @@
                 </select>
             </div>
             @if($marcaVehiculo === 'NINGUNA')
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label for="paisVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">País</label>
                 <select wire:model.live="paisVehiculo"
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
@@ -226,7 +275,7 @@
                 </select>
             </div>
             @endif
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label for="tipoVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Tipo de Vehículo</label>
                 <select wire:model.live="tipoVehiculo"
                     @if($marcaVehiculo==='NINGUNA' ) disabled @endif
@@ -239,7 +288,7 @@
                     <option value="NINGUNA" style="background-color:#1a170c;">NINGUNA DE LAS ANTERIORES</option>
                 </select>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label for="subtipoVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Subtipo de Vehículo</label>
                 <select wire:model.live="subtipoVehiculo"
                     @if($tipoVehiculo==='NINGUNA' || $marcaVehiculo==='NINGUNA' ) disabled @endif
@@ -251,7 +300,7 @@
                     <option value="NINGUNA" style="background-color:#1a170c;">NINGUNA DE LAS ANTERIORES</option>
                 </select>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label for="cilindradaVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Cilindrada</label>
                 <select wire:model.live="cilindradaVehiculo"
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
@@ -266,7 +315,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label for="traccionVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Tracción</label>
                 <select wire:model.live="traccionVehiculo"
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
@@ -281,7 +330,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label for="transmisionVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Transmisión</label>
                 <select wire:model.live="transmisionVehiculo"
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
@@ -296,7 +345,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label for="combustibleVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Combustible</label>
                 <select wire:model.live="combustibleVehiculo"
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
@@ -311,7 +360,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label for="anioVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Año</label>
                 <select wire:model.live="anioVehiculo"
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
@@ -327,7 +376,7 @@
                 </select>
             </div>
             @if($marcaVehiculo !== 'NINGUNA')
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label for="paisVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">País</label>
                 <select wire:model.live="paisVehiculo"
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
@@ -343,7 +392,7 @@
                 </select>
             </div>
             @endif
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label for="otrasCaracteristicasVehiculo" class="pt-2 block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Otras Características</label>
                 <select wire:model.live="otrasCaracteristicasVehiculo"
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
@@ -470,7 +519,7 @@
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Peso (Toneladas)</label>
+                <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Peso (Kg)</label>
                 <input type="number" wire:model="pesoVehiculo" step="1" placeholder="Ej: 2100"
                     class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
             </div>
@@ -546,11 +595,58 @@
                     </div>
                 </div>
             </div>
+            <!-- Verificación Emisiones de gases -->
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ $desconsolidacionAutos == '0' ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" wire:model="verificacionEmisionesGasesRoRo" id="verificacionEmisionesGasesRoRo"
+                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer"
+                        @if($desconsolidacionAutos !='0' ) disabled @endif>
+                    <div class="flex-1">
+                        <label for="verificacionEmisionesGasesRoRo" class="flex items-center justify-between cursor-pointer">
+                            <div>
+                                <h5 class="text-white font-semibold text-sm">Verificación de emisiones de gases</h5>
+                                <p class="text-gray-400 text-xs mt-0.5">Realización de análisis de emisiones de gases.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <!-- Requiere la reexpidicion del vehiculo -->
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ ($desconsolidacionAutos == '0' || $desconsolidacionAutos == '1') ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" wire:model="requiereReexpidicionVehiculoRoRo" id="requiereReexpidicionVehiculoRoRo"
+                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer"
+                        @if($desconsolidacionAutos !='0' && $desconsolidacionAutos !='1' ) disabled @endif>
+                    <div class="flex-1">
+                        <label for="requiereReexpidicionVehiculoRoRo" class="flex items-center justify-between cursor-pointer">
+                            <div>
+                                <h5 class="text-white font-semibold text-sm">Requiere la reexpidicion del vehiculo</h5>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <!-- Verificación Transporte Terrestre -->
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all hover:border-yellow-500/30">
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" wire:model="requiereTransporteTerrestreRoRo" id="requiereTransporteTerrestreRoRo"
+                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                    <div class="flex-1">
+                        <label for="requiereTransporteTerrestreRoRo" class="flex items-center justify-between cursor-pointer">
+                            <div>
+                                <h5 class="text-white font-semibold text-sm">Requiere transporte terrestre para el translado de su mercancía?</h5>
+                                <p class="text-gray-400 text-xs mt-0.5">Si requiere transporte terrestre para el translado de su mercancía, por favor marque esta casilla.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
             <!-- Verificación Sustancias Peligrosas -->
-            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ $desconsolidacionAutos == '2' ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
                 <div class="flex items-start space-x-3">
                     <input type="checkbox" wire:model="verificacionSustanciasPeligrosasRoRo" id="verificacionSustanciasPeligrosasRoRo"
-                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer"
+                        @if($desconsolidacionAutos !='2' ) disabled @endif>
                     <div class="flex-1">
                         <label for="verificacionSustanciasPeligrosasRoRo" class="flex items-center justify-between cursor-pointer">
                             <div>
@@ -561,7 +657,7 @@
                     </div>
                 </div>
             </div>
-            <!-- Seguro -->
+            <!-- Seguro de la Carga -->
             <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
                 <div class="flex items-start space-x-3">
                     <input type="checkbox" wire:model="seguroCargaAutos" id="seguroCargaAutos"

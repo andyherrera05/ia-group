@@ -232,25 +232,32 @@
 
                         <div class="space-y-3">
                             <!-- Row 1: Image & Name -->
-                            <div class="flex gap-3 items-start">
+                            <div class="flex flex-col md:flex-row gap-3 items-start">
                                 <!-- Image Upload (Square with Preview) -->
-                                <div style="width: 100px; height: 100px; min-width: 100px; min-height: 100px;"
-                                    class="shrink-0 relative group">
+                                <div
+                                    class="shrink-0 relative group w-[100px] h-[100px] min-w-[100px] min-h-[100px] md:w-[100px] md:h-[100px]" style="width: 150px; height: 150px;">
                                     <label
                                         class="block w-full h-full rounded-lg border-2 border-dashed border-yellow-500/30 hover:border-yellow-500 bg-black/20 cursor-pointer overflow-hidden transition-all relative">
-                                        <input type="file" wire:model="temp_manualImagen" class="hidden">
+                                        <input type="file" wire:model="temp_manualImagen" class="hidden" />
                                         @if ($temp_manualImagen)
-                                        <img src="{{ $temp_manualImagen->temporaryUrl() }}"
-                                            class="absolute inset-0 w-full h-full object-cover">
+                                        <img
+                                            src="{{ $temp_manualImagen->temporaryUrl() }}"
+                                            class="absolute inset-0 w-full h-full object-cover" />
                                         @elseif ($temp_imagen)
-                                        <img src="{{ $temp_imagen }}"
-                                            class="absolute inset-0 w-full h-full object-cover">
+                                        <img
+                                            src="{{ $temp_imagen }}"
+                                            class="absolute inset-0 w-full h-full object-cover" />
                                         @else
                                         <div
                                             class="w-full h-full flex flex-col items-center justify-center text-gray-500 group-hover:text-yellow-500">
-                                            <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor"
+                                            <svg
+                                                class="w-6 h-6 mb-2"
+                                                fill="none"
+                                                stroke="currentColor"
                                                 viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
                                                     stroke-width="2"
                                                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
@@ -258,68 +265,90 @@
                                         </div>
                                         @endif
                                         <!-- Loading State -->
-                                        <div wire:loading wire:target="temp_manualImagen"
+                                        <div
+                                            wire:loading
+                                            wire:target="temp_manualImagen"
                                             class="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
                                             <div
-                                                class="w-6 h-6 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin">
-                                            </div>
+                                                class="w-6 h-6 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
                                         </div>
                                     </label>
                                 </div>
 
                                 <!-- Name Input & Extra Fields -->
-                                <div class="flex-1 flex flex-col gap-2">
-                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1">Nombre del Producto</label>
-                                    <input type="text" wire:model="temp_producto"
+                                <div class="flex-1 flex flex-col gap-2 w-full">
+                                    <label
+                                        class="text-[10px] text-gray-400 uppercase tracking-wider pl-1">Nombre del Producto</label>
+                                    <input
+                                        type="text"
+                                        wire:model="temp_producto"
                                         placeholder="Nombre del Producto (Ej: Zapatillas)"
-                                        class="w-full h-[50px] p-4 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
+                                        class="w-full h-[50px] p-4 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm" />
                                     @error('temp_producto')
                                     <span class="text-red-400 text-[10px] ml-1">{{ $message }}</span>
                                     @enderror
 
-                                    <div class="grid grid-cols-3 gap-1 overflow-x-auto pb-1">
-                                        <div class="col-span-1 flex flex-col gap-2  mr-1">
-                                            <label class="text-gray-400 uppercase tracking-wider pl-1" style="font-size: 12px;">Cantidad de piezas por caja</label>
-                                            <input type="number" wire:model="temp_cantidad" placeholder="Cant."
-                                                class="w-[35px] min-w-[35px] max-w-[35px] py-3 text-center bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600 shrink-0">
+                                    <div
+                                        class="grid grid-cols-3 gap-1 overflow-x-auto pb-1"
+                                        style="min-width: 0;">
+                                        <div class="col-span-1 flex flex-col gap-2 mr-1">
+                                            <label
+                                                class="text-gray-400 uppercase tracking-wider pl-1 text-[12px]" style="font-size: 10px;">Cantidad de piezas por caja</label>
+                                            <input
+                                                type="number"
+                                                wire:model="temp_cantidad"
+                                                placeholder="Cant."
+                                                class="w-[35px] min-w-[35px] max-w-[35px] py-3 text-center bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600 shrink-0" />
                                             @error('temp_cantidad')
                                             <span
                                                 class="text-red-400 text-[10px] block mt-0.5 leading-none">{{ $message }}</span>
                                             @enderror
                                         </div>
-                                        <div class="col-span-1 flex flex-col gap-2  mr-1">
-                                            <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 12px;">Cantidad de cajas</label>
-                                            <input type="number" wire:model="temp_cantidad_cajas" placeholder="Cajas"
-                                                class="w-[35px] min-w-[35px] max-w-[35px] py-3 text-center bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600 shrink-0">
+                                        <div class="col-span-1 flex flex-col gap-2 mr-1">
+                                            <label
+                                                class="text-gray-400 uppercase tracking-wider pl-1 text-[12px]" style="font-size: 10px;">Cantidad de cajas</label>
+                                            <input
+                                                type="number"
+                                                wire:model="temp_cantidad_cajas"
+                                                placeholder="Cajas"
+                                                class="w-[35px] min-w-[35px] max-w-[35px] py-3 text-center bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600 shrink-0" />
                                             @error('temp_cantidad_cajas')
                                             <span
                                                 class="text-red-400 text-[10px] block mt-0.5 leading-none">{{ $message }}</span>
                                             @enderror
                                         </div>
-                                        <div class="col-span-1 flex flex-col gap-2  mr-1">
-                                            <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 12px;">Valor Unit. ($)</label>
-                                            <input type="number" wire:model="temp_valor_unitario"
+                                        <div class="col-span-1 flex flex-col gap-2 mr-1">
+                                            <label
+                                                class="text-gray-400 uppercase tracking-wider pl-1 text-[12px]" style="font-size: 10px;">Valor Unit. ($)</label>
+                                            <input
+                                                type="number"
+                                                wire:model="temp_valor_unitario"
                                                 placeholder="Valor ($)"
-                                                class="w-[70px] p-3 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                                                class="w-[70px] p-3 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600" />
                                             @error('temp_valor_unitario')
                                             <span
                                                 class="text-red-400 text-[10px] block mt-0.5 leading-none">{{ $message }}</span>
                                             @enderror
                                         </div>
-
                                     </div>
+
                                     <!-- Row: Horizontal Inputs -->
                                     <div class="grid grid-cols-3 sm:grid-cols-3 gap-2 relative">
                                         <div class="flex space-x-0 w-[90px]">
                                             <div class="flex-1">
-                                                <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 12px;">Peso Unit</label>
-                                                <input type="number" wire:model="temp_peso_unitario"
+                                                <label
+                                                    class="text-gray-400 uppercase tracking-wider pl-1 text-[12px]" style="font-size: 10px;">Peso Unit</label>
+                                                <input
+                                                    type="number"
+                                                    wire:model="temp_peso_unitario"
                                                     placeholder="Peso"
-                                                    class="w-full p-3 bg-black/40 border border-yellow-500/10 rounded-l-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
+                                                    class="w-full p-3 bg-black/40 border border-yellow-500/10 rounded-l-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600" />
                                             </div>
                                             <div class="w-12 flex-shrink-0">
-                                                <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 12px;">Unid</label>
-                                                <select wire:model="temp_peso_unidad"
+                                                <label
+                                                    class="text-gray-400 uppercase tracking-wider pl-1 text-[12px]" style="font-size: 10px;">Unid</label>
+                                                <select
+                                                    wire:model="temp_peso_unidad"
                                                     class="py-2 w-full px-0 pl-1 bg-black/40 border border-yellow-500/10 border-l-0 rounded-r-lg text-white text-[10px] focus:border-yellow-500/50 focus:outline-none">
                                                     <option value="kg">Kg</option>
                                                     <option value="lb">Lb</option>
@@ -332,137 +361,192 @@
                                         </div>
                                         <!-- Costo Envio Interno -->
                                         <div class="col-span-1 relative group">
-                                            <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 12px;">Costo Envio Interno</label>
-                                            <input type="text"
+                                            <label
+                                                class="text-gray-400 uppercase tracking-wider pl-1 text-[12px]" style="font-size: 10px;">Costo Envio Interno</label>
+                                            <input
+                                                type="text"
                                                 wire:model.live.debounce.300ms="temp_costo_envio_interno"
                                                 placeholder="Costo Envio Interno"
                                                 class="w-full h-[42px] p-3 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs focus:border-yellow-500/50 focus:outline-none placeholder-gray-600"
-                                                title="Usa punto (.) para decimales • Ejemplo: 0.2">
+                                                title="Usa punto (.) para decimales • Ejemplo: 0.2" />
                                             <!-- Tooltip explicativo (aparece al hacer hover) -->
-                                            <div class="absolute hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded border border-gray-700 whitespace-nowrap z-10">
-                                                Usa <strong>punto</strong> para decimales<br>
+                                            <div
+                                                class="absolute hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded border border-gray-700 whitespace-nowrap z-10">
+                                                Usa <strong>punto</strong> para decimales<br />
                                                 Ejemplos válidos: 0.2 • 1250.50
                                             </div>
                                         </div>
                                     </div>
-
-
                                 </div>
                             </div>
 
+
                             <!-- Row 3: Dimensions & Action -->
-                            <div class="grid grid-cols-1 md:grid-cols-1 gap-3 items-center mt-2">
+                            <div class="grid grid-cols-1 gap-3 items-center mt-2">
                                 <!-- Dimensions -->
                                 <div class="bg-black/20 rounded-lg p-2 border border-white/5 relative">
-                                    <div class="flex justify-center items-center gap-2 mb-2">
-                                        <label class="text-[10px] text-gray-500 block text-center uppercase">Dimensiones Unitarias</label>
-                                        <select wire:model="temp_medida_unidad"
-                                            class="bg-black/40 border px-4 border-yellow-500/10 rounded text-white text-[10px] focus:outline-none focus:border-yellow-500/50 py-0.5 px-1">
+                                    <div class="flex justify-center items-center gap-2 mb-2 flex-col sm:flex-row">
+                                        <label class="text-[10px] text-gray-500 block text-center uppercase">
+                                            Dimensiones Unitarias
+                                        </label>
+                                        <select
+                                            wire:model="temp_medida_unidad"
+                                            class="bg-black/40 border border-yellow-500/10 rounded text-white text-[10px] focus:outline-none focus:border-yellow-500/50 py-0.5 px-1 w-full sm:w-auto">
                                             <option value="cm">cm</option>
                                             <option value="in">in</option>
                                         </select>
                                     </div>
 
-                                    <!-- Auto-fill Helper -->
-                                    <div class="flex items-center gap-2 mb-3 border-b border-white/5 pb-3">
-                                        <div class="flex-1">
-                                            <label class="block text-[8px] text-gray-500 mb-1">Dimensión Única (Ref)</label>
-                                            <input type="number" wire:model.blur="temp_dimension_total" placeholder="Dimensión de un lado"
-                                                class="w-full py-3 bg-black/40 border border-yellow-500/10 rounded px-2 py-1 text-xs text-white focus:border-yellow-500/50 outline-none text-center">
+                                    <!-- Bloque que NO se modifica para móvil -->
+                                    <div
+                                        class="flex flex-col md:flex-row md:items-center gap-4">
+                                        <div class="w-full md:w-56">
+                                            <label class="block text-[8px] text-gray-500 mb-1">
+                                                Dimensión Única (Ref)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                wire:model.blur="temp_dimension_total"
+                                                placeholder="Dimensión de un lado"
+                                                class="w-full py-2 bg-black/40 border border-yellow-500/10 rounded px-2 text-xs text-white focus:border-yellow-500/50 outline-none text-center" />
                                         </div>
-                                        <div class="flex gap-2">
-                                            <button type="button" wire:click="aplicarDimensiones('square')" title="Caja Cuadrada"
-                                                class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
-                                                <img src="{{ asset('images/cajas/caja_cuadrada.png') }}" alt="Square" class="w-full h-full object-contain opacity-70 hover:opacity-100">
+
+                                        <div class="grid grid-cols-2 sm:grid-cols-4 md:flex gap-3 justify-center md:justify-start">
+                                            <button
+                                                type="button"
+                                                wire:click="aplicarDimensiones('square')"
+                                                title="Caja Cuadrada"
+                                                class="w-full sm:w-28 md:w-32 h-20 sm:h-24 md:h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-2" style="width: 80px; height: 80px;">
+                                                <img
+                                                    src="{{ asset('images/cajas/caja_cuadrada.png') }}"
+                                                    alt="Square"
+                                                    class="w-full h-full object-contain opacity-70 hover:opacity-100" />
                                             </button>
-                                            <button type="button" wire:click="aplicarDimensiones('rectangular')" title="Caja Rectangular"
-                                                class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
-                                                <img src="{{ asset('images/cajas/caja_rectangular.png') }}" alt="Rectangular" class="w-full h-full object-contain opacity-70 hover:opacity-100">
+                                            <button
+                                                type="button"
+                                                wire:click="aplicarDimensiones('rectangular')"
+                                                title="Caja Rectangular"
+                                                class="w-full sm:w-28 md:w-32 h-20 sm:h-24 md:h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-2" style="width: 80px; height: 80px;">
+                                                <img
+                                                    src="{{ asset('images/cajas/caja_rectangular.png') }}"
+                                                    alt="Rectangular"
+                                                    class="w-full h-full object-contain opacity-70 hover:opacity-100" />
                                             </button>
-                                            <button type="button" wire:click="aplicarDimensiones('flat')" title="Caja Plana"
-                                                class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
-                                                <img src="{{ asset('images/cajas/caja_plana.png') }}" alt="Flat" class="w-full h-full object-contain opacity-70 hover:opacity-100">
+                                            <button
+                                                type="button"
+                                                wire:click="aplicarDimensiones('flat')"
+                                                title="Caja Plana"
+                                                class="w-full sm:w-28 md:w-32 h-20 sm:h-24 md:h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-2" style="width: 80px; height: 80px;">
+                                                <img
+                                                    src="{{ asset('images/cajas/caja_plana.png') }}"
+                                                    alt="Flat"
+                                                    class="w-full h-full object-contain opacity-70 hover:opacity-100" />
                                             </button>
-                                            <button type="button" wire:click="aplicarDimensiones('long')" title="Caja Alargada"
-                                                class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
-                                                <img src="{{ asset('images/cajas/caja_tubo.png') }}" alt="Long" class="w-full h-full object-contain opacity-70 hover:opacity-100">
+                                            <button
+                                                type="button"
+                                                wire:click="aplicarDimensiones('long')"
+                                                title="Caja Alargada"
+                                                class="w-full sm:w-28 md:w-32 h-20 sm:h-24 md:h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-2" style="width: 80px; height: 80px;">
+                                                <img
+                                                    src="{{ asset('images/cajas/caja_tubo.png') }}"
+                                                    alt="Long"
+                                                    class="w-full h-full object-contain opacity-70 hover:opacity-100" />
                                             </button>
                                         </div>
                                     </div>
 
-                                    <div class="flex gap-2">
+                                    <!-- Inputs para largo, ancho y alto, adaptados para móvil -->
+                                    <div class="flex flex-col sm:flex-row gap-2">
                                         <div class="flex-1">
                                             <label
                                                 class="block text-[8px] text-gray-500 text-center mb-1 uppercase">Largo</label>
-                                            <input type="number" wire:model="temp_largo" placeholder="0"
-                                                class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1">
+                                            <input
+                                                type="number"
+                                                wire:model="temp_largo"
+                                                placeholder="0"
+                                                class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" />
                                         </div>
                                         <div class="flex-1">
                                             <label
                                                 class="block text-[8px] text-gray-500 text-center mb-1 uppercase">Ancho</label>
-                                            <input type="number" wire:model="temp_ancho" placeholder="0"
-                                                class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1">
+                                            <input
+                                                type="number"
+                                                wire:model="temp_ancho"
+                                                placeholder="0"
+                                                class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" />
                                         </div>
                                         <div class="flex-1">
                                             <label
                                                 class="block text-[8px] text-gray-500 text-center mb-1 uppercase">Alto</label>
-                                            <input type="number" wire:model="temp_alto" placeholder="0"
-                                                class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1">
+                                            <input
+                                                type="number"
+                                                wire:model="temp_alto"
+                                                placeholder="0"
+                                                class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" />
                                         </div>
                                     </div>
                                 </div>
-                                <div class="md:col-span-2 bg-black/20 rounded-lg p-3 border border-white/5">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <input type="checkbox" wire:model.live="temp_con_arancel" id="temp_con_arancel" class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                                        <label for="temp_con_arancel" class="text-gray-400 cursor-pointer uppercase tracking-wider" style="font-size:14px">¿La carga tiene arancel?</label>
-                                    </div>
+                            </div>
 
-                                    @if($temp_con_arancel)
-                                    <div class="mt-2 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg space-y-3">
-                                        <div class="grid grid-cols-2 gap-2 bg-black/20 rounded-lg p-2 border border-white/5">
-                                            <div class="relative">
-                                                <label for="temp_hs_code" class="block text-[4px] text-gray-500 text-center mb-1 uppercase">HS Code</label>
-                                                <input type="text" wire:model.live="temp_hs_code" placeholder="HS Code"
-                                                    class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
+                            <!-- Arancel Option -->
+                            <div class="md:col-span-2 bg-black/20 rounded-lg p-3 border border-white/5">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <input type="checkbox" wire:model.live="temp_con_arancel" id="temp_con_arancel" class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                                    <label for="temp_con_arancel" class="text-gray-400 cursor-pointer uppercase tracking-wider" style="font-size:14px">¿La carga tiene arancel?</label>
+                                </div>
 
-                                                @if(!empty($arancelSuggestions))
-                                                <div class="absolute top-full left-0 w-full z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto mt-1" @click.away="$wire.limpiarArancelSearch()" style="background-color: rgba(0, 0, 0, 0.9);">
-                                                    @foreach($arancelSuggestions as $suggestion)
-                                                    <div wire:click="selectArancel('{{ $suggestion['codigo_hs'] }}', {{ $suggestion['arancel'] }})"
-                                                        class="p-2 hover:bg-gray-800 cursor-pointer text-xs border-b border-gray-800 last:border-0">
-                                                        <div class="font-bold text-yellow-500">{{ $suggestion['codigo_hs'] }}</div>
-                                                        <div class="text-gray-300">{{ $suggestion['descripcion'] }}</div>
-                                                        <div class="text-gray-500 text-[10px]">Arancel: {{ $suggestion['arancel'] }}%</div>
+                                @if($temp_con_arancel)
+                                <div class="mt-2 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg space-y-3">
+                                    <div class="grid grid-cols-2 gap-2 bg-black/20 rounded-lg p-2 border border-white/5">
+                                        <!-- HS Code Search -->
+                                        <div class="relative z-[40]">
+                                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                                </svg>
+                                                Buscador Arancelario
+                                            </label>
+                                            <input type="text" wire:model.live.debounce.300ms="temp_hs_code"
+                                                placeholder="HS Code"
+                                                class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+                                            <span class="block uppercase font-bold text-gray-500 mt-1"
+                                                style="font-size: 9px;">Colocar una palabra genérica que identifique al
+                                                producto</span>
+
+                                            @if (!empty($arancelSuggestions))
+                                            <div class="absolute z-50 left-0 w-[150%] mt-1 bg-gray-900 border border-yellow-500/30 rounded-lg shadow-2xl max-h-48 overflow-y-auto custom-scrollbar"
+                                                style="background-color: rgba(0, 0, 0, 0.9); z-index: 1000;">
+                                                @foreach ($arancelSuggestions as $sug)
+                                                <div wire:click="selectArancel('{{ $sug['codigo_hs'] }}', {{ $sug['arancel'] }})"
+                                                    class="p-2 hover:bg-yellow-500/10 cursor-pointer border-b border-white/5 last:border-0 transition-colors" style="font-size: 12px">
+                                                    <div class="flex justify-between items-start">
+                                                        <span
+                                                            class="text-yellow-500 text-[9px] font-bold">{{ $sug['codigo_hs'] }}</span>
+                                                        <span
+                                                            class="bg-yellow-500/20 text-yellow-500 text-[7px] px-1 rounded">{{ $sug['arancel'] }}%</span>
                                                     </div>
-                                                    @endforeach
+                                                    <p class="text-[8px] text-gray-400 truncate">
+                                                        {{ $sug['descripcion'] }}
+                                                    </p>
                                                 </div>
-                                                @endif
+                                                @endforeach
                                             </div>
-                                            <div class="relative">
-                                                <label for="temp_arancel" class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Arancel</label>
-                                                <input type="number" wire:model="temp_arancel" placeholder="Arancel %"
-                                                    class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
-                                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">%</span>
-                                            </div>
+                                            @endif
+                                        </div>
+                                        <!-- Arancel % -->
+                                        <div class="relative z-[40]">
+                                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                </svg>
+                                                Arancel %
+                                            </label>
+                                            <input type="number" wire:model="temp_arancel" placeholder="GA %"
+                                                class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                                         </div>
                                     </div>
-                                    @endif
                                 </div>
-
-                                <!-- Action Button -->
-                                <div class="flex items-center justify-center gap-4">
-                                    <p class="text-xm text-gray-500 mb-2">Haga clic para calcular el total del producto</p>
-                                    <button wire:click="agregarProducto"
-                                        class="w-full p-4 h-[48px] bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-bold text-xs rounded-lg shadow-lg hover:shadow-yellow-500/20 transition-all flex items-center justify-center uppercase tracking-wider">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                        </svg>
-                                        AGREGAR PRODUCTO
-                                    </button>
-                                </div>
-
+                                @endif
                             </div>
                         </div>
                     </div>

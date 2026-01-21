@@ -168,99 +168,184 @@
                 <div class="space-y-3">
 
                     <!-- Row 1: Image & Name -->
-                    <div class="flex gap-3" style="align-items: center;">
-                        <!-- Image Upload (Square with Preview) -->
-                        <div style="width: 150px; height: 150px; min-width: 150px; min-height: 150px;" class="shrink-0 relative group">
-                            <label class="block w-full h-full rounded-lg border-2 border-dashed border-yellow-500/30 hover:border-yellow-500 bg-black/20 cursor-pointer overflow-hidden transition-all relative">
-                                <input type="file" wire:model="temp_manualImagen" accept="image/*" class="hidden">
-                                @if ($temp_manualImagen)
-                                <img src="{{ $temp_manualImagen->temporaryUrl() }}" class="absolute inset-0 w-full h-full object-cover">
-                                @elseif ($temp_imagen)
-                                <img src="{{ $temp_imagen }}" class="absolute inset-0 w-full h-full object-cover">
-                                @else
-                                <div class="w-full h-full flex flex-col items-center justify-center text-gray-500 group-hover:text-yellow-500">
-                                    <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <span class="text-[10px] uppercase font-bold">Foto</span>
-                                </div>
-                                @endif
-                                <!-- Loading State -->
-                                <div wire:loading wire:target="temp_manualImagen" class="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
-                                    <div class="w-6 h-6 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-                                </div>
-                            </label>
-                        </div>
+                    <div class="w-full max-w-5xl mx-auto px-4">
 
-                        <!-- Name Input & Extra Fields -->
-                        <div class="flex-1 flex flex-col gap-2">
-                            <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 12px;">Nombre del Producto</label>
-                            <input type="text" wire:model="temp_producto" placeholder="Nombre del Producto (Ej: Zapatillas)"
-                                class="w-full h-[105px] px-4 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-lg">
-                            @error('temp_producto') <span class="text-red-400 text-[10px] ml-1">{{ $message }}</span> @enderror
+                        <div class="flex flex-col md:flex-row gap-6 md:items-start">
 
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 9px;">Cantidad de piezas por caja</label>
-                                    <input type="number" wire:model="temp_piezas_por_carton" placeholder="1" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
-                                    @error('temp_piezas_por_carton') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
+                            <!-- IMAGE UPLOAD -->
+                            <div class="flex-shrink-0 flex justify-center md:justify-start md:pt-7">
+                                <div class="relative group w-[220px] h-[150px] flex-shrink-0">
+
+                                    <label
+                                        class="relative flex w-full h-full rounded-lg border-2 border-dashed border-yellow-500/30 hover:border-yellow-500 bg-black/20 cursor-pointer overflow-hidden transition-all" style="width: 150px;">
+
+                                        <!-- INPUT CORRECTO -->
+                                        <input
+                                            type="file"
+                                            wire:model="temp_manualImagen"
+                                            accept="image/*"
+                                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+
+                                        @if ($temp_manualImagen)
+                                        <img
+                                            src="{{ $temp_manualImagen->temporaryUrl() }}"
+                                            class="inset-0 w-full h-full object-cover z-10 {{ $temp_manualImagen || $temp_imagen ? '' : 'absolute' }}">
+
+                                        @elseif ($temp_imagen)
+                                        <img
+                                            src=" {{ $temp_imagen }}"
+                                            class="inset-0 w-full h-full object-cover z-10 {{ $temp_manualImagen || $temp_imagen ? '' : 'absolute' }}">
+
+                                        @else
+                                        <div class="w-full h-full px-4 flex flex-col items-center justify-center text-gray-500 group-hover:text-yellow-500 z-10">
+                                            <svg class="w-10 h-10 mb-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            <span class="text-xs uppercase font-bold tracking-wide">Foto</span>
+                                        </div>
+                                        @endif
+
+                                        <!-- Loading -->
+                                        <div wire:loading wire:target="temp_manualImagen"
+                                            class="absolute inset-0 bg-black/60 flex items-center justify-center z-30">
+                                            <div class="w-6 h-6 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                                        </div>
+
+                                    </label>
                                 </div>
+                            </div>
+
+
+
+                            <!-- FORM -->
+                            <div class="flex-1 max-w-3xl flex flex-col gap-4">
+
                                 <div>
-                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 9px;">Cantidad de cajas</label>
-                                    <input type="number" wire:model="temp_cantidad" placeholder="1" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
-                                    @error('temp_cantidad') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
+                                    <label class="text-xs text-gray-400 uppercase tracking-wider pl-1">
+                                        Nombre del Producto
+                                    </label>
+                                    <input type="text" wire:model="temp_producto"
+                                        placeholder="Nombre del Producto (Ej: Zapatillas)"
+                                        class="w-full h-[90px] md:h-[105px] px-4 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 text-base md:text-lg">
+                                    @error('temp_producto')
+                                    <span class="text-red-400 text-[10px] ml-1">{{ $message }}</span>
+                                    @enderror
                                 </div>
-                                <div>
-                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1" style="font-size: 9px;">Valor unitario ($)</label>
-                                    <input type="number" wire:model="temp_valor_unitario" placeholder="0.00" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
-                                    @error('temp_valor_unitario') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
+
+                                <!-- GRID 1 -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="text-[9px] text-gray-400 uppercase pl-1">
+                                            Piezas por caja
+                                        </label>
+                                        <input type="number" wire:model="temp_piezas_por_carton"
+                                            class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none">
+                                    </div>
+
+                                    <div>
+                                        <label class="text-[9px] text-gray-400 uppercase pl-1">
+                                            Cantidad de cajas
+                                        </label>
+                                        <input type="number" wire:model="temp_cantidad"
+                                            class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none">
+                                    </div>
+
+                                    <div>
+                                        <label class="text-[9px] text-gray-400 uppercase pl-1">
+                                            Valor unitario ($)
+                                        </label>
+                                        <input type="number" wire:model="temp_valor_unitario"
+                                            class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none">
+                                    </div>
+                                </div>
+
+                                <!-- GRID 2 -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="text-[10px] text-gray-400 uppercase pl-1">
+                                            Peso unitario (Kg)
+                                        </label>
+                                        <input type="number" wire:model="temp_peso_unitario"
+                                            class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none">
+                                    </div>
+
+                                    <div>
+                                        <label class="text-[10px] text-gray-400 uppercase pl-1">
+                                            Costo Interno
+                                        </label>
+                                        <input type="number" wire:model="temp_costo_interno"
+                                            class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none">
+                                    </div>
                                 </div>
 
                             </div>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1">Peso unitario (Kg)</label>
-                                    <input type="number" wire:model="temp_peso_unitario" placeholder="0.00" class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
-                                    @error('temp_peso_unitario') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <label class="text-[10px] text-gray-400 uppercase tracking-wider pl-1">Costo Interno</label>
-                                    <input type="number" wire:model="temp_costo_interno" placeholder="Costo Interno "
-                                        class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-sm focus:border-yellow-500/50 focus:outline-none placeholder-gray-600">
-                                    @error('temp_costo_interno') <span class="text-red-400 text-[10px] block mt-1">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
+
                         </div>
                     </div>
+
+
 
                     <!-- Row 3: Dimensions & Action -->
                     <div class="grid grid-cols-1 md:grid-cols-1 gap-3 items-center">
                         <!-- Auto-fill Helper -->
-                        <div class="flex items-center gap-2 mb-3 border-b border-white/5 pb-3">
-                            <div class="flex-1">
-                                <label class="block text-[8px] text-gray-500 mb-1">Dimensión Única (Ref)</label>
-                                <input type="number" wire:model.blur="temp_dimension_total" placeholder="Dimensión de un lado"
-                                    class="w-full py-3 bg-black/40 border border-yellow-500/10 rounded px-2 py-1 text-xs text-white focus:border-yellow-500/50 outline-none text-center">
+                        <div class="mb-3 border-b border-white/5 pb-3">
+
+                            <div class="flex flex-col md:flex-row md:items-center gap-4">
+
+                                <!-- INPUT -->
+                                <div class="w-full md:w-56">
+                                    <label class="block text-[9px] text-gray-500 mb-1 text-center md:text-left">
+                                        Dimensión Única (Ref)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        wire:model.blur="temp_dimension_total"
+                                        placeholder="Dimensión de un lado"
+                                        class="w-full bg-black/40 border border-yellow-500/10 rounded px-3 py-2 text-xs text-white focus:border-yellow-500/50 outline-none text-center">
+                                </div>
+
+                                <!-- BUTTONS -->
+                                <div class="grid grid-cols-2 sm:grid-cols-4 md:flex gap-3 justify-center md:justify-start">
+
+                                    <button type="button"
+                                        wire:click="aplicarDimensiones('square')"
+                                        title="Caja Cuadrada"
+                                        class="w-full sm:w-28 md:w-32 h-20 sm:h-24 md:h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-2" style="width: 80px; height: 80px;">
+                                        <img src="{{ asset('images/cajas/caja_cuadrada.png') }}"
+                                            class="w-full h-full object-contain opacity-80 hover:opacity-100">
+                                    </button>
+
+                                    <button type="button"
+                                        wire:click="aplicarDimensiones('rectangular')"
+                                        title="Caja Rectangular"
+                                        class="w-full sm:w-28 md:w-32 h-20 sm:h-24 md:h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-2" style="width: 80px; height: 80px;">
+                                        <img src="{{ asset('images/cajas/caja_rectangular.png') }}"
+                                            class="w-full h-full object-contain opacity-80 hover:opacity-100">
+                                    </button>
+
+                                    <button type="button"
+                                        wire:click="aplicarDimensiones('flat')"
+                                        title="Caja Plana"
+                                        class="w-full sm:w-28 md:w-32 h-20 sm:h-24 md:h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-2" style="width: 80px; height: 80px;">
+                                        <img src="{{ asset('images/cajas/caja_plana.png') }}"
+                                            class="w-full h-full object-contain opacity-80 hover:opacity-100">
+                                    </button>
+
+                                    <button type="button"
+                                        wire:click="aplicarDimensiones('long')"
+                                        title="Caja Alargada"
+                                        class="w-full sm:w-28 md:w-32 h-20 sm:h-24 md:h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-2" style="width: 80px; height: 80px;">
+                                        <img src="{{ asset('images/cajas/caja_tubo.png') }}"
+                                            class="w-full h-full object-contain opacity-80 hover:opacity-100">
+                                    </button>
+
+                                </div>
                             </div>
-                            <div class="flex gap-2">
-                                <button type="button" wire:click="aplicarDimensiones('square')" title="Caja Cuadrada"
-                                    class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
-                                    <img src="{{ asset('images/cajas/caja_cuadrada.png') }}" alt="Square" class="w-full h-full object-contain opacity-70 hover:opacity-100">
-                                </button>
-                                <button type="button" wire:click="aplicarDimensiones('rectangular')" title="Caja Rectangular"
-                                    class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
-                                    <img src="{{ asset('images/cajas/caja_rectangular.png') }}" alt="Rectangular" class="w-full h-full object-contain opacity-70 hover:opacity-100">
-                                </button>
-                                <button type="button" wire:click="aplicarDimensiones('flat')" title="Caja Plana"
-                                    class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
-                                    <img src="{{ asset('images/cajas/caja_plana.png') }}" alt="Flat" class="w-full h-full object-contain opacity-70 hover:opacity-100">
-                                </button>
-                                <button type="button" wire:click="aplicarDimensiones('long')" title="Caja Alargada"
-                                    class="w-24 h-24 rounded border border-white/10 hover:border-yellow-500/50 hover:bg-white/5 flex items-center justify-center transition-all p-1">
-                                    <img src="{{ asset('images/cajas/caja_tubo.png') }}" alt="Long" class="w-full h-full object-contain opacity-70 hover:opacity-100">
-                                </button>
-                            </div>
+
                         </div>
+
                         <!-- Dimensions -->
                         <div class="md:col-span-2 bg-black/20 rounded-lg p-2 border border-white/5 relative">
                             <label class="text-[10px] text-gray-500 block mb-2 text-center">Dimensiones (cm) o CBM Directo</label>

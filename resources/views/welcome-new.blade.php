@@ -305,7 +305,7 @@
                         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
 
                             <div class="flex-1">
-                                <input id="productUrl" type="text"
+                                <input id="productUrl" type="text" disabled
                                     placeholder="https://www.alibaba.com/product-detail/Teddy-Bear-I-Love-You-Valentines.html"
                                     class="w-full bg-black/50 border border-yellow-500/30 text-white px-4 py-3 sm:py-4 rounded-lg focus:outline-none focus:border-yellow-500 transition-all text-sm sm:text-base placeholder-gray-500">
                             </div>
@@ -1466,7 +1466,7 @@
 
             const img = document.getElementById('scraped-image');
             const placeholder = document.getElementById('placeholder-image');
-            const titleElem = document.getElementById('scraped-title'); 
+            const titleElem = document.getElementById('scraped-title');
             const productIdElem = document.getElementById('scraped-product-id');
 
             if (titleElem) {
@@ -1730,7 +1730,7 @@
                 const titleAir = document.getElementById('scraped-title').innerText.trim();
                 const imageProduct = document.getElementById('scraped-image').src;
                 const productId = document.getElementById('scraped-product-id').innerText.trim();
-                
+
                 const payload = {
                     peso: parseFloat(packageWeightText) || '',
                     dimensiones: packageSizeTexto,

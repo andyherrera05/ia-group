@@ -229,6 +229,10 @@
 
         $agencia = (float)($desglose['Agencia Despachante'] ?? 0);
 
+        $transporteTerrestre = (float)($desglose['Transporte Terrestre'] ?? 0);
+
+        $desconsolidacion = (float)($desglose['Cargo de Desconsolidacion'] ?? 0);
+
         // Lista de keys a EXCLUIR de la izquierda porque van a la derecha o no se muestran
         $excludedKeys = [
         'Gravamen Arancelario',
@@ -242,13 +246,13 @@
         'Gestión Logística',
         'Brokers en China',
         'Valor de Mercancía',
+        'Transporte Terrestre',
         'IVA',
         'ICE',
         'Poliza de Importacion',
-        // 'Pago Internacional' y 'Seguro de la Carga' se muestran en el bucle
         ];
 
-        $granTotalFinal = $iva + $ice + $polizaImportacion + $agencia + $gravamenArancelario;
+        $granTotalFinal = $iva + $ice + $polizaImportacion + $agencia + $gravamenArancelario + $transporteTerrestre;
         $granTotalFinalEnvio = $fleteInternacional + $subtotalGastos + $gestionLogisticaBolivia + $brokersChina;
         @endphp
         <table class="order-date-table">
@@ -371,6 +375,10 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <tr>
+                                <td style="text-align: left; padding: 8px 15px; background-color: #ffe6cc; font-weight: bold; border: 1px solid #000; font-size: 10px;">TRANSPORTE TERRESTRE</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000; font-size: 10px;">$ {{ number_format($transporteTerrestre, 2) }}</td>
+                            </tr>
                             <!-- Gravamen Arancelario -->
                             <tr>
                                 <td style="text-align: left; padding: 8px 15px; background-color: #ffe6cc; font-weight: bold; border: 1px solid #000; font-size: 10px;">GRAVAMEN ARANCELARIO</td>
