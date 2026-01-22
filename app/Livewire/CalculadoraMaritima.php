@@ -1824,6 +1824,23 @@ class CalculadoraMaritima extends Component
 
         return redirect()->route('cotizacion.pdf', $params);
     }
+
+    public function descargarPDFleteMaritimo()
+    {
+        $agenteSeleccionado = collect($this->agentes)->firstWhere('id', $this->agenteId);
+        $params = [
+            'agente' => json_encode($agenteSeleccionado),
+            'desglose_reporte' => json_encode($this->desglose_reporte),
+            'clienteNombre' => $this->clienteNombre,
+            'clienteEmail' => $this->clienteEmail,
+            'clienteTelefono' => $this->clienteTelefono,
+            'clienteDireccion' => $this->clienteDireccion,
+            'clienteCiudad' => $this->clienteCiudad
+        ];
+        $params['tipoCarga'] = 'FCL_MARITIMO'; // Custom type to trigger the specific view
+        return redirect()->route('cotizacion.pdf', $params);
+    }
+    
     
     
     // =======================================================

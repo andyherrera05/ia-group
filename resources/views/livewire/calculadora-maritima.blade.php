@@ -258,7 +258,19 @@
                             <span>Descargar Cotización en PDF</span>
                         </button>
                     </div>
-
+                    @if ($tipoCarga === 'fcl')
+                    <div class="mt-6">
+                        <a wire:click="descargarPDFleteMaritimo" wire:loading.attr="disabled"
+                            style="background: linear-gradient(to right, #dc2626, #b91c1c); color: white;"
+                            class="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-xl shadow-red-600/40 flex items-center justify-center space-x-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span>Descargar Cotización en Precio (Flete Marítimo)</span>
+                        </a>
+                    </div>
+                    @endif
                     <!-- Pregunta interactiva -->
                     @if ($mostrarPregunta && $resultado !== null)
                     <div class="mt-8 bg-gradient-to-br border-2 border-yellow-500/50 rounded-xl p-6 shadow-2xl">
