@@ -192,7 +192,7 @@
                             <div class="flex justify-between items-center py-2 px-4 bg-white/5 rounded-lg border border-white/5">
                                 <div class="flex items-center gap-2">
                                     <span class="text-gray-300 text-sm font-medium" style="width: 175px;">{{ trim($concepto) }}</span>
-                                    @if(in_array(trim($concepto), ['Agencia Despachante', 'Cargos de importacion y despacho', 'Impuestos', 'Gravamen Arancelario', 'Iva', 'Poliza de Importacion', 'ICE', 'IVA', 'Transporte Terrestre']))
+                                    @if(in_array(trim($concepto), ['Agencia Despachante', 'Cargos de importacion y despacho', 'Impuestos', 'Gravamen Arancelario', 'Poliza de Importacion', 'ICE', 'IVA', 'Transporte Terrestre']))
                                     <span class="px-1.5 py-0.5 rounded font-bold bg-green-500/20 text-green-400 border border-green-500/30" style="font-size:9px">TC OF</span>
                                     @else
                                     <span class="px-1.5 py-0.5 rounded font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30" style="font-size:9px">TC BLUE</span>
@@ -250,7 +250,9 @@
                     <!-- Botón PDF -->
                     <div class="mt-6">
                         <button wire:click="descargarPDF" wire:loading.attr="disabled"
-                            class="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-xl shadow-red-600/40 flex items-center justify-center space-x-3">
+                            class="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-xl shadow-red-600/40 flex items-center justify-center space-x-3"
+                            style="background: linear-gradient(to right, #dc2626, #b91c1c); color: white;">
+
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -261,8 +263,7 @@
                     @if ($tipoCarga === 'fcl')
                     <div class="mt-6">
                         <a wire:click="descargarPDFleteMaritimo" wire:loading.attr="disabled"
-                            style="background: linear-gradient(to right, #dc2626, #b91c1c); color: white;"
-                            class="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-xl shadow-red-600/40 flex items-center justify-center space-x-3">
+                            class="w-full text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-xl flex items-center justify-center space-x-3">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

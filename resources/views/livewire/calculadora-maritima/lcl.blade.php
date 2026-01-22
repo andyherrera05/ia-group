@@ -374,7 +374,7 @@
                         <div class="md:col-span-2 bg-black/20 rounded-lg p-3 border border-white/5">
                             <div class="flex items-center gap-2 mb-2">
                                 <input type="checkbox" wire:model.live="temp_con_arancel" id="temp_con_arancel" class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                                <label for="temp_con_arancel" class="text-gray-400 cursor-pointer uppercase tracking-wider" style="font-size:14px">¿La carga tiene arancel?</label>
+                                <label for="temp_con_arancel" class="text-gray-400 cursor-pointer uppercase tracking-wider" style="font-size:14px">¿Necesita realizar el calculo de impuestos? <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span></label>
                             </div>
 
                             @if($temp_con_arancel)

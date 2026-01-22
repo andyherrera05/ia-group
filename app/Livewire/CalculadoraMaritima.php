@@ -18,7 +18,7 @@ use Livewire\WithFileUploads;
 class CalculadoraMaritima extends Component
 {
     use WithFileUploads;
-    public $tipoCarga = 'uld';
+    public $tipoCarga = 'fcl';
 
     public $peso;
 
@@ -149,11 +149,7 @@ class CalculadoraMaritima extends Component
     public $selectedVehicleIndex = null;
 
     // FCL Specific Properties
-    public $transporteTerrestreFCL = false;
-    public $verificacionSustanciasPeligrosasFCL = false;
-    public $requierePagoInternacionalFCL = false;
-    public $pagosInternacionalesSwiftFCL = 'swift'; // 'swift' or 'sin_swift'
-    public $seguroCargaFCL = false;
+    public $transporteTerrestre = false;
     public $representacionImportacionFCL = false;
     public $pesoMercanciaFCL = 0;
     public $volumenMercanciaFCL = 0;
@@ -874,37 +870,57 @@ class CalculadoraMaritima extends Component
     public function updatedVerificacionProducto()
     {
         $this->calcular();
+        $this->calculateDesgloseFCL();
     }
     public function updatedVerificacionCalidad()
     {
         $this->calcular();
+        $this->calculateDesgloseFCL();
     }
     public function updatedSeguroCarga()
     {
         $this->calcular();
+        $this->calculateDesgloseFCL();
     }
     public function updatedVerificacionEmpresaDigital()
     {
         $this->calcular();
+        $this->calculateDesgloseFCL();
     }
     public function updatedVerificacionSustanciasPeligrosas()
     {
         $this->calcular();
+        $this->calculateDesgloseFCL();
     }
     public function updatedVerificacionEmpresaPresencial()
     {
         $this->calcular();
+        $this->calculateDesgloseFCL();
     }
-    public function updatedRequierePagoInternacionalFCL()
+    public function updatedTransporteTerrestre()
     {
-        if ($this->selectedRateIndex !== null && $this->selectedContainer) {
-            $this->selectRate($this->selectedRateIndex, $this->selectedContainer);
-        }
+        $this->calculateDesgloseFCL();
     }
     public function updatedRequierePagoInternacional()
     {
         $this->calcular();
+        $this->calculateDesgloseFCL();
     }
+    public function updatedRepresentacionImportacionFCL()
+    {
+        $this->calculateDesgloseFCL();
+    }
+
+    public function updatedTempManualImagen()
+    {
+        $this->calculateDesgloseFCL();
+    }
+
+    public function updatedTempProducto()
+    {
+        $this->calculateDesgloseFCL();
+    }
+
     public function selectRate($index, $container)
     {
         $this->validate([
@@ -925,8 +941,6 @@ class CalculadoraMaritima extends Component
 
         $this->mostrarPregunta = false;
         $this->respuestaUsuario = null;
-        $desconsolidacion = 0;
-        $gastosPortuarios = 0;
 
 
         // Recuperar la tarifa usando el index que viene de la vista
@@ -948,6 +962,19 @@ class CalculadoraMaritima extends Component
             'clienteCiudad'    => $this->clienteCiudad,
         ]);
 
+        $this->calculateDesgloseFCL();
+
+        $this->dispatch('scroll-to-result');
+
+        session()->flash('success', 'Cotización generada correctamente.');
+    }
+    public function calculateDesgloseFCL()
+    {
+        $rate = $this->selectedRate;
+        $container = $this->selectedContainer;
+
+        if (!$rate || !$container) return;
+
         $containerName = match ($container) {
             'gp20' => "20' Standard",
             'gp40' => "40' Standard",
@@ -956,150 +983,90 @@ class CalculadoraMaritima extends Component
         };
 
         $precioBase = $rate[$container] ?? 0;
-
         if ($precioBase <= 0) {
             session()->flash('error', 'Precio no disponible para este contenedor.');
             return;
         }
 
         $shippingLine = $rate['shipping_line'] ?? 'Desconocida';
-
-        $gastosLocales = [
-            '   ├─ Manipulación en Terminal' => 159.00,
-            '   ├─ Gastos de Documentación' => 72.00,
-            '   ├─ Gastos Portuarios Varios' => 102.00,
-            '   ├─ Control de Equipo (EIR)' => 22.00,
-            '   ├─ Sello de Seguridad' => 10.00,
-            '   ├─ Despacho de Aduana' => 40.00,
-            '   └─ Gasto por Liberación Digital' => 65.00
-        ];
-
+        $gastosLocales = $this->getGastosLocales();
         $subtotalPortuaria = array_sum($gastosLocales);
-        $peso = floatval($this->pesoMercanciaFCL);
-        $volumen = floatval($this->volumenMercanciaFCL);
-        $totalCBMCobrables = max($peso, $volumen);
+
         $valorMercancia = floatval($this->valorMercancia);
+
+        // Agencias y Despacho
         $agencia_despachante = $this->calculate_tiered_charge($valorMercancia);
         $despachante = 768.68;
 
-        $transporte_terrestre = $this->transporteTerrestreFCL ? 3600 : 0;
-        $transporte_terrestre_cif = $transporte_terrestre / 2;
+        // Transporte
+        $transporte_terrestre = $this->transporteTerrestre ? 3600 : 0;
 
-        $seguroEstimado = $this->seguroCargaFCL ? ($valorMercancia * 0.02) : 0;
-        $seguroParaImpuestos = $valorMercancia * 0.02;
+        // Impuestos
+        $taxes = $this->calculateCifAndTaxes($valorMercancia, $transporte_terrestre);
+        $impuesto = $taxes['impuesto'];
+        $gravamenArancelario = $taxes['gravamen'];
+        $iva = $taxes['iva'];
+        $ice = $taxes['ice'];
 
-        $valorFlete = $valorMercancia * 0.10;
+        // Costos Adicionales
+        $adicionales = $this->calculateAdditionalCosts($valorMercancia);
+        $costoAdicionales = $adicionales['total'];
 
-        $baseCIF = $valorMercancia + $valorFlete + $transporte_terrestre_cif + $seguroParaImpuestos;
+        // Construir Desglose UI
+        if ($this->desconsolidacionFCL == 0) {
+            $this->desglose = [
+                "Flete Marítimo ({$shippingLine} - {$containerName})" => $precioBase,
+                '─ GESTIÓN PORTUARIA Y LOGÍSTICA' => null,
+            ];
+        } else {
+            $this->desglose = [
+                "Flete Marítimo ({$shippingLine} - {$containerName})" => ($precioBase / 2),
+                '─ GESTIÓN PORTUARIA Y LOGÍSTICA' => null,
+            ];
+        }
 
-        $gravamen =  $baseCIF * ($this->temp_arancel / 100);
-        $iva = ($baseCIF + $gravamen) * (14.94 / 100);
-        $impuesto = $iva + $gravamen;
-
-        $this->desglose = [
-            "Flete Marítimo ({$shippingLine} - {$containerName})" => $precioBase,
-            '─ GESTIÓN PORTUARIA Y LOGÍSTICA' => null,
-        ];
 
         foreach ($gastosLocales as $concepto => $monto) {
             $this->desglose[$concepto] = number_format($monto, 2);
         }
-        $this->desglose['   Valor de la Mercancía'] = number_format($valorMercancia, 2, '.', '');
-        $this->desglose['   Gestión Portuaria'] = number_format($subtotalPortuaria, 2);
-        $this->desglose['   Booking'] = number_format($precioBase * 0.05, 2);
-        $this->desglose['   Cargos de importacion y despacho'] = number_format($despachante, 2);
-        $this->desglose['   Agencia Despachante'] = number_format($agencia_despachante, 2);
-        $this->desglose['   Impuestos'] = number_format($impuesto, 2);
 
-        if ($this->transporteTerrestreFCL) {
+        $this->desglose = array_merge($this->desglose, [
+            '   Valor de la Mercancía' => number_format($valorMercancia, 2, '.', ''),
+            '   Gestión Portuaria' => number_format($subtotalPortuaria, 2),
+            '   Booking' => number_format($precioBase * 0.05, 2),
+            '   Cargos de importacion y despacho' => number_format($despachante, 2),
+            '   Agencia Despachante' => number_format($agencia_despachante, 2),
+            '   Gravamen Arancelario' => number_format($gravamenArancelario, 2),
+            '   IVA' => number_format($iva, 2),
+            '   ICE' => number_format($ice, 2),
+        ]);
+
+        if ($this->transporteTerrestre) {
             $this->desglose['   Transporte Terrestre'] = number_format($transporte_terrestre, 2);
         }
 
-        $costoAdicionales = 0;
+        // Merge de desglose de adicionales
+        $this->desglose = array_merge($this->desglose, $adicionales['desglose']);
 
-        if ($this->verificacionSustanciasPeligrosasFCL) {
-            $this->desglose['   Envio de producto peligroso'] = 250.00;
-            $costoAdicionales += 250.00;
-        }
-
-        if ($this->desconsolidacionFCL == '0') {
-            $desconsolidacion = $totalCBMCobrables * 12;
-            $gastosPortuarios = $totalCBMCobrables * 15;
-            $this->desglose['   Cargo de Desconsolidacion'] = number_format($desconsolidacion, 2);
-            $this->desglose['   Gastos Portuarios'] = number_format($gastosPortuarios, 2);
-            $costoAdicionales += $desconsolidacion + $gastosPortuarios;
-        }
-
-
-        $costoSwift = 0;
-        if ($this->requierePagoInternacionalFCL) {
-            $tasaSwift = ($this->pagosInternacionalesSwiftFCL === 'swift') ? 0.01 : 0.025;
-            $costoSwift = $valorMercancia * $tasaSwift;
-            $this->desglose['   Pago Internacional'] = number_format($costoSwift, 2);
-        }
-        $costoAdicionales += $costoSwift;
-
-        if ($this->seguroCargaFCL) {
-            $this->desglose['   Seguro de Carga'] = number_format($seguroEstimado, 2);
-            $costoAdicionales += $seguroEstimado;
-        }
-
-        if ($this->representacionImportacionFCL) {
-            $this->desglose['   Representación Importación'] = number_format(3500.00, 2);
-            $costoAdicionales += 3500.00;
-        }
-        if ($this->verificacionProducto) {
-            $costoAdicionales += 30.00;
-            $this->desglose['   Verificación del Producto'] = number_format(30.00, 2, '.', '');
-        }
-        if ($this->verificacionCalidad) {
-            $this->desglose['   Verificación de Calidad del Producto'] = 50.00;
-            $costoAdicionales += 50.00;
-        }
-        if ($this->verificacionEmpresaDigital) {
-            $this->desglose['   Verificación de Empresa Digital'] = 100.00;
-            $costoAdicionales += 100.00;
-        }
-        if ($this->verificacionEmpresaPresencial) {
-            $this->desglose['   Verificación Presencial de Empresa'] = 350.00;
-            $costoAdicionales += 350.00;
-        }
-
+        // Resultado Final
         $this->resultado = $precioBase + $subtotalPortuaria + ($precioBase * 0.05) + $valorMercancia + $transporte_terrestre + $impuesto + $agencia_despachante + $despachante + $costoAdicionales;
 
-        $this->desglose_reporte = [
-            'ref' => $this->id_producto ?: 'FCL-' . strtoupper($container),
-            'descripcion' => "Flete Marítimo ({$shippingLine} - {$containerName})",
-            'cantidad' => 1,
-            'unidad' => 'PCS',
-            'precio' => $precioBase,
-            'total' => $precioBase,
-            'imagen' => $this->imagen ?: null,
-            'valorMercancia' => $valorMercancia,
-            'gestionPortuaria' => $subtotalPortuaria,
-            'booking' => $precioBase * 0.05,
-            'agencia_despachante' => $agencia_despachante,
-            'despachante' => $despachante,
-            'transporte_terrestre' => $transporte_terrestre,
-            'gravamen' => $gravamen,
-            'costo_adicionales' => $costoAdicionales, // Para uso en PDF si se requiere
-            'iva' => $iva,
-            'impuestos' => $impuesto,
-            'seguro_carga' => $this->seguroCargaFCL,
-            'representacion' => $this->representacionImportacionFCL,
-            'comision_swift' => $this->pagosInternacionalesSwiftFCL,
-            'desconsolidacion' => $desconsolidacion,
-            'gastos_portuarios' => $gastosPortuarios,
-            'verificacion_sustancias_peligrosas' => $this->verificacionSustanciasPeligrosasFCL,
-            'verificacion_producto' => $this->verificacionProducto,
-            'verificacion_calidad' => $this->verificacionCalidad,
-            'verificacion_empresa_digital' => $this->verificacionEmpresaDigital,
-            'verificacion_empresa_presencial' => $this->verificacionEmpresaPresencial,
-            'costo_verificacion_empresa_digital' => 100,
-            'costo_verificacion_empresa_presencial' => 350,
-            'costo_verificacion_calidad' => 50,
-            'costo_verificacion_producto' => 30,
-        ];
+        // Construir Reporte
+        $this->desglose_reporte = $this->buildReportData(
+            $container,
+            $containerName,
+            $shippingLine,
+            $precioBase,
+            $valorMercancia,
+            $subtotalPortuaria,
+            $agencia_despachante,
+            $despachante,
+            $transporte_terrestre,
+            $taxes,
+            $costoAdicionales,
+            $adicionales
+        );
+
         $this->tipoCobroActual = 'Contenedor Completo (FCL)';
         $this->unidadActual = "Contenedor " . $containerName;
         $this->valorFacturadoActual = $precioBase;
@@ -1109,9 +1076,135 @@ class CalculadoraMaritima extends Component
         $this->mostrarDesglose = true;
         $this->respuestaUsuario = null;
 
-        $this->dispatch('scroll-to-result');
-
         session()->flash('success', 'Cotización generada correctamente.');
+    }
+
+    private function getGastosLocales()
+    {
+        return [
+            '   ├─ Manipulación en Terminal' => 159.00,
+            '   ├─ Gastos de Documentación' => 72.00,
+            '   ├─ Gastos Portuarios Varios' => 102.00,
+            '   ├─ Control de Equipo (EIR)' => 22.00,
+            '   ├─ Sello de Seguridad' => 10.00,
+            '   ├─ Despacho de Aduana' => 40.00,
+            '   └─ Gasto por Liberación Digital' => 65.00
+        ];
+    }
+
+    private function calculateCifAndTaxes($valorMercancia, $transporte_terrestre)
+    {
+        $transporte_terrestre_cif = $transporte_terrestre / 2;
+        $seguroParaImpuestos = $valorMercancia * 0.02; // 2% fijo para base imponible
+        $valorFlete = $valorMercancia * 0.10; // 10% teórico
+
+        $baseCIF = $valorMercancia + $valorFlete + $transporte_terrestre_cif + $seguroParaImpuestos;
+        $gravamen = $baseCIF * ($this->temp_arancel / 100);
+        $iva = ($baseCIF + $gravamen) * (14.94 / 100);
+        $ice = $baseCIF * (15 / 100);
+
+        return [
+            'gravamen' => $gravamen,
+            'iva' => $iva,
+            'ice' => $ice,
+            'impuesto' => $iva + $gravamen + $ice
+        ];
+    }
+
+    private function calculateAdditionalCosts($valorMercancia)
+    {
+        $total = 0;
+        $desgloseAux = [];
+        $desconsolidacion = 1800;
+
+        if ($this->verificacionSustanciasPeligrosas) {
+            $desgloseAux['   Envio de producto peligroso'] = number_format(250.00, 2);
+            $total += 250.00;
+        }
+        if ($this->desconsolidacionFCL == '0') {
+            $total += $desconsolidacion;
+        } else {
+            $desconsolidacion = $desconsolidacion / 2;
+            $total += $desconsolidacion;
+        }
+        $desgloseAux['   Cargo de Desconsolidacion'] = number_format($desconsolidacion, 2);
+
+        if ($this->requierePagoInternacional) {
+            $tasaSwift = ($this->pagosInternacionalesSwift === 'swift') ? 0.01 : 0.025;
+            $costoSwift = $valorMercancia * $tasaSwift;
+            $desgloseAux['   Pago Internacional'] = number_format($costoSwift, 2);
+            $total += $costoSwift;
+        }
+
+        if ($this->seguroCarga) {
+            $seguroEstimado = $valorMercancia * 0.02;
+            $desgloseAux['   Seguro de Carga'] = number_format($seguroEstimado, 2);
+            $total += $seguroEstimado;
+        }
+
+        if ($this->representacionImportacionFCL) {
+            $desgloseAux['   Representación Importación'] = number_format(502.87, 2);
+            $total += 502.87;
+        }
+
+        // Verificaciones
+        $verificaciones = [
+            'verificacionProducto' => ['costo' => 30.00, 'label' => 'Verificación del Producto'],
+            'verificacionCalidad' => ['costo' => 50.00, 'label' => 'Verificación de Calidad del Producto'],
+            'verificacionEmpresaDigital' => ['costo' => 100.00, 'label' => 'Verificación de Empresa Digital'],
+            'verificacionEmpresaPresencial' => ['costo' => 350.00, 'label' => 'Verificación Presencial de Empresa']
+        ];
+
+        foreach ($verificaciones as $prop => $data) {
+            if ($this->$prop) {
+                $desgloseAux['   ' . $data['label']] = number_format($data['costo'], 2, '.', '');
+                $total += $data['costo'];
+            }
+        }
+
+        return [
+            'total' => $total,
+            'desglose' => $desgloseAux,
+            'data_reporte' => [
+                'desconsolidacion' => $desconsolidacion,
+            ]
+        ];
+    }
+
+    private function buildReportData($container, $containerName, $shippingLine, $precioBase, $valorMercancia, $subtotalPortuaria, $agencia_despachante, $despachante, $transporte_terrestre, $taxes, $costoAdicionales, $adicionales)
+    {
+        return [
+            'ref' => $this->id_producto ?: 'FCL-' . strtoupper($container),
+            'descripcion' => $this->temp_producto ?: "Flete Marítimo ({$shippingLine} - {$containerName})",
+            'cantidad' => 1,
+            'unidad' => 'PCS',
+            'precio' => $precioBase,
+            'total' => $precioBase,
+            'imagen' => $this->temp_manualImagen ? $this->temp_manualImagen->temporaryUrl() : ($this->temp_imagen ?: null),
+            'valorMercancia' => $valorMercancia,
+            'gestionPortuaria' => $subtotalPortuaria,
+            'booking' => $precioBase * 0.05,
+            'agencia_despachante' => $agencia_despachante,
+            'despachante' => $despachante,
+            'transporte_terrestre' => $transporte_terrestre,
+            'gravamen' => $taxes['gravamen'],
+            'costo_adicionales' => $costoAdicionales,
+            'iva' => $taxes['iva'],
+            'impuestos' => $taxes['impuesto'],
+            'seguro_carga' => $this->seguroCarga,
+            'representacion' => $this->representacionImportacionFCL,
+            'comision_swift' => $this->pagosInternacionalesSwift,
+            'desconsolidacion' => $adicionales['data_reporte']['desconsolidacion'],
+            'verificacion_sustancias_peligrosas' => $this->verificacionSustanciasPeligrosas,
+            'verificacion_producto' => $this->verificacionProducto,
+            'verificacion_calidad' => $this->verificacionCalidad,
+            'verificacion_empresa_digital' => $this->verificacionEmpresaDigital,
+            'verificacion_empresa_presencial' => $this->verificacionEmpresaPresencial,
+            'costo_verificacion_empresa_digital' => 100,
+            'costo_verificacion_empresa_presencial' => 350,
+            'costo_verificacion_calidad' => 50,
+            'costo_verificacion_producto' => 30,
+        ];
     }
     function calculate_tiered_charge(float $evaluation_value): float
     {
@@ -3189,10 +3282,6 @@ class CalculadoraMaritima extends Component
         } else {
             $rate = 10.00; // 6 o más
         }
-        Log::info('Costo de verificación: ' . $rate * $count);
-        Log::info('Cantidad de productos: ' . $count);
-        Log::info('Rate: ' . $rate);
-
         return $rate * $count;
     }
 

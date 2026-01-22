@@ -183,7 +183,73 @@
                 @endif
             </button>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-50">
+        <!-- Row 1: Image & Name -->
+        <div class="w-full max-w-5xl mx-auto px-4">
+
+            <div class="flex flex-col md:flex-row gap-6 md:items-start">
+
+                <!-- IMAGE UPLOAD -->
+                <div class="flex-shrink-0 flex justify-center md:justify-start md:pt-7">
+                    <div class="relative group w-[220px] h-[150px] flex-shrink-0">
+
+                        <label
+                            class="relative flex w-full h-full rounded-lg border-2 border-dashed border-yellow-500/30 hover:border-yellow-500 bg-black/20 cursor-pointer overflow-hidden transition-all" style="width: 75px;">
+
+                            <!-- INPUT CORRECTO -->
+                            <input
+                                type="file"
+                                wire:model="temp_manualImagen"
+                                accept="image/*"
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+
+                            @if ($temp_manualImagen)
+                            <img
+                                src="{{ $temp_manualImagen->temporaryUrl() }}"
+                                class="inset-0 w-full h-full object-cover z-10 {{ $temp_manualImagen || $temp_imagen ? '' : 'absolute' }}">
+
+                            @elseif ($temp_imagen)
+                            <img
+                                src=" {{ $temp_imagen }}"
+                                class="inset-0 w-full h-full object-cover z-10 {{ $temp_manualImagen || $temp_imagen ? '' : 'absolute' }}">
+
+                            @else
+                            <div class="w-full h-full px-4 flex flex-col items-center justify-center text-gray-500 group-hover:text-yellow-500 z-10">
+                                <svg class="w-10 h-10 mb-2" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span class="text-xs uppercase font-bold tracking-wide">Foto</span>
+                            </div>
+                            @endif
+
+                            <!-- Loading -->
+                            <div wire:loading wire:target="temp_manualImagen"
+                                class="absolute inset-0 bg-black/60 flex items-center justify-center z-30">
+                                <div class="w-6 h-6 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+
+                        </label>
+                    </div>
+                </div>
+                <!-- FORM -->
+                <div class="flex-1 max-w-3xl flex flex-col gap-4">
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            Nombre del Producto
+                        </label>
+                        <input type="text" wire:model="temp_producto"
+                            placeholder="Nombre del Producto (Ej: Zapatillas)"
+                            class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+                        @error('temp_producto')
+                        <span class="text-red-400 text-[10px] ml-1">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-50 mb-4 mt-4">
             <!-- Valor de Carga (Nuevo) -->
             <div class="relative z-[40]">
                 <label class="block text-sm font-medium text-gray-300 mb-2">
@@ -219,244 +285,67 @@
             </div>
         </div>
         <!-- Arancel Option -->
-        <div class="md:col-span-2 bg-black/20 rounded-lg p-3 border border-white/5">
-            <div class="flex items-center gap-2 mb-2">
-                <input type="checkbox" wire:model.live="temp_con_arancelFCL" id="temp_con_arancelFCL" class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                <label for="temp_con_arancelFCL" class="text-gray-400 cursor-pointer uppercase tracking-wider" style="font-size:14px">¿La carga tiene arancel?</label>
-            </div>
-
-            @if($temp_con_arancelFCL)
-            <div class="mt-2 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg space-y-3">
-                <div class="grid grid-cols-2 gap-2 bg-black/20 rounded-lg p-2 border border-white/5">
-                    <!-- HS Code Search -->
-                    <div class="relative z-[40]">
-                        <label class="block text-sm font-medium text-gray-300 mb-2">
-                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            Buscador Arancelario
-                        </label>
-                        <input type="text" wire:model.live.debounce.300ms="temp_hs_code"
-                            placeholder="HS Code"
-                            class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
-                        <span class="block uppercase font-bold text-gray-500 mt-1"
-                            style="font-size: 9px;">Colocar una palabra genérica que identifique al
-                            producto</span>
-
-                        @if (!empty($arancelSuggestions))
-                        <div class="absolute z-50 left-0 w-[150%] mt-1 bg-gray-900 border border-yellow-500/30 rounded-lg shadow-2xl max-h-48 overflow-y-auto custom-scrollbar"
-                            style="background-color: rgba(0, 0, 0, 0.9); z-index: 1000;">
-                            @foreach ($arancelSuggestions as $sug)
-                            <div wire:click="selectArancel('{{ $sug['codigo_hs'] }}', {{ $sug['arancel'] }})"
-                                class="p-2 hover:bg-yellow-500/10 cursor-pointer border-b border-white/5 last:border-0 transition-colors" style="font-size: 12px">
-                                <div class="flex justify-between items-start">
-                                    <span
-                                        class="text-yellow-500 text-[9px] font-bold">{{ $sug['codigo_hs'] }}</span>
-                                    <span
-                                        class="bg-yellow-500/20 text-yellow-500 text-[7px] px-1 rounded">{{ $sug['arancel'] }}%</span>
-                                </div>
-                                <p class="text-[8px] text-gray-400 truncate">
-                                    {{ $sug['descripcion'] }}
-                                </p>
-                            </div>
-                            @endforeach
-                        </div>
-                        @endif
-                    </div>
-                    <!-- Arancel % -->
-                    <div class="relative z-[40]">
-                        <label class="block text-sm font-medium text-gray-300 mb-2">
-                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                            Arancel %
-                        </label>
-                        <input type="number" wire:model="temp_arancel" placeholder="GA %"
-                            class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
-                    </div>
+        <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-4 mt-4 mb-4 shadow-xl text-center relative z-30">
+            <div class="md:col-span-2 bg-black/20 rounded-lg p-3 border border-white/5">
+                <div class="flex items-center gap-2 mb-2">
+                    <input type="checkbox" wire:model.live="temp_con_arancelFCL" id="temp_con_arancelFCL" class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                    <label for="temp_con_arancelFCL" class="text-gray-400 cursor-pointer uppercase tracking-wider" style="font-size:14px">¿Necesita realizar el calculo de impuestos? <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span></label>
                 </div>
-            </div>
-            @endif
-        </div>
 
-        <div class="bg-white/5 border border-white/10 rounded-xl p-4 animate-fade-in">
-            <div class="p-6 shadow-xl">
-                <h3 class="text-yellow-500 font-bold mb-6 text-lg uppercase tracking-widest flex items-center">
-                    <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
-                    </svg>
-                    Servicios Adicionales
-                </h3>
-                <p class="text-gray-400 text-sm mb-6">Selecciona los servicios adicionales que requieras para tu envío</p>
-
-                <div class="space-y-6">
-                    <!-- Verificación de Producto -->
-                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                        <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model="verificacionProducto" id="verificacionProducto"
-                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                            <div class="flex-1">
-                                <label for="verificacionProducto" class="flex items-center justify-between cursor-pointer">
-                                    <div>
-                                        <h5 class="text-white font-semibold text-sm">Verificación de Producto por modelo</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">Obtención de video real y fotos del producto real.</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Verificación de Calidad -->
-                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                        <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model="verificacionCalidad" id="verificacionCalidad"
-                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                            <div class="flex-1">
-                                <label for="verificacionCalidad" class="flex items-center justify-between cursor-pointer">
-                                    <div>
-                                        <h5 class="text-white font-semibold text-sm">Verificación de la Calidad del producto</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">Recepción en almacén y pruebas de funcionamiento/uso.</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Verificación de Empresa Digital -->
-                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                        <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model="verificacionEmpresaDigital" id="verificacionEmpresaDigital"
-                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                            <div class="flex-1">
-                                <label for="verificacionEmpresaDigital" class="flex items-center justify-between cursor-pointer">
-                                    <div>
-                                        <h5 class="text-white font-semibold text-sm">Verificación de Empresa Digital</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">Investigación de veracidad de licencias y establecimiento.</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Verificación Presencial de Empresa -->
-                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                        <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model="verificacionEmpresaPresencial" id="verificacionEmpresaPresencial"
-                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                            <div class="flex-1">
-                                <label for="verificacionEmpresaPresencial" class="flex items-center justify-between cursor-pointer">
-                                    <div>
-                                        <h5 class="text-white font-semibold text-sm">Verificación in situ de la Empresa(Física/Digital)</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">Realización de viaje y visita técnica a la fábrica.</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Transporte Terrestre -->
-                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                        <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model="transporteTerrestreFCL" id="transporteTerrestreFCL"
-                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                            <div class="flex-1">
-                                <label for="transporteTerrestreFCL" class="flex items-center justify-between cursor-pointer">
-                                    <div>
-                                        <h5 class="text-white font-semibold text-sm">Requiere transporte terrestre para el translado de su mercancía?</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">Transporte terrestre para el traslado de su mercancía.</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Verificación Sustancias Peligrosas -->
-                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                        <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model="verificacionSustanciasPeligrosasFCL" id="verificacionSustanciasPeligrosasFCL"
-                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                            <div class="flex-1">
-                                <label for="verificacionSustanciasPeligrosasFCL" class="flex items-center justify-between cursor-pointer">
-                                    <div>
-                                        <h5 class="text-white font-semibold text-sm">¿Los productos que envia contienen sustancias peligrosas?</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">Envio de sustancias peligrosas como: explosivos, gases, liquidos y solidos infamable, etc.</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Pagos internacionales con swift 1% o sin swift 2.5%-->
-                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                        <div class="flex items-center justify-between {{ $requierePagoInternacionalFCL ? 'mb-3' : '' }}">
-                            <label class="flex items-center space-x-3 cursor-pointer">
-                                <input type="checkbox" wire:model.live="requierePagoInternacionalFCL"
-                                    class="w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-offset-0 focus:ring-yellow-500 transition-all">
-                                <h5 class="text-white font-semibold text-sm">¿Requiere Pago Internacional?</h5>
+                @if($temp_con_arancelFCL)
+                <div class="mt-2 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg space-y-3">
+                    <div class="grid grid-cols-2 gap-2 bg-black/20 rounded-lg p-2 border border-white/5">
+                        <!-- HS Code Search -->
+                        <div class="relative z-[40]">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                Buscador Arancelario
                             </label>
-                        </div>
+                            <input type="text" wire:model.live.debounce.300ms="temp_hs_code"
+                                placeholder="HS Code"
+                                class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+                            <span class="block uppercase font-bold text-gray-500 mt-1"
+                                style="font-size: 9px;">Colocar una palabra genérica que identifique al
+                                producto</span>
 
-                        @if($requierePagoInternacionalFCL)
-                        <div class="space-y-3 border-t border-yellow-500/20 pt-3 mt-3">
-                            <!-- Opción Con Swift (1%) -->
-                            <label class="flex items-start space-x-3 cursor-pointer group">
-                                <input type="radio" wire:model="pagosInternacionalesSwiftFCL" value="swift"
-                                    class="mt-1 w-4 h-4 text-yellow-500 border-gray-600 focus:ring-yellow-500 bg-black/40">
-                                <div class="flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">CON Swift Bancario / USD</span>
-                                        <span class="text-white text-xs font-medium px-2 py-1 rounded" style="background-color: #FA9F00;">Alta Comision</span>
+                            @if (!empty($arancelSuggestions))
+                            <div class="absolute z-50 left-0 w-[150%] mt-1 bg-gray-900 border border-yellow-500/30 rounded-lg shadow-2xl max-h-48 overflow-y-auto custom-scrollbar"
+                                style="background-color: rgba(0, 0, 0, 0.9); z-index: 1000;">
+                                @foreach ($arancelSuggestions as $sug)
+                                <div wire:click="selectArancel('{{ $sug['codigo_hs'] }}', {{ $sug['arancel'] }})"
+                                    class="p-2 hover:bg-yellow-500/10 cursor-pointer border-b border-white/5 last:border-0 transition-colors" style="font-size: 12px">
+                                    <div class="flex justify-between items-start">
+                                        <span
+                                            class="text-yellow-500 text-[9px] font-bold">{{ $sug['codigo_hs'] }}</span>
+                                        <span
+                                            class="bg-yellow-500/20 text-yellow-500 text-[7px] px-1 rounded">{{ $sug['arancel'] }}%</span>
                                     </div>
-                                    <p class="text-gray-500 text-xs mt-0.5">Transferencia bancaria internacional estándar (SWIFT).</p>
+                                    <p class="text-[8px] text-gray-400 truncate">
+                                        {{ $sug['descripcion'] }}
+                                    </p>
                                 </div>
-                            </label>
-
-                            <!-- Opción Sin Swift (2.5%) -->
-                            <label class="flex items-start space-x-3 cursor-pointer group">
-                                <input type="radio" wire:model="pagosInternacionalesSwiftFCL" value="sin_swift"
-                                    class="mt-1 w-4 h-4 text-yellow-500 border-gray-600 focus:ring-yellow-500 bg-black/40">
-                                <div class="flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">SIN Swift Bancario / USDT</span>
-                                        <span class="text-white text-xs font-medium px-2 py-1 rounded" style="background-color: #FA9F00;">Baja Comision</span>
-                                    </div>
-                                    <p class="text-gray-500 text-xs mt-0.5">Pagos directos en China, USDT o sin uso de red SWIFT.</p>
-                                </div>
-                            </label>
-                        </div>
-                        @endif
-                    </div>
-                    <!-- Seguro de la carga -->
-                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                        <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model="seguroCargaFCL" id="seguroCargaFCL"
-                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                            <div class="flex-1">
-                                <label for="seguroCargaFCL" class="flex items-center justify-between cursor-pointer">
-                                    <div>
-                                        <h5 class="text-white font-semibold text-sm">¿Requiere seguro de la carga?</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">Seguro contra todo tipo de riesgo en la mercancia y transporte.</p>
-                                    </div>
-                                </label>
+                                @endforeach
                             </div>
+                            @endif
                         </div>
-                    </div>
-                    <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                        <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model="representacionImportacionFCL" id="representacionImportacionFCL"
-                                class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                            <div class="flex-1">
-                                <label for="representacionImportacionFCL" class="flex items-center justify-between cursor-pointer">
-                                    <div>
-                                        <h5 class="text-white font-semibold text-sm">¿Requiere representacion o usuario para su importacion?</h5>
-                                        <p class="text-gray-400 text-xs mt-0.5">Solicite la representacion o usuario para su importacion.</p>
-                                    </div>
-                                </label>
-                            </div>
+                        <!-- Arancel % -->
+                        <div class="relative z-[40]">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                Arancel %
+                            </label>
+                            <input type="number" wire:model="temp_arancel" placeholder="GA %"
+                                class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                         </div>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
             <!-- Puerto Origen (POL) con Autocompletado -->
             <div class="relative">
@@ -476,7 +365,7 @@
                 <!-- Dropdown de Sugerencias POL -->
                 @if ($showPOLDropdown && count($polSuggestions) > 0)
                 <div class="absolute w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden"
-                    style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
+                    style="background-color: #030100; color: #FFF; border: 1px solid #f0b100; z-index: 100;"
                     x-data="{ activeRegion: null }" style="min-width: 800px; left: 0;">
 
                     <!-- Pestañas de Regiones -->
@@ -558,8 +447,8 @@
 
                 <!-- Dropdown de Sugerencias POD -->
                 @if ($showPODDropdown && count($podSuggestions) > 0)
-                <div class="absolute  w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden"
-                    style="background-color: #030100; color: #FFF; border: 1px solid #f0b100;"
+                <div class="absolute  w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-2xl overflow-hidden z-[100]"
+                    style="background-color: #030100; color: #FFF; border: 1px solid #f0b100; z-index: 100;"
                     x-data="{ activeRegion: null }" style="min-width: 800px; right: 0;">
 
                     <!-- Pestañas de Regiones -->
@@ -823,6 +712,184 @@
             disponibles</p>
     </div>
     @endif
+
+    <div class="bg-white/5 border border-white/10 rounded-xl p-4 animate-fade-in">
+        <div class="p-6 shadow-xl">
+            <h3 class="text-yellow-500 font-bold mb-6 text-lg uppercase tracking-widest flex items-center">
+                <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
+                </svg>
+                Servicios Adicionales
+            </h3>
+            <p class="text-gray-400 text-sm mb-6">Selecciona los servicios adicionales que requieras para tu envío</p>
+
+            <div class="space-y-6">
+                <!-- Verificación de Producto -->
+                <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" wire:model.live="verificacionProducto" id="verificacionProducto"
+                            class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                        <div class="flex-1">
+                            <label for="verificacionProducto" class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <h5 class="text-white font-semibold text-sm">Verificación de Producto por modelo</h5>
+                                    <p class="text-gray-400 text-xs mt-0.5">Obtención de video real y fotos del producto real.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verificación de Calidad -->
+                <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" wire:model.live="verificacionCalidad" id="verificacionCalidad"
+                            class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                        <div class="flex-1">
+                            <label for="verificacionCalidad" class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <h5 class="text-white font-semibold text-sm">Verificación de la Calidad del producto</h5>
+                                    <p class="text-gray-400 text-xs mt-0.5">Recepción en almacén y pruebas de funcionamiento/uso.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verificación de Empresa Digital -->
+                <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" wire:model.live="verificacionEmpresaDigital" id="verificacionEmpresaDigital"
+                            class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                        <div class="flex-1">
+                            <label for="verificacionEmpresaDigital" class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <h5 class="text-white font-semibold text-sm">Verificación de Empresa Digital</h5>
+                                    <p class="text-gray-400 text-xs mt-0.5">Investigación de veracidad de licencias y establecimiento.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verificación Presencial de Empresa -->
+                <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" wire:model.live="verificacionEmpresaPresencial" id="verificacionEmpresaPresencial"
+                            class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                        <div class="flex-1">
+                            <label for="verificacionEmpresaPresencial" class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <h5 class="text-white font-semibold text-sm">Verificación in situ de la Empresa(Física/Digital)</h5>
+                                    <p class="text-gray-400 text-xs mt-0.5">Realización de viaje y visita técnica a la fábrica.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Transporte Terrestre -->
+                <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" wire:model.live="transporteTerrestre" id="transporteTerrestre"
+                            class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                        <div class="flex-1">
+                            <label for="transporteTerrestre" class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <h5 class="text-white font-semibold text-sm">Requiere transporte terrestre para el translado de su mercancía?</h5>
+                                    <p class="text-gray-400 text-xs mt-0.5">Transporte terrestre para el traslado de su mercancía.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Verificación Sustancias Peligrosas -->
+                <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" wire:model.live="verificacionSustanciasPeligrosas" id="verificacionSustanciasPeligrosas"
+                            class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                        <div class="flex-1">
+                            <label for="verificacionSustanciasPeligrosas" class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <h5 class="text-white font-semibold text-sm">¿Los productos que envia contienen sustancias peligrosas?</h5>
+                                    <p class="text-gray-400 text-xs mt-0.5">Envio de sustancias peligrosas como: explosivos, gases, liquidos y solidos infamable, etc.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pagos internacionales con swift 1% o sin swift 2.5%-->
+                <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                    <div class="flex items-center justify-between {{ $requierePagoInternacional ? 'mb-3' : '' }}">
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" wire:model.live="requierePagoInternacional"
+                                class="w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-offset-0 focus:ring-yellow-500 transition-all">
+                            <h5 class="text-white font-semibold text-sm">¿Requiere Pago Internacional?</h5>
+                        </label>
+                    </div>
+
+                    @if($requierePagoInternacional)
+                    <div class="space-y-3 border-t border-yellow-500/20 pt-3 mt-3">
+                        <!-- Opción Con Swift (1%) -->
+                        <label class="flex items-start space-x-3 cursor-pointer group">
+                            <input type="radio" wire:model.live="pagosInternacionalesSwift" value="swift"
+                                class="mt-1 w-4 h-4 text-yellow-500 border-gray-600 focus:ring-yellow-500 bg-black/40">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">CON Swift Bancario / USD</span>
+                                    <span class="text-white text-xs font-medium px-2 py-1 rounded" style="background-color: #FA9F00;">Alta Comision</span>
+                                </div>
+                                <p class="text-gray-500 text-xs mt-0.5">Transferencia bancaria internacional estándar (SWIFT).</p>
+                            </div>
+                        </label>
+
+                        <!-- Opción Sin Swift (2.5%) -->
+                        <label class="flex items-start space-x-3 cursor-pointer group">
+                            <input type="radio" wire:model.live="pagosInternacionalesSwift" value="sin_swift"
+                                class="mt-1 w-4 h-4 text-yellow-500 border-gray-600 focus:ring-yellow-500 bg-black/40">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">SIN Swift Bancario / USDT</span>
+                                    <span class="text-white text-xs font-medium px-2 py-1 rounded" style="background-color: #FA9F00;">Baja Comision</span>
+                                </div>
+                                <p class="text-gray-500 text-xs mt-0.5">Pagos directos en China, USDT o sin uso de red SWIFT.</p>
+                            </div>
+                        </label>
+                    </div>
+                    @endif
+                </div>
+                <!-- Seguro de la carga -->
+                <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" wire:model.live="seguroCarga" id="seguroCarga"
+                            class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                        <div class="flex-1">
+                            <label for="seguroCarga" class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <h5 class="text-white font-semibold text-sm">¿Requiere seguro de la carga?</h5>
+                                    <p class="text-gray-400 text-xs mt-0.5">Seguro contra todo tipo de riesgo en la mercancia y transporte.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" wire:model.live="representacionImportacionFCL" id="representacionImportacionFCL"
+                            class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                        <div class="flex-1">
+                            <label for="representacionImportacionFCL" class="flex items-center justify-between cursor-pointer">
+                                <div>
+                                    <h5 class="text-white font-semibold text-sm">¿Requiere representacion o usuario para su importacion?</h5>
+                                    <p class="text-gray-400 text-xs mt-0.5">Solicite la representacion o usuario para su importacion.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Botón Limpiar -->
     <div class="flex justify-end">

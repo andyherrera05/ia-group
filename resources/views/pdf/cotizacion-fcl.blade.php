@@ -274,28 +274,31 @@
             @endphp
             <tr>
                 <td class="col-ref">{{ $item['ref'] ?? 'CONTAINER' }}</td>
-                <td>@if(!empty($containerBase64))
+                <td>
+                    @if(!empty($item['imagen']))
+                    <img src="{{ $item['imagen'] }}" alt="Producto" style="max-width: 100px; max-height: 100px; object-fit: contain;">
+                    @elseif(!empty($containerBase64))
                     <img src="{{ $containerBase64 }}" alt="Container" style="max-width: 100px; max-height: 100px; object-fit: contain;">
                     @else
                     <div style="color: #9ca3af; font-size: 10px; font-style: italic;">Sin imagen</div>
                     @endif
                 </td>
                 <td class="col-desc">
-                    {{ $item['descripcion'] ?? 'Flete Marítimo (COSCO - 40\' Standard)' }}
+                    <div style="font-weight: bold;">{{ $item['descripcion'] ?? 'Flete Marítimo' }}</div>
                 </td>
                 <td class="col-cant">{{ $item['cantidad'] ?? '1' }}</td>
                 <td class="col-unid">{{ $item['unidad'] ?? 'PCS' }}</td>
                 <td class="col-price">
                     <div class="price-val">
                         <span class="currency-prefix">$</span>
-                        <span class="amount-val">{{ number_format($item['precio'] ?? 0, 2) }}</span>
+                        <span class="amount-val">${{ number_format($item['valorMercancia'], 2) }}</span>
                         <div class="clear"></div>
                     </div>
                 </td>
                 <td class="col-total">
                     <div class="price-val">
                         <span class="currency-prefix">$</span>
-                        <span class="amount-val">{{ number_format($item['total'] ?? 0, 2) }}</span>
+                        <span class="amount-val">${{ number_format($item['valorMercancia'], 2) }}</span>
                         <div class="clear"></div>
                     </div>
                 </td>
@@ -359,10 +362,6 @@
                     <tr>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">VALOR DE CARGA</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($valorCarga, 2) }}</td>
-                    </tr>
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO DE RECOGIDA DESDE LA FABRICA A NUESTRO ALMACEN</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">$0.00</td>
                     </tr>
                     @if($item['verificacion_empresa_digital'] ?? false)
                     <tr>
@@ -474,7 +473,7 @@
                     $totalImpuesto = $gravamenArancelario + $transporte_terrestre + $impuesto + $despachante + $agencia_despachante;
                     @endphp
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TRANSPORTE TERRESTRE (Puerto Iquique - {{ $clienteCiudad ?? '-' }})</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TRANSPORTE TERRESTRE (Iquique - Oruro)</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($transporte_terrestre, 2) }}</td>
                     </tr>
                     <tr>
