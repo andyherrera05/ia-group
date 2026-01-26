@@ -334,7 +334,6 @@ class CalculadoraAerea extends Component
     {
         $total = floatval($this->temp_dimension_total);
         if ($total <= 0) return;
-        if ($total <= 0) return;
 
         // Distribución según tipo de caja
         // Square: L=W=H => 3x = total => x = total/3
@@ -448,34 +447,34 @@ class CalculadoraAerea extends Component
      */
     public function calcular($forzarMostrar = true)
     {
-        if ($forzarMostrar) {
-            $this->validate([
-                'clienteNombre' => 'required|string|min:3',
-                'clienteCiudad' => 'required|not_in:0',
-                'clienteDireccion' => 'required|string|min:5',
-                'clienteEmail' => 'required|email',
-                'clienteTelefono' => 'required|string|min:7',
-            ], [
-                'clienteNombre.required' => 'El nombre del cliente es obligatorio.',
-                'clienteNombre.min' => 'El nombre debe tener al menos 3 caracteres.',
-                'clienteCiudad.required' => 'Debe seleccionar una ciudad.',
-                'clienteCiudad.not_in' => 'Debe seleccionar una ciudad.',
-                'clienteDireccion.required' => 'La dirección es obligatoria.',
-                'clienteDireccion.min' => 'La dirección debe tener al menos 5 caracteres.',
-                'clienteEmail.required' => 'El email es obligatorio.',
-                'clienteEmail.email' => 'El formato del email no es válido.',
-                'clienteTelefono.required' => 'El teléfono es obligatorio.',
-                'clienteTelefono.min' => 'El teléfono debe tener al menos 7 caracteres.',
-            ]);
+        // if ($forzarMostrar) {
+        //     $this->validate([
+        //         'clienteNombre' => 'required|string|min:3',
+        //         'clienteCiudad' => 'required|not_in:0',
+        //         'clienteDireccion' => 'required|string|min:5',
+        //         'clienteEmail' => 'required|email',
+        //         'clienteTelefono' => 'required|string|min:7',
+        //     ], [
+        //         'clienteNombre.required' => 'El nombre del cliente es obligatorio.',
+        //         'clienteNombre.min' => 'El nombre debe tener al menos 3 caracteres.',
+        //         'clienteCiudad.required' => 'Debe seleccionar una ciudad.',
+        //         'clienteCiudad.not_in' => 'Debe seleccionar una ciudad.',
+        //         'clienteDireccion.required' => 'La dirección es obligatoria.',
+        //         'clienteDireccion.min' => 'La dirección debe tener al menos 5 caracteres.',
+        //         'clienteEmail.required' => 'El email es obligatorio.',
+        //         'clienteEmail.email' => 'El formato del email no es válido.',
+        //         'clienteTelefono.required' => 'El teléfono es obligatorio.',
+        //         'clienteTelefono.min' => 'El teléfono debe tener al menos 7 caracteres.',
+        //     ]);
 
-            $nuevoCliente = Cliente::create([
-                'clienteNombre'    => $this->clienteNombre,
-                'clienteEmail'     => $this->clienteEmail,
-                'clienteTelefono'  => $this->clienteTelefono,
-                'clienteDireccion' => $this->clienteDireccion,
-                'clienteCiudad'    => $this->clienteCiudad,
-            ]);
-        }
+        //     $nuevoCliente = Cliente::create([
+        //         'clienteNombre'    => $this->clienteNombre,
+        //         'clienteEmail'     => $this->clienteEmail,
+        //         'clienteTelefono'  => $this->clienteTelefono,
+        //         'clienteDireccion' => $this->clienteDireccion,
+        //         'clienteCiudad'    => $this->clienteCiudad,
+        //     ]);
+        // }
         if (empty($this->items)) {
             $this->resultado = null;
             $this->desglose = [];
@@ -693,9 +692,6 @@ class CalculadoraAerea extends Component
 
         $costo_envio_interno = floatval($this->temp_costo_envio_interno);
         $impuestoTotal =  $totalArancel + $iva;
-        Log::info($impuestoTotal);
-        Log::info($totalArancel);
-        Log::info($iva);
         $impuestoTotal = $valorMercancia == 0 ? 0 : $impuestoTotal;
 
         $totalLogisticaChina = ($valorMercancia + $costoFinal + $costo_envio_interno) * $comision;
@@ -721,10 +717,6 @@ class CalculadoraAerea extends Component
                 'Costo de Envío Internacional' => number_format($costoFinal, 2, '.', ''),
                 'Gestión Logística' => number_format($totalLogisticaBolivia, 2, '.', ''),
                 'Brokers en China' => number_format($totalLogisticaChina, 2, '.', ''),
-
-                'Cargos de importacion y despacho' => number_format($totalDespacho, 2, '.', ''),
-                'Agencia Despachante' => number_format($total_tiered_charge, 2, '.', ''),
-                'Impuestos' => number_format($impuestoTotal, 2, '.', ''),
                 'Pago Internacional' => number_format($costoPagoInternacional, 2, '.', ''),
             ];
         }
@@ -756,6 +748,11 @@ class CalculadoraAerea extends Component
             $costoAdicionales += 350.00;
             $this->desglose['Verificación Presencial de Empresa'] = number_format(350.00, 2, '.', '');
         }
+
+        $this->desglose['Cargos de importacion y despacho'] = number_format($totalDespacho, 2, '.', '');
+        $this->desglose['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
+        $this->desglose['GA'] = number_format($totalArancel, 2, '.', '');
+        $this->desglose['IVA'] = number_format($impuestoTotal, 2, '.', '');
 
         $this->desglose = array_merge($this->desglose, [
             '─ DETALLE DE SERVICIOS EN ORIGEN' => null,

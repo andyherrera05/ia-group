@@ -391,8 +391,13 @@
                         <tbody>
                             <!-- Gravamen Arancelario -->
                             <tr>
-                                <td style="text-align: left; padding: 8px 15px; background-color: #ffe6cc; font-weight: bold; border: 1px solid #000; font-size: 10px;">CALCULO ESTIMADO DE IMPUESTO</td>
-                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000; font-size: 10px;">$ {{ number_format($impuesto, 2) }}</td>
+                                <td style="text-align: left; padding: 8px 15px; background-color: #ffe6cc; font-weight: bold; border: 1px solid #000; font-size: 10px;">GRAVAMEN ARANCELARIO</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000; font-size: 10px;">$ {{ number_format($gravamenArancelario, 2) }}</td>
+                            </tr>
+                            <!-- IVA -->
+                            <tr>
+                                <td style="text-align: left; padding: 8px 15px; background-color: #ffe6cc; font-weight: bold; border: 1px solid #000; font-size: 10px;">IVA</td>
+                                <td style="text-align: right; padding: 8px 15px; font-weight: bold; border: 1px solid #000; font-size: 10px;">$ {{ number_format($iva, 2) }}</td>
                             </tr>
                             <!-- Despacho -->
                             <tr>

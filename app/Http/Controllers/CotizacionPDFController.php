@@ -177,7 +177,6 @@ class CotizacionPDFController extends Controller
 
         $view = match (strtolower($data['tipoCarga'])) {
             'fcl' => 'pdf.cotizacion-fcl',
-            'fcl_maritimo' => 'pdf.cotizacion-fcl-maritimo',
             'uld' => 'pdf.cotizacion-roro',
             default => 'pdf.cotizacion-lcl',
         };

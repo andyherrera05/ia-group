@@ -315,47 +315,22 @@
                     $item = $desglose_reporte;
                     $valorCarga = $item['valorMercancia'] ?? 0;
                     $fleteMaritimo = $item['precio'] ?? 0;
-                    // Costos fijos/hardcoded
-                    $seguroComisiones = ($fleteMaritimo + $valorCarga) * 0.06; // Aproximación basada en Booking 50%
                     $transporte_terrestre = $item['transporte_terrestre'] ?? 0;
                     $despachante = $item['despachante'] ?? 0;
                     $gravamenArancelario = $item['gravamen'] ?? 0;
                     $agencia_despachante = $item['agencia_despachante'] ?? 0;
                     $impuesto = $item['impuestos'] ?? 0;
                     $desconsolidacion = $item['desconsolidacion'] ?? 0;
-                    $gastos_portuarios = $item['gastos_portuarios'] ?? 0;
-                    $verificacion_sustancias_peligrosas = $item['verificacion_sustancias_peligrosas'] ?? 0;
-                    $verificacion_producto = $item['costo_verificacion_producto'] ?? 0;
-                    $verificacion_calidad = $item['costo_verificacion_calidad'] ?? 0;
-                    $verificacion_empresa_digital = $item['costo_verificacion_empresa_digital'] ?? 0;
-                    $verificacion_empresa_presencial = $item['costo_verificacion_empresa_presencial'] ?? 0;
-                    $costo_adicionales = $item['costo_adicionales'] ?? 0;
-
-
-                    // Retrieve boolean flags and costs
-                    $isCargaPeligrosa = $item['carga_peligrosa'] ?? false;
-                    $isExamenPrevio = $item['examen_previo'] ?? false;
-                    $isSeguroCarga = $item['seguro_carga'] ?? false;
-                    // representation and swift are handled differently but costs are aggregated in costo_adicionales?
-                    // Re-calculate or use passed values if available.
-                    // CalculadoraMaritima logic:
-                    // $costoAdicionales includes: Dangerous, Pre-exam, Swift, Insurance (partially/fully?)
-                    // Let's break it down or use specific logic for display
-
-                    $costoPeligrosa = $isCargaPeligrosa ? 250.00 : 0;
-                    $costoExamen = $isExamenPrevio ? 35.00 : 0;
-
-                    // Swift Commission
-                    $comisionSwiftType = $item['comision_swift'] ?? 'swift';
-                    $tasaSwift = ($comisionSwiftType === 'swift') ? 0.01 : 0.025;
-                    $costoSwift = $valorCarga * $tasaSwift;
-
-                    // Seguro Carga (Client cost)
-                    // Logic in Controller: $seguroEstimado = $this->seguroCargaFCL ? ($valorMercancia * 0.02) : 0;
-                    $costoSeguroCliente = $isSeguroCarga ? ($valorCarga * 0.02) : 0;
-
-                    $costoRepresentacion = 0;
-                    if ($item['representacion'] ?? false) { $costoRepresentacion = 3500; }
+                    $verificacion_producto = $item['verificacion_producto'] ?? 0;
+                    $verificacion_calidad = $item['verificacion_calidad'] ?? 0;
+                    $verificacion_empresa_digital = $item['verificacion_empresa_digital'] ?? 0;
+                    $verificacion_empresa_presencial = $item['verificacion_empresa_presencial'] ?? 0;
+                    $costoPeligrosa = $item['verificacion_sustancias_peligrosas'] ?? 0;
+                    $costoSeguroCarga = $item['seguro_carga'] ?? 0;
+                    $costoSwift = $item['comision_swift'] ?? 0;
+                    $costoRepresentacion = $item['representacion'] ?? 0;
+                    $gestionPortuaria = $item['gestionPortuaria'] ?? 0;
+                    $booking = $item['booking'] ?? 0;
 
                     @endphp
 
@@ -363,94 +338,67 @@
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">VALOR DE CARGA</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($valorCarga, 2) }}</td>
                     </tr>
-                    @if($item['verificacion_empresa_digital'] ?? false)
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">VERIFICACION DE EMPRESA DIGITAL</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($verificacion_empresa_digital, 2) }}</td>
-                    </tr>
-                    @endif
-
-                    @if($item['verificacion_calidad'] ?? false)
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE INSPECCION DE CALIDAD</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($verificacion_calidad, 2) }}</td>
-                    </tr>
-                    @endif
-
-                    @if($item['verificacion_producto'] ?? false)
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">VERIFICACION DEL PRODUCTO</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($verificacion_producto, 2) }}</td>
-                    </tr>
-                    @endif
-
-                    @if($item['verificacion_empresa_presencial'] ?? false)
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">VERIFICACION PRESENCIAL DE EMPRESA</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($verificacion_empresa_presencial, 2) }}</td>
-                    </tr>
-                    @endif
 
                     <tr>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE ENVIO MARITIMO {{ $origen }} - {{ $destino }}</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">${{ number_format($fleteMaritimo, 2) }}</td>
                     </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">GESTION PORTUARIA</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($gestionPortuaria, 2) }}</td>
+                    </tr>
 
-                    @if($isCargaPeligrosa)
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">BOOKING</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($booking, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">DESCONSOLIDACION</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($desconsolidacion, 2) }}</td>
+                    </tr>
+
                     <tr>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COSTO ADICIONAL DE ENVIO POR CARGA PELIGROSA</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoPeligrosa, 2) }}</td>
                     </tr>
-                    @endif
 
-                    @if($isExamenPrevio)
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">EXAMEN PREVIO</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoExamen, 2) }}</td>
-                    </tr>
-                    @endif
 
                     <tr>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SEGURO</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($seguroComisiones, 2) }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoSeguroCarga, 2) }}</td>
                     </tr>
                     <tr>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">GIRO INTERNACIONAL</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoSwift, 2) }}</td>
                     </tr>
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">COMISIONES</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($seguroComisiones, 2) }}</td>
-                    </tr>
 
-
-                    @if($costoRepresentacion > 0)
                     <tr>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">REPRESENTACIÓN / USUARIO IMPORTACIÓN</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoRepresentacion, 2) }}</td>
                     </tr>
-                    @endif
 
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">DESCONSOLIDACION</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($desconsolidacion, 2) }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">VERIFICACION DE EMPRESA DIGITAL</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($verificacion_empresa_digital, 2) }}</td>
                     </tr>
+
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">GESTION PORTUARIA</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($item['gestionPortuaria'] ?? 0, 2) }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">SERVICIO DE INSPECCION DE CALIDAD</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($verificacion_calidad, 2) }}</td>
                     </tr>
+
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">BOOKING</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($item['booking'] ?? 0, 2) }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">VERIFICACION DEL PRODUCTO</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($verificacion_producto, 2) }}</td>
                     </tr>
+
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">VERIFICACION PRESENCIAL DE EMPRESA</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($verificacion_empresa_presencial, 2) }}</td>
+                    </tr>
+
                     @php
-                    $totalVerificaciones = 0;
-                    if($item['verificacion_empresa_digital'] ?? false) $totalVerificaciones += $verificacion_empresa_digital;
-                    if($item['verificacion_calidad'] ?? false) $totalVerificaciones += $verificacion_calidad;
-                    if($item['verificacion_producto'] ?? false) $totalVerificaciones += $verificacion_producto;
-                    if($item['verificacion_empresa_presencial'] ?? false) $totalVerificaciones += $verificacion_empresa_presencial;
-
-                    $totalGeneral = $valorCarga + $fleteMaritimo + $seguroComisiones + $costoPeligrosa + $costoExamen + $costoSwift + $costoSeguroCliente + $costoRepresentacion + ($item['gestionPortuaria'] ?? 0) + ($item['booking'] ?? 0) + $costo_adicionales + $totalVerificaciones;
+                    $totalGeneral = $valorCarga + $fleteMaritimo + $costoSeguroCarga + $costoPeligrosa + $costoSwift + $costoRepresentacion + $gestionPortuaria + $booking + $desconsolidacion + $verificacion_empresa_digital + $verificacion_calidad + $verificacion_producto + $verificacion_empresa_presencial;
 
                     $exchangeRateP2P = (isset($p2pPrice) && is_numeric($p2pPrice)) ? (float)$p2pPrice : 9.70;
                     @endphp

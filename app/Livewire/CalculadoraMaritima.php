@@ -18,7 +18,7 @@ use Livewire\WithFileUploads;
 class CalculadoraMaritima extends Component
 {
     use WithFileUploads;
-    public $tipoCarga = 'fcl';
+    public $tipoCarga = 'lcl';
 
     public $peso;
 
@@ -649,7 +649,6 @@ class CalculadoraMaritima extends Component
             'cbm_unitario' => $this->cbmTotalUnitario,
             'total_valor' => $valorTotalItem,
             'hs_code' => $this->temp_hs_code,
-            'arancel' => $this->temp_arancel,
             'con_arancel' => $this->temp_con_arancel,
 
             'costo_interno' => $this->temp_costo_interno,
@@ -673,7 +672,6 @@ class CalculadoraMaritima extends Component
         $this->temp_cbm = 0;
         $this->temp_valor_unitario = 0;
         $this->temp_hs_code = '';
-        $this->temp_arancel = 0;
         $this->temp_costo_interno = 0;
         $this->temp_con_pallet = false;
         $this->temp_pallet_largo = 110;
@@ -962,7 +960,7 @@ class CalculadoraMaritima extends Component
             'clienteCiudad'    => $this->clienteCiudad,
         ]);
 
-        $this->calculateDesgloseFCL();
+        $this->calculateDesgloseFCLonlyFlete();
 
         $this->dispatch('scroll-to-result');
 
@@ -998,6 +996,10 @@ class CalculadoraMaritima extends Component
         $agencia_despachante = $this->calculate_tiered_charge($valorMercancia);
         $despachante = 768.68;
 
+        // Costos Adicionales
+        $adicionales = $this->calculateAdditionalCosts($valorMercancia);
+        $costoAdicionales = $adicionales['total'];
+
         // Transporte
         $transporte_terrestre = $this->transporteTerrestre ? 3600 : 0;
 
@@ -1007,24 +1009,15 @@ class CalculadoraMaritima extends Component
         $gravamenArancelario = $taxes['gravamen'];
         $iva = $taxes['iva'];
         $ice = $taxes['ice'];
+        $desconsolidacion = $this->desconsolidacionFCL == '0' ? 1800 : 0;
 
-        // Costos Adicionales
-        $adicionales = $this->calculateAdditionalCosts($valorMercancia);
-        $costoAdicionales = $adicionales['total'];
+
 
         // Construir Desglose UI
-        if ($this->desconsolidacionFCL == 0) {
-            $this->desglose = [
-                "Flete Marítimo ({$shippingLine} - {$containerName})" => $precioBase,
-                '─ GESTIÓN PORTUARIA Y LOGÍSTICA' => null,
-            ];
-        } else {
-            $this->desglose = [
-                "Flete Marítimo ({$shippingLine} - {$containerName})" => ($precioBase / 2),
-                '─ GESTIÓN PORTUARIA Y LOGÍSTICA' => null,
-            ];
-        }
-
+        $this->desglose = [
+            "Flete Marítimo ({$shippingLine} - {$containerName})" => $precioBase,
+            '─ GESTIÓN PORTUARIA Y LOGÍSTICA' => null,
+        ];
 
         foreach ($gastosLocales as $concepto => $monto) {
             $this->desglose[$concepto] = number_format($monto, 2);
@@ -1034,22 +1027,23 @@ class CalculadoraMaritima extends Component
             '   Valor de la Mercancía' => number_format($valorMercancia, 2, '.', ''),
             '   Gestión Portuaria' => number_format($subtotalPortuaria, 2),
             '   Booking' => number_format($precioBase * 0.05, 2),
-            '   Cargos de importacion y despacho' => number_format($despachante, 2),
-            '   Agencia Despachante' => number_format($agencia_despachante, 2),
-            '   Gravamen Arancelario' => number_format($gravamenArancelario, 2),
-            '   IVA' => number_format($iva, 2),
-            '   ICE' => number_format($ice, 2),
         ]);
-
+        $this->desglose['   Cargo de Desconsolidacion'] = number_format($desconsolidacion, 2);
         if ($this->transporteTerrestre) {
             $this->desglose['   Transporte Terrestre'] = number_format($transporte_terrestre, 2);
         }
 
         // Merge de desglose de adicionales
         $this->desglose = array_merge($this->desglose, $adicionales['desglose']);
-
+        $this->desglose =  array_merge($this->desglose, [
+            '   Cargos de importacion y despacho' => number_format($despachante, 2),
+            '   Agencia Despachante' => number_format($agencia_despachante, 2),
+            '   GA' => number_format($gravamenArancelario, 2),
+            '   IVA' => number_format($iva, 2),
+            '   ICE' => number_format($ice, 2),
+        ]);
         // Resultado Final
-        $this->resultado = $precioBase + $subtotalPortuaria + ($precioBase * 0.05) + $valorMercancia + $transporte_terrestre + $impuesto + $agencia_despachante + $despachante + $costoAdicionales;
+        $this->resultado = $precioBase + $subtotalPortuaria + ($precioBase * 0.05) + $valorMercancia + $transporte_terrestre + $impuesto + $agencia_despachante + $despachante + $costoAdicionales + $desconsolidacion;
 
         // Construir Reporte
         $this->desglose_reporte = $this->buildReportData(
@@ -1064,8 +1058,65 @@ class CalculadoraMaritima extends Component
             $transporte_terrestre,
             $taxes,
             $costoAdicionales,
-            $adicionales
+            $adicionales,
+            $desconsolidacion
         );
+
+        $this->tipoCobroActual = 'Contenedor Completo (FCL)';
+        $this->unidadActual = "Contenedor " . $containerName;
+        $this->valorFacturadoActual = $precioBase;
+        $this->cbmFacturadoActual = $containerName;
+
+        $this->mostrarPregunta = true;
+        $this->mostrarDesglose = true;
+        $this->respuestaUsuario = null;
+
+        $this->dispatch('scroll-to-result');
+
+        session()->flash('success', 'Cotización generada correctamente.');
+    }
+
+    public function calculateDesgloseFCLonlyFlete()
+    {
+        $rate = $this->selectedRate;
+        $container = $this->selectedContainer;
+
+        if (!$rate || !$container) return;
+
+        $containerName = match ($container) {
+            'gp20' => "20' Standard",
+            'gp40' => "40' Standard",
+            'hq40' => "40' High Cube",
+            default => "Contenedor",
+        };
+
+        $precioBase = $rate[$container] ?? 0;
+        if ($precioBase <= 0) {
+            session()->flash('error', 'Precio no disponible para este contenedor.');
+            return;
+        }
+
+        $shippingLine = $rate['shipping_line'] ?? 'Desconocida';
+        $valorMercancia = floatval($this->valorMercancia);
+        // Construir Desglose UI
+        $this->desglose = [
+            "Flete Marítimo ({$shippingLine} - {$containerName})" => $precioBase,
+            '─ GESTIÓN PORTUARIA Y LOGÍSTICA' => null,
+        ];
+
+        $this->desglose = array_merge($this->desglose, [
+            '   Valor de la Mercancía' => number_format($valorMercancia, 2, '.', '')
+        ]);
+
+        $this->desglose_reporte = $this->buildReportDataFCLonlyFlete(
+            $container,
+            $containerName,
+            $shippingLine,
+            $precioBase,
+            $valorMercancia
+        );
+
+        $this->resultado = $precioBase   + $valorMercancia;
 
         $this->tipoCobroActual = 'Contenedor Completo (FCL)';
         $this->unidadActual = "Contenedor " . $containerName;
@@ -1094,11 +1145,10 @@ class CalculadoraMaritima extends Component
 
     private function calculateCifAndTaxes($valorMercancia, $transporte_terrestre)
     {
-        $transporte_terrestre_cif = $transporte_terrestre / 2;
         $seguroParaImpuestos = $valorMercancia * 0.02; // 2% fijo para base imponible
-        $valorFlete = $valorMercancia * 0.10; // 10% teórico
+        $valorFlete = $valorMercancia * 0.20; // 20% teórico
 
-        $baseCIF = $valorMercancia + $valorFlete + $transporte_terrestre_cif + $seguroParaImpuestos;
+        $baseCIF = $valorMercancia + $valorFlete + $transporte_terrestre + $seguroParaImpuestos;
         $gravamen = $baseCIF * ($this->temp_arancel / 100);
         $iva = ($baseCIF + $gravamen) * (14.94 / 100);
         $ice = $baseCIF * (15 / 100);
@@ -1115,19 +1165,15 @@ class CalculadoraMaritima extends Component
     {
         $total = 0;
         $desgloseAux = [];
-        $desconsolidacion = 1800;
+        $desconsolidacion = 0;
+        $costoSwift = 0;
+        $seguroEstimado = 0;
+
 
         if ($this->verificacionSustanciasPeligrosas) {
             $desgloseAux['   Envio de producto peligroso'] = number_format(250.00, 2);
             $total += 250.00;
         }
-        if ($this->desconsolidacionFCL == '0') {
-            $total += $desconsolidacion;
-        } else {
-            $desconsolidacion = $desconsolidacion / 2;
-            $total += $desconsolidacion;
-        }
-        $desgloseAux['   Cargo de Desconsolidacion'] = number_format($desconsolidacion, 2);
 
         if ($this->requierePagoInternacional) {
             $tasaSwift = ($this->pagosInternacionalesSwift === 'swift') ? 0.01 : 0.025;
@@ -1167,11 +1213,33 @@ class CalculadoraMaritima extends Component
             'desglose' => $desgloseAux,
             'data_reporte' => [
                 'desconsolidacion' => $desconsolidacion,
+                'pagosInternacionales' => $costoSwift,
+                'seguroCarga' => $seguroEstimado,
+                'representacionImportacionFCL' => $this->representacionImportacionFCL ? 502.87 : 0,
+                'verificacionProducto' => $this->verificacionProducto ? 30 : 0,
+                'verificacionCalidad' => $this->verificacionCalidad ? 50 : 0,
+                'verificacionEmpresaDigital' => $this->verificacionEmpresaDigital ? 100 : 0,
+                'verificacionEmpresaPresencial' => $this->verificacionEmpresaPresencial ? 350 : 0,
+                'verificacionSustanciasPeligrosas' => $this->verificacionSustanciasPeligrosas ? 250.00 : 0,
             ]
         ];
     }
 
-    private function buildReportData($container, $containerName, $shippingLine, $precioBase, $valorMercancia, $subtotalPortuaria, $agencia_despachante, $despachante, $transporte_terrestre, $taxes, $costoAdicionales, $adicionales)
+    private function buildReportDataFCLonlyFlete($container, $containerName, $shippingLine, $precioBase, $valorMercancia)
+    {
+        return [
+            'ref' => $this->id_producto ?: 'FCL-' . strtoupper($container),
+            'descripcion' => $this->temp_producto ?: "Flete Marítimo ({$shippingLine} - {$containerName})",
+            'cantidad' => 1,
+            'unidad' => 'PCS',
+            'precio' => $precioBase,
+            'total' => $precioBase,
+            'imagen' => $this->temp_manualImagen ? $this->temp_manualImagen->temporaryUrl() : ($this->temp_imagen ?: null),
+            'valorMercancia' => $valorMercancia,
+        ];
+    }
+
+    private function buildReportData($container, $containerName, $shippingLine, $precioBase, $valorMercancia, $subtotalPortuaria, $agencia_despachante, $despachante, $transporte_terrestre, $taxes, $costoAdicionales, $adicionales, $desconsolidacion)
     {
         return [
             'ref' => $this->id_producto ?: 'FCL-' . strtoupper($container),
@@ -1191,19 +1259,15 @@ class CalculadoraMaritima extends Component
             'costo_adicionales' => $costoAdicionales,
             'iva' => $taxes['iva'],
             'impuestos' => $taxes['impuesto'],
-            'seguro_carga' => $this->seguroCarga,
-            'representacion' => $this->representacionImportacionFCL,
-            'comision_swift' => $this->pagosInternacionalesSwift,
-            'desconsolidacion' => $adicionales['data_reporte']['desconsolidacion'],
-            'verificacion_sustancias_peligrosas' => $this->verificacionSustanciasPeligrosas,
-            'verificacion_producto' => $this->verificacionProducto,
-            'verificacion_calidad' => $this->verificacionCalidad,
-            'verificacion_empresa_digital' => $this->verificacionEmpresaDigital,
-            'verificacion_empresa_presencial' => $this->verificacionEmpresaPresencial,
-            'costo_verificacion_empresa_digital' => 100,
-            'costo_verificacion_empresa_presencial' => 350,
-            'costo_verificacion_calidad' => 50,
-            'costo_verificacion_producto' => 30,
+            'seguro_carga' => $adicionales['data_reporte']['seguroCarga'],
+            'representacion' => $adicionales['data_reporte']['representacionImportacionFCL'],
+            'comision_swift' => $adicionales['data_reporte']['pagosInternacionales'],
+            'desconsolidacion' => $desconsolidacion,
+            'verificacion_sustancias_peligrosas' => $adicionales['data_reporte']['verificacionSustanciasPeligrosas'],
+            'verificacion_producto' => $adicionales['data_reporte']['verificacionProducto'],
+            'verificacion_calidad' => $adicionales['data_reporte']['verificacionCalidad'],
+            'verificacion_empresa_digital' => $adicionales['data_reporte']['verificacionEmpresaDigital'],
+            'verificacion_empresa_presencial' => $adicionales['data_reporte']['verificacionEmpresaPresencial']
         ];
     }
     function calculate_tiered_charge(float $evaluation_value): float
@@ -1319,29 +1383,29 @@ class CalculadoraMaritima extends Component
     // =======================================================
     public function calcular($isFinal = true)
     {
-        // if ($isFinal) {
-        //     $this->validate([
-        //         'peso' => 'nullable|numeric|min:0',
-        //         'volumen' => 'nullable|numeric|min:0.000001',
-        //         'valorMercancia' => 'required|numeric|min:0',
-        //         'clienteNombre' => 'required|string|min:3',
-        //         'clienteCiudad' => 'required|not_in:0',
-        //         'clienteDireccion' => 'required|string|min:5',
-        //         'clienteEmail' => 'required|email',
-        //         'clienteTelefono' => 'required|string|min:7',
-        //     ], [
-        //         'clienteNombre.required' => 'El nombre del cliente es obligatorio.',
-        //         'clienteNombre.min' => 'El nombre debe tener al menos 3 caracteres.',
-        //         'clienteCiudad.required' => 'Debe seleccionar una ciudad.',
-        //         'clienteCiudad.not_in' => 'Debe seleccionar una ciudad.',
-        //         'clienteDireccion.required' => 'La dirección es obligatoria.',
-        //         'clienteDireccion.min' => 'La dirección debe tener al menos 5 caracteres.',
-        //         'clienteEmail.required' => 'El email es obligatorio.',
-        //         'clienteEmail.email' => 'El formato del email no es válido.',
-        //         'clienteTelefono.required' => 'El teléfono es obligatorio.',
-        //         'clienteTelefono.min' => 'El teléfono debe tener al menos 7 caracteres.',
-        //     ]);
-        // }
+        if ($isFinal) {
+            $this->validate([
+                'peso' => 'nullable|numeric|min:0',
+                'volumen' => 'nullable|numeric|min:0.000001',
+                'valorMercancia' => 'required|numeric|min:0',
+                'clienteNombre' => 'required|string|min:3',
+                'clienteCiudad' => 'required|not_in:0',
+                'clienteDireccion' => 'required|string|min:5',
+                'clienteEmail' => 'required|email',
+                'clienteTelefono' => 'required|string|min:7',
+            ], [
+                'clienteNombre.required' => 'El nombre del cliente es obligatorio.',
+                'clienteNombre.min' => 'El nombre debe tener al menos 3 caracteres.',
+                'clienteCiudad.required' => 'Debe seleccionar una ciudad.',
+                'clienteCiudad.not_in' => 'Debe seleccionar una ciudad.',
+                'clienteDireccion.required' => 'La dirección es obligatoria.',
+                'clienteDireccion.min' => 'La dirección debe tener al menos 5 caracteres.',
+                'clienteEmail.required' => 'El email es obligatorio.',
+                'clienteEmail.email' => 'El formato del email no es válido.',
+                'clienteTelefono.required' => 'El teléfono es obligatorio.',
+                'clienteTelefono.min' => 'El teléfono debe tener al menos 7 caracteres.',
+            ]);
+        }
 
         $this->mostrarPregunta = false;
         $this->respuestaUsuario = null;
@@ -1522,7 +1586,7 @@ class CalculadoraMaritima extends Component
             $this->desglose['Envio de producto peligroso'] = 250.00;
             $costoVerificacion += 250.00;
         }
-        $this->desglose['Gravamen Arancelario'] = number_format($gravamen_arancelario, 2, '.', '');
+        $this->desglose['GA'] = number_format($gravamen_arancelario, 2, '.', '');
         $this->desglose['Agencia Despachante'] = number_format($agencia, 2, '.', '');
         $this->desglose['IVA'] = number_format($iva, 2, '.', '');
         $this->desglose['ICE'] = number_format($ice, 2, '.', '');
@@ -1593,6 +1657,7 @@ class CalculadoraMaritima extends Component
      */
     private function calculateShippingPackage(float $pesoKg, float $cbmReal)
     {
+
         $TARIFA_POR_KG = [
             1  => 10,
             2 => 9.5,
@@ -1627,6 +1692,7 @@ class CalculadoraMaritima extends Component
         $costoFinal = 0.0;
         $tipoCobro  = '';
         $valorUsado = 0.0;
+        $costoInterno = 0;
 
         if ($cbmReal === null || $cbmReal < 0.1) {
             $tipoCobro  = 'Peso (W/M)';
@@ -1655,7 +1721,7 @@ class CalculadoraMaritima extends Component
 
         $costoRecojo = $this->costoRecojo;
         $resultadoDestino = $this->calcularCostoDestino();
-        $costoDestino = $resultadoDestino['costo'] * $this->volumetricWeight;
+        $costoDestino = $resultadoDestino['costo'] * $this->volumenTotal;
         $nombreDestino = $resultadoDestino['nombre'];
 
         $unidad = str_contains($tipoCobro, 'Peso') ? 'kg' : 'm³';
@@ -1666,23 +1732,19 @@ class CalculadoraMaritima extends Component
         }
 
 
-        $totalArancel = 0;
-        $iva = 0;
-        $impuesto = 0;
-        $costoInterno = 0;
-
         foreach ($this->productos as $prod) {
-            $arancelPct = $prod['con_arancel'] ? (isset($prod['arancel']) ? floatval($prod['arancel']) : 0) : 0;
-            $seguro = $prod['total_valor'] * 0.02;
-            $valorFlete = $prod['total_valor'] * 0.20;
-            $totalArancel +=  ($prod['total_valor'] + $seguro + $valorFlete) * ($arancelPct / 100);
-            $subtotalArancel = $prod['total_valor'] + $seguro + $valorFlete;
-            $iva += ($prod['con_arancel'] && $this->valorMercancia != 0) ? ($subtotalArancel + $totalArancel) * 0.1494 : 0;
-            $impuesto += ($prod['con_arancel'] && $this->valorMercancia != 0) ? ($totalArancel + $iva) : 0;
             $costoInterno += $prod['costo_interno'];
             $this->totalLogisticaBolivia = ($prod['total_valor'] + $valorFacturado  + $costoInterno) * 0.03;
             $this->totalBrokersChina = ($prod['total_valor'] + $valorFacturado  + $costoInterno) * 0.035;
         }
+        $seguro = $this->valorMercancia * 0.02;
+        $valorFlete = $this->valorMercancia * 0.20;
+        $baseCIF = $this->valorMercancia + $seguro + $valorFlete;
+        $arancelPct = $this->temp_con_arancel ? (isset($this->temp_arancel) ? floatval($this->temp_arancel) : 0) : 0;
+        $totalArancel =  ($this->valorMercancia + $seguro + $valorFlete) * ($arancelPct / 100);
+        $iva = ($this->temp_con_arancel && $this->valorMercancia != 0) ? ($totalArancel + $baseCIF) * 0.1494 : 0;
+        $impuesto = ($this->temp_con_arancel && $this->valorMercancia != 0) ? ($totalArancel + $iva) : 0;
+
 
         // CÁLCULO DE COMISIÓN POR PAGO INTERNACIONAL
         $swiftFee = 0;
@@ -1696,10 +1758,6 @@ class CalculadoraMaritima extends Component
             }
             $swiftFee = $this->valorMercancia == 0 ? 0 : $this->valorMercancia * $tasaSwift;
         }
-
-
-
-
         $almacen = 3.59;
         $documentacion = 17.24;
         $formularios = 14.37;
@@ -1769,18 +1827,20 @@ class CalculadoraMaritima extends Component
 
             $this->desglose['Gestión Logística'] = number_format($this->totalLogisticaBolivia, 2, '.', '');
             $this->desglose['Brokers en China'] = number_format($this->totalBrokersChina, 2, '.', '');
-            $this->desglose['Cargos de importacion y despacho'] = number_format($despacho, 2, '.', '');
-            $this->desglose['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
+
 
             if ($impuesto !== 0) {
-                $this->desglose['Impuestos'] = number_format($impuesto, 2, '.', '');
+                $this->desglose['Cargos de importacion y despacho'] = number_format($despacho, 2, '.', '');
+                $this->desglose['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
+                $this->desglose['GA'] = number_format($totalArancel, 2, '.', '');
+                $this->desglose['IVA'] = number_format($iva, 2, '.', '');
             }
         }
         $this->desglose = array_merge($this->desglose, $desgloseFleteMaritimo);
 
         if ($this->recojoAlmacen) {
-            $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumetricWeight, 2, '.', '');
-            $addServices = (float) number_format($costoRecojo * $this->volumetricWeight, 2, '.', '');
+            $this->desglose['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumenTotal, 2, '.', '');
+            $addServices = (float) number_format($costoRecojo * $this->volumenTotal, 2, '.', '');
         }
         if ($this->verificacionProducto) {
             $costoVerificacion = $this->calculateVerificationCost();
@@ -1810,7 +1870,7 @@ class CalculadoraMaritima extends Component
         if ($costoDestino > 0 && $nombreDestino) {
             $this->desglose["Entrega a " . $nombreDestino] = number_format($costoDestino, 2, '.', '');
         }
-        if ($this->recojoAlmacen) $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumetricWeight, 2, '.', '');
+        if ($this->recojoAlmacen) $this->gastosAdicionales['Recojo desde Almacén'] = number_format($costoRecojo * $this->volumenTotal, 2, '.', '');
         $this->gastosAdicionales['Costo de Envío Interno'] = number_format($costoInterno, 2, '.', '');
         $this->gastosAdicionales['Cargos de importacion y despacho'] = number_format($despacho, 2, '.', '');
         $this->gastosAdicionales['Agencia Despachante'] = number_format($total_tiered_charge, 2, '.', '');
@@ -1915,22 +1975,6 @@ class CalculadoraMaritima extends Component
             ]);
         }
 
-        return redirect()->route('cotizacion.pdf', $params);
-    }
-
-    public function descargarPDFleteMaritimo()
-    {
-        $agenteSeleccionado = collect($this->agentes)->firstWhere('id', $this->agenteId);
-        $params = [
-            'agente' => json_encode($agenteSeleccionado),
-            'desglose_reporte' => json_encode($this->desglose_reporte),
-            'clienteNombre' => $this->clienteNombre,
-            'clienteEmail' => $this->clienteEmail,
-            'clienteTelefono' => $this->clienteTelefono,
-            'clienteDireccion' => $this->clienteDireccion,
-            'clienteCiudad' => $this->clienteCiudad
-        ];
-        $params['tipoCarga'] = 'FCL_MARITIMO'; // Custom type to trigger the specific view
         return redirect()->route('cotizacion.pdf', $params);
     }
     
@@ -2922,103 +2966,6 @@ class CalculadoraMaritima extends Component
     /**
      * Buscar tarifas FCL usando los códigos POL/POD
      */
-    // public function buscarTarifasFCL()
-    // {
-
-    //     $this->reset(['rates', 'loadingRates', 'statusMessage', 'fclRates', 'currentPage']);
-    //     $this->currentRunId = null;
-
-
-    //     if (empty($this->polCode) || empty($this->podCode)) {
-    //         $this->statusMessage = 'Selecciona origen y destino';
-    //         return;
-    //     }
-
-    //     $this->loadingRates = true;
-    //     $this->statusMessage = 'Conectando con el proveedor de tarifas';
-
-    //     $originCode = strtolower(substr($this->polCode, 0, 5));
-    //     $destCode   = strtolower(substr($this->podCode, 0, 5));
-    //     $url = "https://www.5688.com.cn/fcl/{$originCode}-{$destCode}";
-
-    //     try {
-    //         $response = Http::timeout(120)->withHeaders([
-    //             'Authorization' => 'Bearer ' . config('services.firecrawl.key'), // Recomendado: pon tu API key en .env
-    //             'Content-Type'  => 'application/json',
-    //         ])->post('https://api.firecrawl.dev/v2/scrape', [
-    //             'url' => $url,
-    //             'formats' => [
-    //                 [
-    //                     'type' => 'json',
-    //                     'prompt' => 'Extrae todas las tarifas FCL válidas de la tabla. Incluye solo filas completas con precios numéricos. Ignora filas de carga o incompletas.',
-    //                     'schema' => [
-    //                         'type' => 'object',
-    //                         'properties' => [
-    //                             'rates' => [
-    //                                 'type' => 'array',
-    //                                 'items' => [
-    //                                     'type' => 'object',
-    //                                     'properties' => [
-    //                                         'shipping_line' => ['type' => 'string'],
-    //                                         'gp20'          => ['type' => ['integer', 'null']],
-    //                                         'gp40'          => ['type' => ['integer', 'null']],
-    //                                         'hq40'          => ['type' => ['integer', 'null']],
-    //                                         'transit_time'  => ['type' => ['string', 'null']],
-    //                                         'valid_until'   => ['type' => ['string', 'null']],
-    //                                         'closing'       => ['type' => ['integer', 'null']],
-    //                                     ],
-    //                                     'required' => ['shipping_line']
-    //                                 ]
-    //                             ]
-    //                         ],
-    //                         'required' => ['rates']
-    //                     ]
-    //                 ]
-    //             ]
-    //         ]);
-
-    //         $responseArray = json_decode($response->body(), true);
-
-    //         if (!$responseArray || !($responseArray['success'] ?? false)) {
-    //             throw new \Exception('Error al conectar con Firecrawl o respuesta no exitosa.');
-    //         }
-
-    //         $data = $responseArray['data']['json']['rates'] ?? [];
-
-    //         if (empty($data)) {
-    //             $this->statusMessage = 'No se encontraron tarifas para esta ruta en este momento.';
-    //             $this->fclRates = collect();
-    //         } else {
-    //             $this->fclRates = collect($data);
-
-    //             $this->guardarTarifasEnBaseDeDatos($url, $data);
-
-    //             $this->statusMessage = '¡Tarifas actualizadas! Se encontraron ' . count($data) . ' opciones.';
-    //         }
-    //         if (empty($data) || count($data) === 0) {
-    //             $this->statusMessage = 'No hay tarifas en tiempo real para esta ruta en este momento.';
-    //             $this->cargarTarifasDesdeBaseDeDatos();
-    //             if (count($this->fclRates) > 0) {
-    //                 $this->statusMessage .= ' Mostrando tarifas guardadas anteriormente.';
-    //             }
-    //         }
-    //     } catch (\Exception $e) {
-    //         Log::error('Error Firecrawl FCL: ' . $e->getMessage(), [
-    //             'url' => $url,
-    //             'pol' => $this->polCode,
-    //             'pod' => $this->podCode,
-    //         ]);
-    //         $this->cargarTarifasDesdeBaseDeDatos();
-
-    //         if (count($this->fclRates) === 0) {
-    //             $this->statusMessage = 'No se pudieron obtener tarifas en tiempo real. Inténtalo más tarde.';
-    //         } else {
-    //             $this->statusMessage = 'Mostrando tarifas guardadas (conexión fallida).';
-    //         }
-    //     }
-    //     $this->loadingRates = false;
-    // }
-
     public function buscarTarifasFCL()
     {
 
@@ -3032,55 +2979,152 @@ class CalculadoraMaritima extends Component
         }
 
         $this->loadingRates = true;
-        // $this->statusMessage = 'Conectando con el proveedor de tarifas'; // Old message
-        $this->statusMessage = 'Cargando tarifas locales...';
+        $this->statusMessage = 'Conectando con el proveedor de tarifas';
 
-        // $originCode = strtolower(substr($this->polCode, 0, 5));
-        // $destCode   = strtolower(substr($this->podCode, 0, 5));
-        // $url = "https://www.5688.com.cn/fcl/{$originCode}-{$destCode}";
-        // Mock URL for internal tracking
-        $url = "local://database/mockup/data.json";
+        $originCode = strtolower(substr($this->polCode, 0, 5));
+        $destCode   = strtolower(substr($this->podCode, 0, 5));
+        $url = "https://www.5688.com.cn/fcl/{$originCode}-{$destCode}";
 
         try {
-            /*
-             * REEMPLAZO PETICIÓN HTTP POR LECTURA DE ARCHIVO LOCAL
-             */
-            $jsonPath = base_path('database/mockup/data.json');
+            $response = Http::timeout(120)->withHeaders([
+                'Authorization' => 'Bearer ' . config('services.firecrawl.key'), // Recomendado: pon tu API key en .env
+                'Content-Type'  => 'application/json',
+            ])->post('https://api.firecrawl.dev/v2/scrape', [
+                'url' => $url,
+                'formats' => [
+                    [
+                        'type' => 'json',
+                        'prompt' => 'Extrae todas las tarifas FCL válidas de la tabla. Incluye solo filas completas con precios numéricos. Ignora filas de carga o incompletas.',
+                        'schema' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'rates' => [
+                                    'type' => 'array',
+                                    'items' => [
+                                        'type' => 'object',
+                                        'properties' => [
+                                            'shipping_line' => ['type' => 'string'],
+                                            'gp20'          => ['type' => ['integer', 'null']],
+                                            'gp40'          => ['type' => ['integer', 'null']],
+                                            'hq40'          => ['type' => ['integer', 'null']],
+                                            'transit_time'  => ['type' => ['string', 'null']],
+                                            'valid_until'   => ['type' => ['string', 'null']],
+                                            'closing'       => ['type' => ['integer', 'null']],
+                                        ],
+                                        'required' => ['shipping_line']
+                                    ]
+                                ]
+                            ],
+                            'required' => ['rates']
+                        ]
+                    ]
+                ]
+            ]);
 
-            if (!File::exists($jsonPath)) {
-                throw new \Exception("El archivo de datos simulados no existe en: $jsonPath");
-            }
-
-            $jsonContent = File::get($jsonPath);
-            $responseArray = json_decode($jsonContent, true);
+            $responseArray = json_decode($response->body(), true);
 
             if (!$responseArray || !($responseArray['success'] ?? false)) {
-                throw new \Exception('El archivo JSON local no tiene el formato esperado o success=false.');
+                throw new \Exception('Error al conectar con Firecrawl o respuesta no exitosa.');
             }
 
-            // Extract rates from the mockup structure
             $data = $responseArray['data']['json']['rates'] ?? [];
 
             if (empty($data)) {
-                $this->statusMessage = 'No se encontraron tarifas en el archivo local.';
+                $this->statusMessage = 'No se encontraron tarifas para esta ruta en este momento.';
                 $this->fclRates = collect();
             } else {
                 $this->fclRates = collect($data);
 
-                // Guardamos en BD para mantener la lógica de caché/historial si se desea
                 $this->guardarTarifasEnBaseDeDatos($url, $data);
 
-                $this->statusMessage = '¡Tarifas actualizadas (Local)! Se encontraron ' . count($data) . ' opciones.';
+                $this->statusMessage = '¡Tarifas actualizadas! Se encontraron ' . count($data) . ' opciones.';
+            }
+            if (empty($data) || count($data) === 0) {
+                $this->statusMessage = 'No hay tarifas en tiempo real para esta ruta en este momento.';
+                $this->cargarTarifasDesdeBaseDeDatos();
+                if (count($this->fclRates) > 0) {
+                    $this->statusMessage .= ' Mostrando tarifas guardadas anteriormente.';
+                }
             }
         } catch (\Exception $e) {
-            Log::error('Error Cargando FCL Local: ' . $e->getMessage());
-            $this->statusMessage = 'Error cargando datos locales: ' . $e->getMessage();
-
-            // Fallback a BD antigua si falla lo local (opcional)
+            Log::error('Error Firecrawl FCL: ' . $e->getMessage(), [
+                'url' => $url,
+                'pol' => $this->polCode,
+                'pod' => $this->podCode,
+            ]);
             $this->cargarTarifasDesdeBaseDeDatos();
+
+            if (count($this->fclRates) === 0) {
+                $this->statusMessage = 'No se pudieron obtener tarifas en tiempo real. Inténtalo más tarde.';
+            } else {
+                $this->statusMessage = 'Mostrando tarifas guardadas (conexión fallida).';
+            }
         }
         $this->loadingRates = false;
     }
+
+    // public function buscarTarifasFCL()
+    // {
+
+    //     $this->reset(['rates', 'loadingRates', 'statusMessage', 'fclRates', 'currentPage']);
+    //     $this->currentRunId = null;
+
+
+    //     if (empty($this->polCode) || empty($this->podCode)) {
+    //         $this->statusMessage = 'Selecciona origen y destino';
+    //         return;
+    //     }
+
+    //     $this->loadingRates = true;
+    //     // $this->statusMessage = 'Conectando con el proveedor de tarifas'; // Old message
+    //     $this->statusMessage = 'Cargando tarifas locales...';
+
+    //     // $originCode = strtolower(substr($this->polCode, 0, 5));
+    //     // $destCode   = strtolower(substr($this->podCode, 0, 5));
+    //     // $url = "https://www.5688.com.cn/fcl/{$originCode}-{$destCode}";
+    //     // Mock URL for internal tracking
+    //     $url = "local://database/mockup/data.json";
+
+    //     try {
+    //         /*
+    //          * REEMPLAZO PETICIÓN HTTP POR LECTURA DE ARCHIVO LOCAL
+    //          */
+    //         $jsonPath = base_path('database/mockup/data.json');
+
+    //         if (!File::exists($jsonPath)) {
+    //             throw new \Exception("El archivo de datos simulados no existe en: $jsonPath");
+    //         }
+
+    //         $jsonContent = File::get($jsonPath);
+    //         $responseArray = json_decode($jsonContent, true);
+
+    //         if (!$responseArray || !($responseArray['success'] ?? false)) {
+    //             throw new \Exception('El archivo JSON local no tiene el formato esperado o success=false.');
+    //         }
+
+    //         // Extract rates from the mockup structure
+    //         $data = $responseArray['data']['json']['rates'] ?? [];
+
+    //         if (empty($data)) {
+    //             $this->statusMessage = 'No se encontraron tarifas en el archivo local.';
+    //             $this->fclRates = collect();
+    //         } else {
+    //             $this->fclRates = collect($data);
+
+    //             // Guardamos en BD para mantener la lógica de caché/historial si se desea
+    //             $this->guardarTarifasEnBaseDeDatos($url, $data);
+
+    //             $this->statusMessage = '¡Tarifas actualizadas (Local)! Se encontraron ' . count($data) . ' opciones.';
+    //         }
+    //     } catch (\Exception $e) {
+    //         Log::error('Error Cargando FCL Local: ' . $e->getMessage());
+    //         $this->statusMessage = 'Error cargando datos locales: ' . $e->getMessage();
+
+    //         // Fallback a BD antigua si falla lo local (opcional)
+    //         $this->cargarTarifasDesdeBaseDeDatos();
+    //     }
+    //     $this->loadingRates = false;
+    // }
 
     private function guardarTarifasEnBaseDeDatos($url, $rates)
     {
