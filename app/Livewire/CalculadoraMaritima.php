@@ -18,7 +18,7 @@ use Livewire\WithFileUploads;
 class CalculadoraMaritima extends Component
 {
     use WithFileUploads;
-    public $tipoCarga = 'lcl';
+    public $tipoCarga = 'uld';
 
     public $peso;
 
@@ -98,8 +98,6 @@ class CalculadoraMaritima extends Component
     public $temp_producto = '';
     public $temp_imagen = '';
     public $temp_manualImagen;
-    public $temp_manualImagenRoRo;
-    public $temp_imagenRoRo = '';
     public $temp_cantidad = 1;
     public $temp_piezas_por_carton = 1;
     public $temp_peso_unitario = 0;
@@ -186,29 +184,10 @@ class CalculadoraMaritima extends Component
     public $otrasCaracteristicasVehiculoOptions = [];
     public $requierePagoInternacionalAutos = false;
     public $pagosInternacionalesSwiftAutos = 'swift';
-    public $seguroCargaAutos = false;
-    public $valorMercanciaRoRo = 0;
-    public $nombreVehiculoRoRo = '';
-    public $temp_con_arancelRoRo = false;
-    public $temp_hs_codeRoRo = '';
-    public $temp_arancelRoRo = 0;
-    public $arancelSuggestionsRoRo = [];
-    public $verificacionProductoRoRo = false;
-    public $verificacionCalidadRoRo = false;
-    public $verificacionEmpresaDigitalRoRo = false;
-    public $verificacionSustanciasPeligrosasRoRo = false;
-    public $verificacionEmpresaPresencialRoRo = false;
-    public $verificacionEmisionesGasesRoRo = false;
-    public $requiereReexpidicionVehiculoRoRo = false;
-    public $requiereTransporteTerrestreRoRo = false;
+    public $nombreVehiculo = '';
+    public $verificacionEmisionesGases = false;
+    public $requiereReexpidicionVehiculo = false;
 
-    public $clienteNombreRoRo = '';
-    public $clienteEmailRoRo = '';
-    public $clienteTelefonoRoRo = '';
-    public $codigoPaisRoRo = '+591';
-    public $clienteDireccionRoRo = '';
-    public $clienteCiudadRoRo = '';
-    public $agenteIdRoRo = '';
     public $gastosAdicionalesRoRo = [];
 
 
@@ -551,11 +530,8 @@ class CalculadoraMaritima extends Component
     public function selectArancel($codigo, $arancel)
     {
         $this->temp_hs_code = $codigo;
-        $this->temp_hs_codeRoRo = $codigo;
         $this->temp_arancel = $arancel;
-        $this->temp_arancelRoRo = $arancel;
         $this->arancelSuggestions = [];
-        $this->arancelSuggestionsRoRo = [];
     }
 
     public function limpiarArancelSearch()
@@ -650,7 +626,6 @@ class CalculadoraMaritima extends Component
             'total_valor' => $valorTotalItem,
             'hs_code' => $this->temp_hs_code,
             'con_arancel' => $this->temp_con_arancel,
-
             'costo_interno' => $this->temp_costo_interno,
             'con_pallet' => $this->temp_con_pallet,
             'pallet_largo' => $this->temp_pallet_largo,
@@ -1502,22 +1477,26 @@ class CalculadoraMaritima extends Component
             $costo_envio = 0;
         }
 
-        $totalLogisticaChina = ($this->valorMercanciaRoRo + $costo_envio) * $comision;
-        $totalLogisticaBolivia = ($this->valorMercanciaRoRo + $costo_envio) * $comisionBolivia;
-        $iva = $this->valorMercanciaRoRo * 0.1494;
-        $gravamen_arancelario = $this->valorMercanciaRoRo * 0.10;
-        $ice = ($this->valorMercanciaRoRo + $gravamen_arancelario) * 0.15;
-        $poliza_importacion = $iva + $gravamen_arancelario + $ice;
-        $agencia = $this->calculate_tiered_charge($this->valorMercanciaRoRo);
+        $totalLogisticaChina = ($this->valorMercancia + $costo_envio) * $comision;
+        $totalLogisticaBolivia = ($this->valorMercancia + $costo_envio) * $comisionBolivia;
+        $seguro = $this->valorMercancia * 0.02;
+        $valorFlete = $this->valorMercancia * 0.20;
+        $baseCIF = $this->valorMercancia + $seguro + $valorFlete;
+        $arancelPct = $this->temp_con_arancel ? (isset($this->temp_arancel) ? floatval($this->temp_arancel) : 0) : 0;
+        $totalArancel =  ($this->valorMercancia + $seguro + $valorFlete) * ($arancelPct / 100);
+        $iva = ($this->temp_con_arancel && $this->valorMercancia != 0) ? ($totalArancel + $baseCIF) * 0.1494 : 0;
+        $ice = ($this->valorMercancia + $totalArancel) * 0.15;
+        $poliza_importacion = $iva + $totalArancel + $ice;
+        $agencia = $this->calculate_tiered_charge($this->valorMercancia);
 
 
         $costoPagoInternacional = 0;
         if ($this->requierePagoInternacionalAutos) {
             $tasaPagoInternacional = ($this->pagosInternacionalesSwiftAutos === 'swift') ? 0.01 : 0.025;
-            $costoPagoInternacional = $this->valorMercanciaRoRo > 0 ? $this->valorMercanciaRoRo * $tasaPagoInternacional : 0;
+            $costoPagoInternacional = $this->valorMercancia > 0 ? $this->valorMercancia * $tasaPagoInternacional : 0;
         }
-        $tasaSeguro = $this->seguroCargaAutos ? 0.02 : 0;
-        $costoSeguro = $this->valorMercanciaRoRo > 0 ? $this->valorMercanciaRoRo * $tasaSeguro : 0;
+        $tasaSeguro = $this->seguroCarga ? 0.02 : 0;
+        $costoSeguro = $this->valorMercancia > 0 ? $this->valorMercancia * $tasaSeguro : 0;
 
         if ($this->desconsolidacionAutos == '1') {
             $desconsolidacion = 1600;
@@ -1528,7 +1507,7 @@ class CalculadoraMaritima extends Component
         }
 
         $this->desglose = [
-            'Valor de Mercancía' => $this->valorMercanciaRoRo,
+            'Valor de Mercancía' => $this->valorMercancia,
             'Costo de Envío Internacional' => number_format($costo_envio, 2, '.', ''),
         ];
 
@@ -1539,7 +1518,7 @@ class CalculadoraMaritima extends Component
         $this->desglose['Gestión Logística'] = number_format($totalLogisticaBolivia, 2, '.', '');
         $this->desglose['Brokers en China'] = number_format($totalLogisticaChina, 2, '.', '');
 
-        if ($this->seguroCargaAutos) {
+        if ($this->seguroCarga) {
             $this->desglose['Seguro de la Carga'] = number_format($costoSeguro, 2, '.', '');
         }
         if ($this->desconsolidacionAutos == '0' || $this->desconsolidacionAutos == '1') {
@@ -1553,45 +1532,41 @@ class CalculadoraMaritima extends Component
         $this->desglose['Documentacion Exportacion'] = $documentacion_exportacion;
         $this->desglose['Grua en China'] = $grua_china;
 
-        if ($this->verificacionProductoRoRo) {
+        if ($this->verificacionProducto) {
             $costoVerificacion = $this->calculateVerificationCost();
             $this->desglose['Verificación del Producto'] = number_format($costoVerificacion, 2, '.', '');
         }
-        if ($this->verificacionCalidadRoRo) {
+        if ($this->verificacionCalidad) {
             $this->desglose['Verificación de Calidad del Producto'] = 50.00;
             $costoVerificacion += 50.00;
         }
 
-        if ($this->verificacionEmpresaDigitalRoRo) {
+        if ($this->verificacionEmpresaDigital) {
             $this->desglose['Verificación de Empresa Digital'] = 100.00;
             $costoVerificacion += 100.00;
         }
-        if ($this->verificacionEmpresaPresencialRoRo) {
+        if ($this->verificacionEmpresaPresencial) {
             $this->desglose['Verificación Presencial de Empresa'] = 350.00;
             $costoVerificacion += 350.00;
         }
-        if ($this->verificacionEmisionesGasesRoRo) {
+        if ($this->verificacionEmisionesGases) {
             $this->desglose['Verificación de Emisiones de Gases'] = 680.00;
             $costoVerificacion += 680.00;
         }
-        if ($this->requiereReexpidicionVehiculoRoRo) {
+        if ($this->requiereReexpidicionVehiculo) {
             $this->desglose['Reexpidicion del vehiculo'] = 650.00;
             $costoVerificacion += 650.00;
         }
-        if ($this->verificacionSustanciasPeligrosasRoRo) {
+        if ($this->verificacionSustanciasPeligrosas) {
             $this->desglose['Envio de producto peligroso'] = 250.00;
             $costoVerificacion += 250.00;
         }
-        if ($this->verificacionSustanciasPeligrosasRoRo) {
-            $this->desglose['Envio de producto peligroso'] = 250.00;
-            $costoVerificacion += 250.00;
-        }
-        $this->desglose['GA'] = number_format($gravamen_arancelario, 2, '.', '');
         $this->desglose['Agencia Despachante'] = number_format($agencia, 2, '.', '');
+        $this->desglose['GA'] = number_format($totalArancel, 2, '.', '');
         $this->desglose['IVA'] = number_format($iva, 2, '.', '');
         $this->desglose['ICE'] = number_format($ice, 2, '.', '');
         $this->desglose['Poliza de Importacion'] = number_format($poliza_importacion, 2, '.', '');
-        if ($this->requiereTransporteTerrestreRoRo) {
+        if ($this->transporteTerrestre) {
             if ($this->desconsolidacionAutos == '1') {
                 $this->desglose['Transporte Terrestre'] = 1600;
                 $transporte_terrestre = 1600;
@@ -1603,7 +1578,7 @@ class CalculadoraMaritima extends Component
                 $transporte_terrestre = 2100;
             }
         }
-        $total = $this->valorMercanciaRoRo + $costoVerificacion + $gravamen_arancelario + $iva + $ice + $transporte_terrestre + $costo_embalaje + $poliza_importacion + $grua_china + $documentacion_exportacion + $totalLogisticaChina + $totalLogisticaBolivia + $costo_envio + $costoPagoInternacional + $costoSeguro + $desconsolidacion;
+        $total = $this->valorMercancia + $costoVerificacion + $totalArancel + $iva + $ice + $transporte_terrestre + $costo_embalaje + $poliza_importacion + $grua_china + $documentacion_exportacion + $totalLogisticaChina + $totalLogisticaBolivia + $costo_envio + $costoPagoInternacional + $costoSeguro + $desconsolidacion;
         return [
             'costo' => (float) number_format($total, 2, '.', ''),
         ];
@@ -1930,20 +1905,20 @@ class CalculadoraMaritima extends Component
 
         if ($this->tipoCarga === 'uld') {
             // RoRo Specific Data
-            $params['clienteNombre'] = $this->clienteNombreRoRo;
-            $params['clienteEmail'] = $this->clienteEmailRoRo;
-            $params['clienteTelefono'] = $this->clienteTelefonoRoRo;
-            $params['clienteDireccion'] = $this->clienteDireccionRoRo;
-            $params['clienteCiudad'] = $this->clienteCiudadRoRo;
+            $params['clienteNombre'] = $this->clienteNombre;
+            $params['clienteEmail'] = $this->clienteEmail;
+            $params['clienteTelefono'] = $this->clienteTelefono;
+            $params['clienteDireccion'] = $this->clienteDireccion;
+            $params['clienteCiudad'] = $this->clienteCiudad;
 
-            $params['valorMercancia'] = $this->valorMercanciaRoRo;
+            $params['valorMercancia'] = $this->valorMercancia;
 
             // For RoRo, extra expenses are in breakdown
             $params['gastosAdicionales'] = json_encode($this->desglose);
 
             $params['vehiculo'] = json_encode([
-                'nombre' => $this->nombreVehiculoRoRo,
-                'imagen' => $this->temp_imagenRoRo ? $this->temp_imagenRoRo : ($this->temp_manualImagenRoRo ? $this->temp_manualImagenRoRo->temporaryUrl() : ''),
+                'nombre' => $this->nombreVehiculo,
+                'imagen' => $this->temp_imagen ? $this->temp_imagen : ($this->temp_manualImagen ? $this->temp_manualImagen->temporaryUrl() : ''),
             ]);
         } else {
             // LCL/FCL Data
@@ -2592,7 +2567,7 @@ class CalculadoraMaritima extends Component
 
                 $this->vehiculosEncontrados = $result;
                 $this->selectedVehicleIndex = null;
-                $this->valorMercanciaRoRo = 0;
+                $this->valorMercancia = 0;
 
                 $maxValor = 0;
                 foreach ($result as $item) {
@@ -2601,7 +2576,7 @@ class CalculadoraMaritima extends Component
                     }
                 }
                 if ($maxValor > 0) {
-                    $this->valorMercanciaRoRo = $maxValor;
+                    $this->valorMercancia = $maxValor;
                 }
             }
         } catch (\Exception $e) {
@@ -2614,12 +2589,12 @@ class CalculadoraMaritima extends Component
     {
         if (isset($this->vehiculosEncontrados[$index])) {
             $vehiculo = $this->vehiculosEncontrados[$index];
-            $this->valorMercanciaRoRo = $vehiculo['valorSus'] ?? 0;
+            $this->valorMercancia = $vehiculo['valorSus'] ?? 0;
             // Construct a descriptive name
             $marca = $vehiculo['codigoMarcaDescripcion'] ?? '';
             $modelo = $vehiculo['codigoTipoDescripcion'] ?? '';
             $subtipo = $vehiculo['codigoSubtipoDescripcion'] ?? '';
-            $this->nombreVehiculoRoRo = trim("$marca $modelo $subtipo");
+            $this->nombreVehiculo = trim("$marca $modelo $subtipo");
 
             $this->selectedVehicleIndex = $index;
         }
@@ -2634,7 +2609,7 @@ class CalculadoraMaritima extends Component
 
                 $this->vehiculosEncontrados = $result;
                 $this->selectedVehicleIndex = null;
-                $this->valorMercanciaRoRo = 0;
+                $this->valorMercancia = 0;
 
                 $maxValor = 0;
 
@@ -2645,7 +2620,7 @@ class CalculadoraMaritima extends Component
                 }
 
                 if ($maxValor > 0) {
-                    $this->valorMercanciaRoRo = $maxValor;
+                    $this->valorMercancia = $maxValor;
                 }
             }
         } catch (\Exception $e) {
@@ -2662,7 +2637,7 @@ class CalculadoraMaritima extends Component
 
                 $this->vehiculosEncontrados = $result;
                 $this->selectedVehicleIndex = null;
-                $this->valorMercanciaRoRo = 0;
+                $this->valorMercancia = 0;
 
                 $maxValor = 0;
 
@@ -2673,7 +2648,7 @@ class CalculadoraMaritima extends Component
                 }
 
                 if ($maxValor > 0) {
-                    $this->valorMercanciaRoRo = $maxValor;
+                    $this->valorMercancia = $maxValor;
                 }
             }
         } catch (\Exception $e) {
@@ -2690,7 +2665,7 @@ class CalculadoraMaritima extends Component
 
                 $this->vehiculosEncontrados = $result;
                 $this->selectedVehicleIndex = null;
-                $this->valorMercanciaRoRo = 0;
+                $this->valorMercancia = 0;
 
                 $maxValor = 0;
 
@@ -2701,7 +2676,7 @@ class CalculadoraMaritima extends Component
                 }
 
                 if ($maxValor > 0) {
-                    $this->valorMercanciaRoRo = $maxValor;
+                    $this->valorMercancia = $maxValor;
                 }
             }
         } catch (\Exception $e) {

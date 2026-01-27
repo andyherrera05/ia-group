@@ -662,7 +662,7 @@
                                 </h5>
                                 <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
                             </label>
-                            <p class="text-gray-400 text-xs mt-0.5">Se aplica un monto adicional por el pago internacional.</p>
+                            <p class="text-gray-400 text-xs mt-0.5">Pago internacional de la mercancía.</p>
                         </div>
                     </div>
 
@@ -709,6 +709,22 @@
                                 <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
                             </label>
                             <p class="text-gray-400 text-xs mt-0.5">Seguro contra todo tipo de riesgo en la mercancia y transporte.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Verificación Sustancias Peligrosas -->
+                <div class="bg-black/20 border border-yellow-500/40 rounded-xl p-4 hover:border-yellow-500/60 shadow-[0_0_10px_rgba(234,179,8,0.1)] transition-all">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" wire:model="verificacionSustanciasPeligrosas" id="verificacionSustanciasPeligrosas"
+                            class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                        <div class="flex-1">
+                            <label for="verificacionSustanciasPeligrosas" class="flex items-center justify-between cursor-pointer">
+                                <h5 class="text-white font-semibold text-sm flex items-center">
+                                    ¿Los productos que envia contienen sustancias peligrosas?
+                                </h5>
+                                <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
+                            </label>
+                            <p class="text-gray-400 text-xs mt-0.5">Envio de sustancias peligrosas como: explosivos, gases, liquidos y solidos infamable, etc.</p>
                         </div>
                     </div>
                 </div>
@@ -779,22 +795,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Verificación Sustancias Peligrosas -->
-                <div class="bg-black/20 border border-yellow-500/40 rounded-xl p-4 hover:border-yellow-500/60 shadow-[0_0_10px_rgba(234,179,8,0.1)] transition-all">
-                    <div class="flex items-start space-x-3">
-                        <input type="checkbox" wire:model="verificacionSustanciasPeligrosas" id="verificacionSustanciasPeligrosas"
-                            class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                        <div class="flex-1">
-                            <label for="verificacionSustanciasPeligrosas" class="flex items-center justify-between cursor-pointer">
-                                <h5 class="text-white font-semibold text-sm flex items-center">
-                                    ¿Los productos que envia contienen sustancias peligrosas?
-                                </h5>
-                                <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
-                            </label>
-                            <p class="text-gray-400 text-xs mt-0.5">Envio de sustancias peligrosas como: explosivos, gases, liquidos y solidos infamable, etc.</p>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
 

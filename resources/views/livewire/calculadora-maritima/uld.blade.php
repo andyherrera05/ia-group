@@ -21,9 +21,9 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="sm:col-span-2">
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Nombre Completo / Empresa</label>
-                    <input type="text" wire:model.live="clienteNombreRoRo" placeholder="Ej: JAIME CARDONA"
+                    <input type="text" wire:model.live="clienteNombre" placeholder="Ej: JAIME CARDONA"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteNombreRoRo')
+                    @error('clienteNombre')
                     <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
                         {{ $message }}
                     </div>
@@ -31,9 +31,9 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Email</label>
-                    <input type="email" wire:model.live="clienteEmailRoRo" placeholder="ejemplo@correo.com"
+                    <input type="email" wire:model.live="clienteEmail" placeholder="ejemplo@correo.com"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteEmailRoRo')
+                    @error('clienteEmail')
                     <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
                         {{ $message }}
                     </div>
@@ -91,13 +91,13 @@
 
                     <input
                         type="tel"
-                        wire:model.live="clienteTelefonoRoRo"
+                        wire:model.live="clienteTelefono"
                         placeholder="72732422"
                         class="w-full px-3 py-2 bg-transparent border-none text-white placeholder-gray-600 focus:ring-0 focus:outline-none text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Ciudad</label>
-                    <select wire:model.live="clienteCiudadRoRo"
+                    <select wire:model.live="clienteCiudad"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
                         <option value="0" style="background-color:#1a170c; color: #fff;">-- Seleccionar Ciudad --</option>
                         <option value="Cochabamba" style="background-color:#1a170c; color: #fff;">Cochabamba</option>
@@ -109,7 +109,7 @@
                         <option value="Oruro" style="background-color:#1a170c; color: #fff;">Oruro</option>
                         <option value="Chuquisaca" style="background-color:#1a170c; color: #fff;">Chuquisaca</option>
                     </select>
-                    @error('clienteCiudadRoRo')
+                    @error('clienteCiudad')
                     <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
                         {{ $message }}
                     </div>
@@ -117,9 +117,9 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Dirección</label>
-                    <input type="text" wire:model.live="clienteDireccionRoRo" placeholder="Dirección completa"
+                    <input type="text" wire:model.live="clienteDireccion" placeholder="Dirección completa"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
-                    @error('clienteDireccionRoRo')
+                    @error('clienteDireccion')
                     <div class="text-red-500 text-[11px] mt-1 font-semibold italic" style="color: #ef4444 !important; font-size: 11px !important;">
                         {{ $message }}
                     </div>
@@ -127,7 +127,7 @@
                 </div>
                 <div class="sm:col-span-2">
                     <label class="block text-xs font-medium text-gray-400 mb-1 uppercase tracking-tighter">Agente de Carga</label>
-                    <select wire:model.live="agenteIdRoRo"
+                    <select wire:model.live="agenteId"
                         class="w-full px-3 py-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all text-sm">
                         <option value="-" style="background-color:#1a170c; color: #fff;">-- Seleccionar Agente --</option>
                         <option value="0" style="background-color:#1a170c; color: #fff;">Ninguno</option>
@@ -141,7 +141,7 @@
             <!-- Desconsolidacion / Carga Suelta / Consolidacion Selection -->
             <div class="py-4 grid grid-cols-3 gap-4 mb-6">
                 <!-- Consolidation Button -->
-                <button type="button" wire:click="$set('desconsolidacionAutos', '2'); $set('verificacionEmisionesGasesRoRo', false); $set('requiereReexpidicionVehiculoRoRo', false)"
+                <button type="button" wire:click="$set('desconsolidacionAutos', '2'); $set('verificacionEmisionesGases', false); $set('requiereReexpidicionVehiculo', false)"
                     class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '2' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
                     <div class="flex flex-col items-center justify-center gap-3">
                         <div class="p-3 rounded-full {{ $desconsolidacionAutos == '2' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
@@ -162,7 +162,7 @@
                     @endif
                 </button>
                 <!-- Carga Suelta Button -->
-                <button type="button" wire:click="$set('desconsolidacionAutos', '1'); $set('verificacionEmisionesGasesRoRo', false); $set('verificacionSustanciasPeligrosasRoRo', false)"
+                <button type="button" wire:click="$set('desconsolidacionAutos', '1'); $set('verificacionEmisionesGases', false); $set('verificacionSustanciasPeligrosas', false)"
                     class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '1' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
                     <div class="flex flex-col items-center justify-center gap-3">
                         <div class="p-3 rounded-full {{ $desconsolidacionAutos == '1' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
@@ -184,7 +184,7 @@
                 </button>
 
                 <!-- Deconsolidation Button -->
-                <button type="button" wire:click="$set('desconsolidacionAutos', '0'); $set('verificacionSustanciasPeligrosasRoRo', false)"
+                <button type="button" wire:click="$set('desconsolidacionAutos', '0'); $set('verificacionSustanciasPeligrosas', false)"
                     class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '0' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
                     <div class="flex flex-col items-center justify-center gap-3">
                         <div class="p-3 rounded-full {{ $desconsolidacionAutos == '0' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
@@ -458,11 +458,11 @@
                 <!-- Image Upload (Square with Preview) -->
                 <div style="width: 150px; height: 150px; min-width: 150px; min-height: 150px;" class="shrink-0 relative group">
                     <label class="block w-full h-full rounded-lg border-2 border-dashed border-yellow-500/30 hover:border-yellow-500 bg-black/20 cursor-pointer overflow-hidden transition-all relative">
-                        <input type="file" wire:model="temp_manualImagenRoRo" accept="image/*" class="hidden">
-                        @if ($temp_manualImagenRoRo)
-                        <img src="{{ $temp_manualImagenRoRo->temporaryUrl() }}" class="absolute inset-0 w-full h-full object-cover">
-                        @elseif ($temp_imagenRoRo)
-                        <img src="{{ $temp_imagenRoRo }}" class="absolute inset-0 w-full h-full object-cover">
+                        <input type="file" wire:model="temp_manualImagen" accept="image/*" class="hidden">
+                        @if ($temp_manualImagen)
+                        <img src="{{ $temp_manualImagen->temporaryUrl() }}" class="absolute inset-0 w-full h-full object-cover">
+                        @elseif ($temp_imagen)
+                        <img src="{{ $temp_imagen }}" class="absolute inset-0 w-full h-full object-cover">
                         @else
                         <div class="w-full h-full flex flex-col items-center justify-center text-gray-500 group-hover:text-yellow-500">
                             <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -472,20 +472,20 @@
                         </div>
                         @endif
                         <!-- Loading State -->
-                        <div wire:loading wire:target="temp_manualImagenRoRo" class="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+                        <div wire:loading wire:target="temp_manualImagen" class="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
                             <div class="w-6 h-6 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
                         </div>
                     </label>
                 </div>
                 <div class="flex-1 w-full">
                     <h3 class="text-yellow-500 font-bold mb-4 text-sm uppercase tracking-widest">Nombre del Vehículo</h3>
-                    <input type="text" wire:model="nombreVehiculoRoRo" step="1" placeholder="Ej: Mazda"
+                    <input type="text" wire:model="nombreVehiculo" step="1" placeholder="Ej: Mazda"
                         class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                     <p class="text-xs text-gray-500 mt-2"></p>
                 </div>
                 <div class="flex-1 w-full">
                     <h3 class="text-yellow-500 font-bold mb-4 text-sm uppercase tracking-widest">Valor del Vehículo (USD)</h3>
-                    <input type="number" wire:model="valorMercanciaRoRo" step="1" placeholder="Ej: 15000"
+                    <input type="number" wire:model="valorMercancia" step="1" placeholder="Ej: 15000"
                         class="w-full px-4 py-3 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                     <p class="text-xs text-gray-500 mt-2">Valor comercial para cálculo de seguro y aduanas</p>
                 </div>
@@ -532,155 +532,107 @@
     <div class="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-6 shadow-xl">
         <h3 class="text-yellow-500 font-bold mb-6 text-sm uppercase tracking-widest">Servicios Adicionales</h3>
         <div class="space-y-4">
-            <!-- Verificación de Producto -->
-            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                <div class="flex items-start space-x-3">
-                    <input type="checkbox" wire:model="verificacionProductoRoRo" id="verificacionProductoRoRo"
-                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+            <!-- Arancel Option -->
+            <div class="bg-black/20 border border-yellow-500/20 rounded-xl p-5">
+                <div class="flex items-center gap-2 mb-2">
+                    <input type="checkbox" wire:model.live="temp_con_arancel" id="temp_con_arancel" class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
                     <div class="flex-1">
-                        <label for="verificacionProductoRoRo" class="flex items-center justify-between cursor-pointer">
-                            <div>
-                                <h5 class="text-white font-semibold text-sm">Verificación de Producto por modelo</h5>
-                                <p class="text-gray-400 text-xs mt-0.5">Obtención de video real y fotos del producto real.</p>
-                            </div>
+                        <label for="temp_con_arancel" class="flex items-center justify-between cursor-pointer" style="font-size:14px">
+                            <h4 class="text-white font-semibold text-base flex items-center">¿Necesita realizar el calculo de impuestos?</h4>
+                            <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
                         </label>
                     </div>
                 </div>
-            </div>
 
-            <!-- Verificación de Calidad -->
-            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                <div class="flex items-start space-x-3">
-                    <input type="checkbox" wire:model="verificacionCalidadRoRo" id="verificacionCalidadRoRo"
-                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                    <div class="flex-1">
-                        <label for="verificacionCalidadRoRo" class="flex items-center justify-between cursor-pointer">
-                            <div>
-                                <h5 class="text-white font-semibold text-sm">Verificación de la Calidad del producto</h5>
-                                <p class="text-gray-400 text-xs mt-0.5">Recepción en almacén y pruebas de funcionamiento/uso.</p>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </div>
+                @if($temp_con_arancel)
+                <div class="mt-2 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg space-y-3">
+                    <div class="grid grid-cols-2 gap-2 bg-black/20 rounded-lg p-2 border border-white/5">
+                        <div class="relative">
+                            <label for="temp_hs_code" class="block text-[4px] text-gray-500 text-center mb-1 uppercase">HS Code</label>
+                            <input type="text" wire:model.live="temp_hs_code" placeholder="HS Code"
+                                class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
 
-            <!-- Verificación de Empresa Digital -->
-            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                <div class="flex items-start space-x-3">
-                    <input type="checkbox" wire:model="verificacionEmpresaDigitalRoRo" id="verificacionEmpresaDigitalRoRo"
-                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                    <div class="flex-1">
-                        <label for="verificacionEmpresaDigitalRoRo" class="flex items-center justify-between cursor-pointer">
-                            <div>
-                                <h5 class="text-white font-semibold text-sm">Verificación de Empresa Digital</h5>
-                                <p class="text-gray-400 text-xs mt-0.5">Investigación de veracidad de licencias y establecimiento.</p>
+                            @if(!empty($arancelSuggestions))
+                            <div class="absolute top-full left-0 w-full z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto mt-1" @click.away="$wire.limpiarArancelSearch()" style="background-color: rgba(0, 0, 0, 0.9);">
+                                @foreach($arancelSuggestions as $suggestion)
+                                <div wire:click="selectArancel('{{ $suggestion['codigo_hs'] }}', {{ $suggestion['arancel'] }})"
+                                    class="p-2 hover:bg-gray-800 cursor-pointer text-xs border-b border-gray-800 last:border-0">
+                                    <div class="font-bold text-yellow-500">{{ $suggestion['codigo_hs'] }}</div>
+                                    <div class="text-gray-300">{{ $suggestion['descripcion'] }}</div>
+                                    <div class="text-gray-500 text-[10px]">Arancel: {{ $suggestion['arancel'] }}%</div>
+                                </div>
+                                @endforeach
                             </div>
-                        </label>
+                            @endif
+                        </div>
+                        <div class="relative">
+                            <label for="temp_arancel" class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Arancel</label>
+                            <input type="number" wire:model="temp_arancel" placeholder="Arancel %"
+                                class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">%</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Verificación Presencial de Empresa -->
-            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                <div class="flex items-start space-x-3">
-                    <input type="checkbox" wire:model="verificacionEmpresaPresencialRoRo" id="verificacionEmpresaPresencialRoRo"
-                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                    <div class="flex-1">
-                        <label for="verificacionEmpresaPresencialRoRo" class="flex items-center justify-between cursor-pointer">
-                            <div>
-                                <h5 class="text-white font-semibold text-sm">Verificación in situ de la Empresa(Física/Digital)</h5>
-                                <p class="text-gray-400 text-xs mt-0.5">Realización de viaje y visita técnica a la fábrica.</p>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <!-- Verificación Emisiones de gases -->
-            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ $desconsolidacionAutos == '0' ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
-                <div class="flex items-start space-x-3">
-                    <input type="checkbox" wire:model="verificacionEmisionesGasesRoRo" id="verificacionEmisionesGasesRoRo"
-                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer"
-                        @if($desconsolidacionAutos !='0' ) disabled @endif>
-                    <div class="flex-1">
-                        <label for="verificacionEmisionesGasesRoRo" class="flex items-center justify-between cursor-pointer">
-                            <div>
-                                <h5 class="text-white font-semibold text-sm">Verificación de emisiones de gases</h5>
-                                <p class="text-gray-400 text-xs mt-0.5">Realización de análisis de emisiones de gases.</p>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <!-- Requiere la reexpidicion del vehiculo -->
-            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ ($desconsolidacionAutos == '0' || $desconsolidacionAutos == '1') ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
-                <div class="flex items-start space-x-3">
-                    <input type="checkbox" wire:model="requiereReexpidicionVehiculoRoRo" id="requiereReexpidicionVehiculoRoRo"
-                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer"
-                        @if($desconsolidacionAutos !='0' && $desconsolidacionAutos !='1' ) disabled @endif>
-                    <div class="flex-1">
-                        <label for="requiereReexpidicionVehiculoRoRo" class="flex items-center justify-between cursor-pointer">
-                            <div>
-                                <h5 class="text-white font-semibold text-sm">Requiere la reexpidicion del vehiculo</h5>
-                            </div>
-                        </label>
-                    </div>
-                </div>
+                @endif
             </div>
             <!-- Verificación Transporte Terrestre -->
             <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all hover:border-yellow-500/30">
                 <div class="flex items-start space-x-3">
-                    <input type="checkbox" wire:model="requiereTransporteTerrestreRoRo" id="requiereTransporteTerrestreRoRo"
+                    <input type="checkbox" wire:model="transporteTerrestre" id="transporteTerrestre"
                         class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
                     <div class="flex-1">
-                        <label for="requiereTransporteTerrestreRoRo" class="flex items-center justify-between cursor-pointer">
-                            <div>
-                                <h5 class="text-white font-semibold text-sm">Requiere transporte terrestre para el translado de su mercancía?</h5>
-                                <p class="text-gray-400 text-xs mt-0.5">Si requiere transporte terrestre para el translado de su mercancía, por favor marque esta casilla.</p>
-                            </div>
+                        <label for="transporteTerrestre" class="flex items-center justify-between cursor-pointer">
+
+                            <h5 class="text-white font-semibold text-sm">Requiere transporte terrestre para el translado de su mercancía?</h5>
+                            <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
+
+
                         </label>
+                        <p class="text-gray-400 text-xs mt-0.5">Si requiere transporte terrestre para el translado de su mercancía, por favor marque esta casilla.</p>
                     </div>
                 </div>
             </div>
             <!-- Verificación Sustancias Peligrosas -->
             <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ $desconsolidacionAutos == '2' ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
                 <div class="flex items-start space-x-3">
-                    <input type="checkbox" wire:model="verificacionSustanciasPeligrosasRoRo" id="verificacionSustanciasPeligrosasRoRo"
+                    <input type="checkbox" wire:model="verificacionSustanciasPeligrosas" id="verificacionSustanciasPeligrosas"
                         class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer"
                         @if($desconsolidacionAutos !='2' ) disabled @endif>
                     <div class="flex-1">
-                        <label for="verificacionSustanciasPeligrosasRoRo" class="flex items-center justify-between cursor-pointer">
-                            <div>
-                                <h5 class="text-white font-semibold text-sm">¿Los productos que envia contienen sustancias peligrosas?</h5>
-                                <p class="text-gray-400 text-xs mt-0.5">Envio de sustancias peligrosas como: explosivos, gases, liquidos y solidos infamable, etc.</p>
-                            </div>
+                        <label for="verificacionSustanciasPeligrosas" class="flex items-center justify-between cursor-pointer">
+                            <h5 class="text-white font-semibold text-sm">¿Los productos que envia contienen sustancias peligrosas?</h5>
+                            <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
                         </label>
+                        <p class="text-gray-400 text-xs mt-0.5">Envio de sustancias peligrosas como: explosivos, gases, liquidos y solidos infamable, etc.</p>
                     </div>
                 </div>
             </div>
             <!-- Seguro de la Carga -->
             <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
                 <div class="flex items-start space-x-3">
-                    <input type="checkbox" wire:model="seguroCargaAutos" id="seguroCargaAutos"
+                    <input type="checkbox" wire:model="seguroCarga" id="seguroCarga"
                         class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 cursor-pointer">
                     <div class="flex-1">
-                        <label for="seguroCargaAutos" class="flex items-center justify-between cursor-pointer">
-                            <div>
-                                <h5 class="text-white font-semibold text-sm">¿Requiere seguro de carga?</h5>
-                                <p class="text-gray-400 text-xs mt-0.5">Cobertura contra todo riesgo durante el tránsito.</p>
-                            </div>
+                        <label for="seguroCarga" class="flex items-center justify-between cursor-pointer">
+                            <h5 class="text-white font-semibold text-sm">¿Requiere seguro de carga?</h5>
+                            <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
                         </label>
+                        <p class="text-gray-400 text-xs mt-0.5">Cobertura contra todo riesgo durante el tránsito.</p>
                     </div>
                 </div>
             </div>
-
             <!-- Pago Internacional -->
             <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                <div class="flex items-center justify-between {{ $requierePagoInternacionalAutos ? 'mb-3' : '' }}">
-                    <label class="flex items-center space-x-3 cursor-pointer">
-                        <input type="checkbox" wire:model.live="requierePagoInternacionalAutos"
-                            class="w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-offset-0 focus:ring-yellow-500 transition-all">
-                        <h5 class="text-white font-semibold text-sm">¿Requiere Pago Internacional?</h5>
-                    </label>
+                <div class="flex items-start space-x-3 {{ $requierePagoInternacionalAutos ? 'mb-3' : '' }}">
+                    <input type="checkbox" wire:model.live="requierePagoInternacionalAutos"
+                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-offset-0 focus:ring-yellow-500 transition-all">
+                    <div class="flex-1">
+                        <label for="requierePagoInternacionalAutos" class="flex items-center justify-between cursor-pointer">
+                            <h5 class="text-white font-semibold text-sm">¿Requiere Pago Internacional?</h5>
+                            <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
+                        </label>
+                        <p class="text-gray-400 text-xs mt-0.5">Pago internacional de la mercancía.</p>
+                    </div>
                 </div>
 
                 @if($requierePagoInternacionalAutos)
@@ -689,8 +641,10 @@
                         <input type="radio" wire:model="pagosInternacionalesSwiftAutos" value="swift"
                             class="mt-1 w-4 h-4 text-yellow-500 border-gray-600 focus:ring-yellow-500 bg-black/40">
                         <div class="flex-1">
-                            <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">CON Swift Bancario / USD</span>
-                            <span class="text-white text-xs font-medium px-2 py-1 rounded" style="background-color: #FA9F00;">Alta Comision</span>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">CON Swift Bancario / USD</span>
+                                <span class="text-white text-xs font-medium px-2 py-1 rounded" style="background-color: #FA9F00;">Alta Comision</span>
+                            </div>
                             <p class="text-gray-500 text-xs mt-0.5">Transferencia bancaria internacional estándar (SWIFT).</p>
                         </div>
                     </label>
@@ -699,13 +653,103 @@
                         <input type="radio" wire:model="pagosInternacionalesSwiftAutos" value="sin_swift"
                             class="mt-1 w-4 h-4 text-yellow-500 border-gray-600 focus:ring-yellow-500 bg-black/40">
                         <div class="flex-1">
-                            <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">SIN Swift Bancario / USDT</span>
-                            <span class="text-white text-xs font-medium px-2 py-1 rounded" style="background-color: #FA9F00;">Baja Comision</span>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-300 text-sm font-medium group-hover:text-yellow-500 transition-colors">SIN Swift Bancario / USDT</span>
+                                <span class="text-white text-xs font-medium px-2 py-1 rounded" style="background-color: #FA9F00;">Baja Comision</span>
+                            </div>
                             <p class="text-gray-500 text-xs mt-0.5">Pagos directos en China, USDT o sin uso de red SWIFT.</p>
                         </div>
                     </label>
                 </div>
                 @endif
+            </div>
+            <!-- Verificación Emisiones de gases -->
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ $desconsolidacionAutos == '0' ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" wire:model="verificacionEmisionesGases" id="verificacionEmisionesGases"
+                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer"
+                        @if($desconsolidacionAutos !='0' ) disabled @endif>
+                    <div class="flex-1">
+                        <label for="verificacionEmisionesGases" class="flex items-center justify-between cursor-pointer">
+                            <h5 class="text-white font-semibold text-sm">Verificación de emisiones de gases</h5>
+                            <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
+                        </label>
+                        <p class="text-gray-400 text-xs mt-0.5">Realización de análisis de emisiones de gases.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Requiere la reexpidicion del vehiculo -->
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ ($desconsolidacionAutos == '0' || $desconsolidacionAutos == '1') ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" wire:model="requiereReexpidicionVehiculo" id="requiereReexpidicionVehiculo"
+                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer"
+                        @if($desconsolidacionAutos !='0' && $desconsolidacionAutos !='1' ) disabled @endif>
+                    <div class="flex-1">
+                        <label for="requiereReexpidicionVehiculo" class="flex items-center justify-between cursor-pointer">
+                            <h5 class="text-white font-semibold text-sm">Requiere la reexpidicion del vehiculo</h5>
+                            <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <!-- Verificación de Producto -->
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" wire:model="verificacionProducto" id="verificacionProducto"
+                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                    <div class="flex-1">
+                        <label for="verificacionProducto" class="flex items-center justify-between cursor-pointer">
+                            <h5 class="text-white font-semibold text-sm">Verificación de Producto por modelo</h5>
+                            <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
+                        </label>
+                        <p class="text-gray-400 text-xs mt-0.5">Obtención de video real y fotos del producto real.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verificación de Calidad -->
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" wire:model="verificacionCalida" id="verificacionCalidad"
+                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                    <div class="flex-1">
+                        <label for="verificacionCalidad" class="flex items-center justify-between cursor-pointer">
+                            <h5 class="text-white font-semibold text-sm">Verificación de la Calidad del producto</h5>
+                            <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
+                        </label>
+                        <p class="text-gray-400 text-xs mt-0.5">Recepción en almacén y pruebas de funcionamiento/uso.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verificación de Empresa Digital -->
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" wire:model="verificacionEmpresaDigital" id="verificacionEmpresaDigital"
+                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                    <div class="flex-1">
+                        <label for="verificacionEmpresaDigital" class="flex items-center justify-between cursor-pointer">
+                            <h5 class="text-white font-semibold text-sm">Verificación de Empresa Digital</h5>
+                            <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
+                        </label>
+                        <p class="text-gray-400 text-xs mt-0.5">Investigación de veracidad de licencias y establecimiento.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verificación Presencial de Empresa -->
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" wire:model="verificacionEmpresaPresencial" id="verificacionEmpresaPresencial"
+                        class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                    <div class="flex-1">
+                        <label for="verificacionEmpresaPresencial" class="flex items-center justify-between cursor-pointer">
+                            <h5 class="text-white font-semibold text-sm">Verificación in situ de la Empresa(Física/Digital)</h5>
+                            <span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
+                        </label>
+                        <p class="text-gray-400 text-xs mt-0.5">Realización de viaje y visita técnica a la fábrica.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

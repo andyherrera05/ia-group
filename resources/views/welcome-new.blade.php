@@ -305,7 +305,7 @@
                         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
 
                             <div class="flex-1">
-                                <input id="productUrl" type="text" disabled
+                                <input id="productUrl" type="text"
                                     placeholder="https://www.alibaba.com/product-detail/Teddy-Bear-I-Love-You-Valentines.html"
                                     class="w-full bg-black/50 border border-yellow-500/30 text-white px-4 py-3 sm:py-4 rounded-lg focus:outline-none focus:border-yellow-500 transition-all text-sm sm:text-base placeholder-gray-500">
                             </div>
@@ -1355,7 +1355,7 @@
         });
         let eventSource = null;
 
-        function calcularCostoMaritimoLCL(volumen, cbmReal, pesoKg) {
+        function calcularCostoMaritimoLCL(volumen, cbmReal, pesoKg, moq) {
             // TARIFA POR PESO (cuando CBM < 0.1)
             const TARIFA_POR_KG = {
                 1: 10,
@@ -1379,39 +1379,39 @@
             // TARIFA POR M³ (cuando CBM ≥ 0.1)
             const TARIFA_POR_CBM = [{
                     min: 20,
-                    precio: 129
+                    precio: 164
                 },
                 {
                     min: 15,
-                    precio: 138
+                    precio: 174
                 },
                 {
                     min: 11,
-                    precio: 149
+                    precio: 184
                 },
                 {
                     min: 8,
-                    precio: 159
+                    precio: 194
                 },
                 {
                     min: 5,
-                    precio: 168
+                    precio: 204
                 },
                 {
                     min: 3,
-                    precio: 179
+                    precio: 214
                 },
                 {
                     min: 1,
-                    precio: 188
+                    precio: 224
                 },
                 {
                     min: 0.5,
-                    precio: 116
+                    precio: 137
                 },
                 {
                     min: 0.25,
-                    precio: 60
+                    precio: 70
                 }
             ];
 
@@ -1441,7 +1441,7 @@
                 }
                 // Si es menor a 0.25 → se cobra como 0.25
                 if (costoFinal === 0) {
-                    costoFinal = 60;
+                    costoFinal = 70;
                 }
             }
 
@@ -1449,9 +1449,9 @@
             let valorFacturado = 0;
 
             if (unidad === 'kg') {
-                valorFacturado = costoFinal * pesoKg;
+                valorFacturado = costoFinal * moq;
             } else {
-                valorFacturado = costoFinal;
+                valorFacturado = costoFinal * moq;
             }
 
             return {
@@ -1492,6 +1492,7 @@
 
             document.getElementById('scraped-moq').value =
                 data.moq || 1;
+            const moq = data.moq || 1;
 
             const packageSizeTexto = data.dimensions_cm || "0x0x0";
             const packageWeightTexto = data.peso_kg_usar || 0;
@@ -1533,7 +1534,7 @@
                 });
             }
 
-            const costPackage = calcularCostoMaritimoLCL(Number(finalWeight), Number(packageSize), Number(packageWeightTexto));
+            const costPackage = calcularCostoMaritimoLCL(Number(finalWeight), Number(packageSize), Number(packageWeightTexto), Number(moq));
 
             document.getElementById('costPackage').textContent = `$ ${Number(costPackage.costo).toFixed(2)}`;
 
