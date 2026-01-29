@@ -141,42 +141,42 @@
             <!-- Desconsolidacion / Carga Suelta / Consolidacion Selection -->
             <div class="py-4 grid grid-cols-3 gap-4 mb-6">
                 <!-- Consolidation Button -->
-                <button type="button" wire:click="$set('desconsolidacionAutos', '2'); $set('verificacionEmisionesGases', false); $set('requiereReexpidicionVehiculo', false)"
-                    class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '2' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
+                <button type="button" wire:click="$set('desconsolidacion', '2'); $set('verificacionEmisionesGases', false); $set('requiereReexpidicionVehiculo', false)"
+                    class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacion == '2' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
                     <div class="flex flex-col items-center justify-center gap-3">
-                        <div class="p-3 rounded-full {{ $desconsolidacionAutos == '2' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
+                        <div class="p-3 rounded-full {{ $desconsolidacion == '2' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                             </svg>
                         </div>
                         <div class="text-center">
-                            <span class="block text-sm font-bold {{ $desconsolidacionAutos == '2' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Consolidación</span>
+                            <span class="block text-sm font-bold {{ $desconsolidacion == '2' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Consolidación</span>
                             <span class="block text-[10px] text-gray-500 mt-1">Agrupar carga</span>
                         </div>
                     </div>
                     <!-- Active Check Indicator -->
-                    @if($desconsolidacionAutos == '2')
+                    @if($desconsolidacion == '2')
                     <div class="absolute top-2 right-2">
                         <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
                     </div>
                     @endif
                 </button>
                 <!-- Carga Suelta Button -->
-                <button type="button" wire:click="$set('desconsolidacionAutos', '1'); $set('verificacionEmisionesGases', false); $set('verificacionSustanciasPeligrosas', false)"
-                    class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '1' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
+                <button type="button" wire:click="$set('desconsolidacion', '1'); $set('verificacionEmisionesGases', false); $set('verificacionSustanciasPeligrosas', false)"
+                    class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacion == '1' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
                     <div class="flex flex-col items-center justify-center gap-3">
-                        <div class="p-3 rounded-full {{ $desconsolidacionAutos == '1' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
+                        <div class="p-3 rounded-full {{ $desconsolidacion == '1' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                             </svg>
                         </div>
                         <div class="text-center">
-                            <span class="block text-sm font-bold {{ $desconsolidacionAutos == '1' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Carga Suelta</span>
+                            <span class="block text-sm font-bold {{ $desconsolidacion == '1' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Carga Suelta</span>
                             <span class="block text-[10px] text-gray-500 mt-1">Carga individual</span>
                         </div>
                     </div>
                     <!-- Active Check Indicator -->
-                    @if($desconsolidacionAutos == '1')
+                    @if($desconsolidacion == '1')
                     <div class="absolute top-2 right-2">
                         <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
                     </div>
@@ -184,21 +184,21 @@
                 </button>
 
                 <!-- Deconsolidation Button -->
-                <button type="button" wire:click="$set('desconsolidacionAutos', '0'); $set('verificacionSustanciasPeligrosas', false)"
-                    class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionAutos == '0' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
+                <button type="button" wire:click="$set('desconsolidacion', '0'); $set('verificacionSustanciasPeligrosas', false)"
+                    class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacion == '0' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
                     <div class="flex flex-col items-center justify-center gap-3">
-                        <div class="p-3 rounded-full {{ $desconsolidacionAutos == '0' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
+                        <div class="p-3 rounded-full {{ $desconsolidacion == '0' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                             </svg>
                         </div>
                         <div class="text-center">
-                            <span class="block text-sm font-bold {{ $desconsolidacionAutos == '0' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Desconsolidación</span>
+                            <span class="block text-sm font-bold {{ $desconsolidacion == '0' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Desconsolidación</span>
                             <span class="block text-[10px] text-gray-500 mt-1">Separar carga</span>
                         </div>
                     </div>
                     <!-- Active Check Indicator -->
-                    @if($desconsolidacionAutos == '0')
+                    @if($desconsolidacion == '0')
                     <div class="absolute top-2 right-2">
                         <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
                     </div>
@@ -593,11 +593,11 @@
                 </div>
             </div>
             <!-- Verificación Sustancias Peligrosas -->
-            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ $desconsolidacionAutos == '2' ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ $desconsolidacion == '2' ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
                 <div class="flex items-start space-x-3">
                     <input type="checkbox" wire:model="verificacionSustanciasPeligrosas" id="verificacionSustanciasPeligrosas"
                         class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer"
-                        @if($desconsolidacionAutos !='2' ) disabled @endif>
+                        @if($desconsolidacion !='2' ) disabled @endif>
                     <div class="flex-1">
                         <label for="verificacionSustanciasPeligrosas" class="flex items-center justify-between cursor-pointer">
                             <h5 class="text-white font-semibold text-sm">¿Los productos que envia contienen sustancias peligrosas?</h5>
@@ -664,11 +664,11 @@
                 @endif
             </div>
             <!-- Verificación Emisiones de gases -->
-            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ $desconsolidacionAutos == '0' ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ $desconsolidacion == '0' ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
                 <div class="flex items-start space-x-3">
                     <input type="checkbox" wire:model="verificacionEmisionesGases" id="verificacionEmisionesGases"
                         class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer"
-                        @if($desconsolidacionAutos !='0' ) disabled @endif>
+                        @if($desconsolidacion !='0' ) disabled @endif>
                     <div class="flex-1">
                         <label for="verificacionEmisionesGases" class="flex items-center justify-between cursor-pointer">
                             <h5 class="text-white font-semibold text-sm">Verificación de emisiones de gases</h5>
@@ -679,11 +679,11 @@
                 </div>
             </div>
             <!-- Requiere la reexpidicion del vehiculo -->
-            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ ($desconsolidacionAutos == '0' || $desconsolidacionAutos == '1') ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
+            <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 transition-all {{ ($desconsolidacion == '0' || $desconsolidacion == '1') ? 'hover:border-yellow-500/30' : 'opacity-40 pointer-events-none' }}">
                 <div class="flex items-start space-x-3">
                     <input type="checkbox" wire:model="requiereReexpidicionVehiculo" id="requiereReexpidicionVehiculo"
                         class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer"
-                        @if($desconsolidacionAutos !='0' && $desconsolidacionAutos !='1' ) disabled @endif>
+                        @if($desconsolidacion !='0' && $desconsolidacion !='1' ) disabled @endif>
                     <div class="flex-1">
                         <label for="requiereReexpidicionVehiculo" class="flex items-center justify-between cursor-pointer">
                             <h5 class="text-white font-semibold text-sm">Requiere la reexpidicion del vehiculo</h5>

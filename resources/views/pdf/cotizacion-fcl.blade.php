@@ -331,6 +331,7 @@
                     $costoRepresentacion = $item['representacion'] ?? 0;
                     $gestionPortuaria = $item['gestionPortuaria'] ?? 0;
                     $booking = $item['booking'] ?? 0;
+                    $totalLogisticaBolivia = $item['total_logistica_bolivia'] ?? 0;
 
                     @endphp
 
@@ -353,6 +354,10 @@
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($booking, 2) }}</td>
                     </tr>
                     <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">GESTION LOGISTICA</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($totalLogisticaBolivia, 2) }}</td>
+                    </tr>
+                    <tr>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">DESCONSOLIDACION</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($desconsolidacion, 2) }}</td>
                     </tr>
@@ -370,11 +375,6 @@
                     <tr>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">GIRO INTERNACIONAL</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoSwift, 2) }}</td>
-                    </tr>
-
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">REPRESENTACIÓN / USUARIO IMPORTACIÓN</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoRepresentacion, 2) }}</td>
                     </tr>
 
                     <tr>
@@ -398,9 +398,9 @@
                     </tr>
 
                     @php
-                    $totalGeneral = $valorCarga + $fleteMaritimo + $costoSeguroCarga + $costoPeligrosa + $costoSwift + $costoRepresentacion + $gestionPortuaria + $booking + $desconsolidacion + $verificacion_empresa_digital + $verificacion_calidad + $verificacion_producto + $verificacion_empresa_presencial;
+                    $totalGeneral = $valorCarga + $fleteMaritimo + $costoSeguroCarga + $costoPeligrosa + $costoSwift + $gestionPortuaria + $booking + $desconsolidacion + $verificacion_empresa_digital + $verificacion_calidad + $verificacion_producto + $verificacion_empresa_presencial + $totalLogisticaBolivia;
 
-                    $exchangeRateP2P = (isset($p2pPrice) && is_numeric($p2pPrice)) ? (float)$p2pPrice : 9.70;
+                    $exchangeRateP2P = (isset($p2pPrice) && is_numeric($p2pPrice)) ? (float)$p2pPrice :9.70;
                     @endphp
                     <tr>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TOTAL</td>
@@ -418,15 +418,23 @@
             <td style="width: 40%; vertical-align: top;">
                 <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                     @php
-                    $totalImpuesto = $gravamenArancelario + $transporte_terrestre + $impuesto + $despachante + $agencia_despachante;
+                    $totalImpuesto = $gravamenArancelario + $transporte_terrestre + $impuesto + $despachante + $agencia_despachante + $costoRepresentacion;
                     @endphp
                     <tr>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">TRANSPORTE TERRESTRE (Iquique - Oruro)</td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($transporte_terrestre, 2) }}</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">CALCULO ESTIMADO DE IMPUESTOS</td>
-                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($impuesto + $gravamenArancelario, 2) }}</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">REPRESENTACIÓN / USUARIO IMPORTACIÓN</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($costoRepresentacion, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">GRAVAMEN ARANCELARIO</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($gravamenArancelario, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">IMPUESTOS</td>
+                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${{ number_format($impuesto, 2) }}</td>
                     </tr>
                     <tr>
                         <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">CARGOS DE IMPORTACION Y DESPACHO </td>
@@ -456,7 +464,7 @@
         </tr>
         <tr style="border: 1px solid #000;">
             <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Total Estimado Bs</td>
-            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Bs {{ number_format(($totalGeneral * 9.70) + ($totalImpuesto * 6.96) , 2) }}</td>
+            <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">Bs {{ number_format(($totalGeneral * $exchangeRateP2P) + ($totalImpuesto * 6.96) , 2) }}</td>
         </tr>
     </table>
 

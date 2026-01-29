@@ -363,7 +363,7 @@
                                     <input type="number" wire:model="temp_alto" placeholder="0" class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" title="Alto (cm)">
                                 </div>
                                 <div class="flex-1">
-                                    <label class="block text-[4px] text-blue-300/70 text-center mb-1 uppercase">CBM</label>
+                                    <label class="block text-[4px] text-blue-300/70 text-center mb-1 uppercase">Total CBM</label>
                                     <input type="number" step="0.01" wire:model="temp_cbm" placeholder="0.00" class="w-full bg-transparent border-b border-blue-500/50 text-center text-xs text-blue-300 focus:border-blue-500 outline-none pb-1" title="CBM Directo">
                                 </div>
                             </div>

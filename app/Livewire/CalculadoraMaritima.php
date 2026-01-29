@@ -18,13 +18,11 @@ use Livewire\WithFileUploads;
 class CalculadoraMaritima extends Component
 {
     use WithFileUploads;
-    public $tipoCarga = 'uld';
+    public $tipoCarga = 'fcl';
 
     public $peso;
 
-    public $desconsolidacionAutos = '1';
-
-    public $desconsolidacionFCL = '1';
+    public $desconsolidacion = '1';
 
     public $volumen;
 
@@ -150,6 +148,8 @@ class CalculadoraMaritima extends Component
     public $transporteTerrestre = false;
     public $representacionImportacionFCL = false;
     public $pesoMercanciaFCL = 0;
+    public $fiat = 'BOB';
+
     public $volumenMercanciaFCL = 0;
 
 
@@ -271,7 +271,7 @@ class CalculadoraMaritima extends Component
         // ],
     ];
 
-    public $precios_envio_por_tipo = [
+    protected $precios_envio_por_tipo = [
         'pickup'      => ['1' => 3300, '0' => 2850],
         'van'         => ['1' => 3200, '0' => 2750],
         'suv'         => ['1' => 2900, '0' => 2450],
@@ -285,6 +285,23 @@ class CalculadoraMaritima extends Component
         'bus'         => ['1' => 5000, '0' => 4500],
         'heavy'       => ['1' => 5000, '0' => 4250],
     ];
+
+
+    protected $precios_desconsolidacion_por_tipo = [
+        'pickup'      => ['1' => 1850, '0' => 1750],
+        'van'         => ['1' => 1850, '0' => 1750],
+        'suv'         => ['1' => 1800, '0' => 1700],
+        'wagon'       => ['1' => 1800, '0' => 1700],
+        'minivan'     => ['1' => 1800, '0' => 1700],
+        'sedan'       => ['1' => 1750, '0' => 1700],
+        'coupe'       => ['1' => 1750, '0' => 1700],
+        'convertible' => ['1' => 1750, '0' => 1700],
+        'hatchback'   => ['1' => 1750, '0' => 1700],
+        'truck'       => ['1' => 2100, '0' => 1950],
+        'bus'         => ['1' => 2300, '0' => 2100],
+        'heavy'       => ['1' => 2500, '0' => 2250],
+    ];
+
 
     public $vehiculos_datos = [
         'pickup' => [
@@ -969,10 +986,10 @@ class CalculadoraMaritima extends Component
 
         // Agencias y Despacho
         $agencia_despachante = $this->calculate_tiered_charge($valorMercancia);
-        $despachante = 768.68;
+        $despachante = 560;
 
         // Costos Adicionales
-        $adicionales = $this->calculateAdditionalCosts($valorMercancia);
+        $adicionales = $this->calculateAdditionalCosts($valorMercancia, $precioBase);
         $costoAdicionales = $adicionales['total'];
 
         // Transporte
@@ -983,8 +1000,10 @@ class CalculadoraMaritima extends Component
         $impuesto = $taxes['impuesto'];
         $gravamenArancelario = $taxes['gravamen'];
         $iva = $taxes['iva'];
-        $ice = $taxes['ice'];
-        $desconsolidacion = $this->desconsolidacionFCL == '0' ? 1800 : 0;
+        $ice = 0; //$taxes['ice'];
+        $desconsolidacion = $this->desconsolidacion == '0' ? 1800 : 0;
+        $totalLogisticaBolivia = ($valorMercancia + $precioBase) * 0.03;
+        $totalBrokersChina = ($valorMercancia + $precioBase) * 0.035;
 
 
 
@@ -1002,12 +1021,9 @@ class CalculadoraMaritima extends Component
             '   Valor de la Mercancía' => number_format($valorMercancia, 2, '.', ''),
             '   Gestión Portuaria' => number_format($subtotalPortuaria, 2),
             '   Booking' => number_format($precioBase * 0.05, 2),
+            '   Gestión Logística' => number_format($totalLogisticaBolivia, 2),
         ]);
         $this->desglose['   Cargo de Desconsolidacion'] = number_format($desconsolidacion, 2);
-        if ($this->transporteTerrestre) {
-            $this->desglose['   Transporte Terrestre'] = number_format($transporte_terrestre, 2);
-        }
-
         // Merge de desglose de adicionales
         $this->desglose = array_merge($this->desglose, $adicionales['desglose']);
         $this->desglose =  array_merge($this->desglose, [
@@ -1017,8 +1033,11 @@ class CalculadoraMaritima extends Component
             '   IVA' => number_format($iva, 2),
             '   ICE' => number_format($ice, 2),
         ]);
+        if ($this->transporteTerrestre) {
+            $this->desglose['   Transporte Terrestre'] = number_format($transporte_terrestre, 2);
+        }
         // Resultado Final
-        $this->resultado = $precioBase + $subtotalPortuaria + ($precioBase * 0.05) + $valorMercancia + $transporte_terrestre + $impuesto + $agencia_despachante + $despachante + $costoAdicionales + $desconsolidacion;
+        $this->resultado = $precioBase + $subtotalPortuaria + ($precioBase * 0.05) + $valorMercancia + $transporte_terrestre + $impuesto + $agencia_despachante + $despachante + $costoAdicionales + $desconsolidacion + $totalLogisticaBolivia + $totalBrokersChina;
 
         // Construir Reporte
         $this->desglose_reporte = $this->buildReportData(
@@ -1034,7 +1053,9 @@ class CalculadoraMaritima extends Component
             $taxes,
             $costoAdicionales,
             $adicionales,
-            $desconsolidacion
+            $desconsolidacion,
+            $totalLogisticaBolivia,
+            $totalBrokersChina
         );
 
         $this->tipoCobroActual = 'Contenedor Completo (FCL)';
@@ -1136,7 +1157,7 @@ class CalculadoraMaritima extends Component
         ];
     }
 
-    private function calculateAdditionalCosts($valorMercancia)
+    private function calculateAdditionalCosts($valorMercancia, $precioBase)
     {
         $total = 0;
         $desgloseAux = [];
@@ -1152,7 +1173,7 @@ class CalculadoraMaritima extends Component
 
         if ($this->requierePagoInternacional) {
             $tasaSwift = ($this->pagosInternacionalesSwift === 'swift') ? 0.01 : 0.025;
-            $costoSwift = $valorMercancia * $tasaSwift;
+            $costoSwift = ($valorMercancia + $precioBase) * $tasaSwift;
             $desgloseAux['   Pago Internacional'] = number_format($costoSwift, 2);
             $total += $costoSwift;
         }
@@ -1164,8 +1185,8 @@ class CalculadoraMaritima extends Component
         }
 
         if ($this->representacionImportacionFCL) {
-            $desgloseAux['   Representación Importación'] = number_format(502.87, 2);
-            $total += 502.87;
+            $desgloseAux['   Representación Importación'] = number_format(459.77, 2);
+            $total += 459.77;
         }
 
         // Verificaciones
@@ -1190,7 +1211,7 @@ class CalculadoraMaritima extends Component
                 'desconsolidacion' => $desconsolidacion,
                 'pagosInternacionales' => $costoSwift,
                 'seguroCarga' => $seguroEstimado,
-                'representacionImportacionFCL' => $this->representacionImportacionFCL ? 502.87 : 0,
+                'representacionImportacionFCL' => $this->representacionImportacionFCL ? 459.77 : 0,
                 'verificacionProducto' => $this->verificacionProducto ? 30 : 0,
                 'verificacionCalidad' => $this->verificacionCalidad ? 50 : 0,
                 'verificacionEmpresaDigital' => $this->verificacionEmpresaDigital ? 100 : 0,
@@ -1214,7 +1235,7 @@ class CalculadoraMaritima extends Component
         ];
     }
 
-    private function buildReportData($container, $containerName, $shippingLine, $precioBase, $valorMercancia, $subtotalPortuaria, $agencia_despachante, $despachante, $transporte_terrestre, $taxes, $costoAdicionales, $adicionales, $desconsolidacion)
+    private function buildReportData($container, $containerName, $shippingLine, $precioBase, $valorMercancia, $subtotalPortuaria, $agencia_despachante, $despachante, $transporte_terrestre, $taxes, $costoAdicionales, $adicionales, $desconsolidacion, $totalLogisticaBolivia, $totalBrokersChina)
     {
         return [
             'ref' => $this->id_producto ?: 'FCL-' . strtoupper($container),
@@ -1238,6 +1259,8 @@ class CalculadoraMaritima extends Component
             'representacion' => $adicionales['data_reporte']['representacionImportacionFCL'],
             'comision_swift' => $adicionales['data_reporte']['pagosInternacionales'],
             'desconsolidacion' => $desconsolidacion,
+            'total_logistica_bolivia' => $totalLogisticaBolivia,
+            'total_brokers_china' => $totalBrokersChina,
             'verificacion_sustancias_peligrosas' => $adicionales['data_reporte']['verificacionSustanciasPeligrosas'],
             'verificacion_producto' => $adicionales['data_reporte']['verificacionProducto'],
             'verificacion_calidad' => $adicionales['data_reporte']['verificacionCalidad'],
@@ -1467,15 +1490,8 @@ class CalculadoraMaritima extends Component
         $grua_china = 500;
 
 
-        if ($this->desconsolidacionAutos == '1' || $this->desconsolidacionAutos == '0') {
-            if (!empty($this->tipoCarroceria) && isset($this->precios_envio_por_tipo[$this->tipoCarroceria])) {
-                $costo_envio = $this->precios_envio_por_tipo[$this->tipoCarroceria][$this->desconsolidacionAutos] ?? 0;
-            } else {
-                $costo_envio = 0;
-            }
-        } else {
-            $costo_envio = 0;
-        }
+        $costo_envio = $this->precios_envio_por_tipo[$this->tipoCarroceria][$this->desconsolidacion] ?? 0;
+
 
         $totalLogisticaChina = ($this->valorMercancia + $costo_envio) * $comision;
         $totalLogisticaBolivia = ($this->valorMercancia + $costo_envio) * $comisionBolivia;
@@ -1498,13 +1514,8 @@ class CalculadoraMaritima extends Component
         $tasaSeguro = $this->seguroCarga ? 0.02 : 0;
         $costoSeguro = $this->valorMercancia > 0 ? $this->valorMercancia * $tasaSeguro : 0;
 
-        if ($this->desconsolidacionAutos == '1') {
-            $desconsolidacion = 1600;
-        } elseif ($this->desconsolidacionAutos == '0') {
-            $desconsolidacion = 1800;
-        } else {
-            $desconsolidacion = 0;
-        }
+        $desconsolidacion = $this->precios_desconsolidacion_por_tipo[$this->tipoCarroceria][$this->desconsolidacion] ?? 0;
+
 
         $this->desglose = [
             'Valor de Mercancía' => $this->valorMercancia,
@@ -1521,11 +1532,11 @@ class CalculadoraMaritima extends Component
         if ($this->seguroCarga) {
             $this->desglose['Seguro de la Carga'] = number_format($costoSeguro, 2, '.', '');
         }
-        if ($this->desconsolidacionAutos == '0' || $this->desconsolidacionAutos == '1') {
+        if ($this->desconsolidacion == '1' || $this->desconsolidacion == '0') {
             $this->desglose['Cargo de Desconsolidacion'] = number_format($desconsolidacion, 2, '.', '');
         }
 
-        if ($this->desconsolidacionAutos == '2') {
+        if ($this->desconsolidacion == '2') {
             $this->desglose['Costo de caja de embalaje'] = 500;
             $costo_embalaje = 500;
         }
@@ -1567,10 +1578,10 @@ class CalculadoraMaritima extends Component
         $this->desglose['ICE'] = number_format($ice, 2, '.', '');
         $this->desglose['Poliza de Importacion'] = number_format($poliza_importacion, 2, '.', '');
         if ($this->transporteTerrestre) {
-            if ($this->desconsolidacionAutos == '1') {
+            if ($this->desconsolidacion == '1') {
                 $this->desglose['Transporte Terrestre'] = 1600;
                 $transporte_terrestre = 1600;
-            } elseif ($this->desconsolidacionAutos == '2') {
+            } elseif ($this->desconsolidacion == '2') {
                 $this->desglose['Transporte Terrestre'] = 1800;
                 $transporte_terrestre = 1800;
             } else {

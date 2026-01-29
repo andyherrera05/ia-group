@@ -140,21 +140,21 @@
         <!-- Desconsolidacion / Consolidacion Selection -->
         <div class="grid grid-cols-2 gap-4 mb-6">
             <!-- Consolidation Button -->
-            <button type="button" wire:click="$set('desconsolidacionFCL', '1')"
-                class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionFCL == '1' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
+            <button type="button" wire:click="$set('desconsolidacion', '1')"
+                class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacion == '1' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
                 <div class="flex flex-col items-center justify-center gap-3">
-                    <div class="p-3 rounded-full {{ $desconsolidacionFCL == '1' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
+                    <div class="p-3 rounded-full {{ $desconsolidacion == '1' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
                     </div>
                     <div class="text-center">
-                        <span class="block text-sm font-bold {{ $desconsolidacionFCL == '1' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Consolidación</span>
+                        <span class="block text-sm font-bold {{ $desconsolidacion == '1' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Consolidación</span>
                         <span class="block text-[10px] text-gray-500 mt-1">Agrupar carga</span>
                     </div>
                 </div>
                 <!-- Active Check Indicator -->
-                @if($desconsolidacionFCL == '1')
+                @if($desconsolidacion == '1')
                 <div class="absolute top-2 right-2">
                     <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
                 </div>
@@ -162,21 +162,21 @@
             </button>
 
             <!-- Deconsolidation Button -->
-            <button type="button" wire:click="$set('desconsolidacionFCL', '0')"
-                class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacionFCL == '0' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
+            <button type="button" wire:click="$set('desconsolidacion', '0')"
+                class="relative group p-4 rounded-xl border-2 transition-all duration-300 {{ $desconsolidacion == '0' ? 'border-yellow-500 bg-yellow-500/10 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'border-white/5 bg-white/5 hover:border-yellow-500/50 hover:bg-white/10' }}">
                 <div class="flex flex-col items-center justify-center gap-3">
-                    <div class="p-3 rounded-full {{ $desconsolidacionFCL == '0' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
+                    <div class="p-3 rounded-full {{ $desconsolidacion == '0' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-white/5 text-gray-400 group-hover:bg-yellow-500/10 group-hover:text-yellow-500' }} transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                         </svg>
                     </div>
                     <div class="text-center">
-                        <span class="block text-sm font-bold {{ $desconsolidacionFCL == '0' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Desconsolidación</span>
+                        <span class="block text-sm font-bold {{ $desconsolidacion == '0' ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-500' }}">Desconsolidación</span>
                         <span class="block text-[10px] text-gray-500 mt-1">Separar carga</span>
                     </div>
                 </div>
                 <!-- Active Check Indicator -->
-                @if($desconsolidacionFCL == '0')
+                @if($desconsolidacion == '0')
                 <div class="absolute top-2 right-2">
                     <div class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
                 </div>
@@ -267,7 +267,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                     </svg>
                     Peso de la carga
-                    <span class="text-xs text-gray-500">(Toneladas)</span>
+                    <span class="text-xs text-gray-500">(Kilos)</span>
                 </label>
                 <input type="number" wire:model="pesoMercanciaFCL" placeholder="Ej: 20"
                     class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
@@ -507,8 +507,14 @@
                                 <h4 class="text-white font-bold text-xl uppercase">
                                     {{ $rate['shipping_line'] }}
                                 </h4>
-                                <p class="text-sm text-gray-300">
+                                <p class="text-gray-300" style="font-size: 10px">
                                     Válida {{ \Carbon\Carbon::parse($rate['valid_until'])->format('d/m/Y') }}
+                                </p>
+                                <p class="text-gray-300" style="font-size: 8px">
+                                    Tiempo de transito: {{ $rate['transit_time'] ?? 'N/A' }}
+                                </p>
+                                <p class="text-gray-300" style="font-size: 10px">
+                                    Cierre: {{ $rate['closing'] ?? 'N/A' }}
                                 </p>
                             </div>
                         </div>
@@ -663,6 +669,19 @@
             <p class="text-gray-400 text-sm mb-6">Selecciona los servicios adicionales que requieras para tu envío</p>
 
             <div class="space-y-6">
+                <!-- Transporte Terrestre -->
+                <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" wire:model="transporteTerrestre" id="transporteTerrestre"
+                            class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
+                        <div class="flex-1">
+                            <label for="transporteTerrestre" class="flex items-center justify-between cursor-pointer">
+                                <h5 class="text-white font-semibold text-sm">Requiere transporte terrestre para el translado de su mercancía?</h5><span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
+                            </label>
+                            <p class="text-gray-400 text-xs mt-0.5">Transporte terrestre desde Chile a Bolivia</p>
+                        </div>
+                    </div>
+                </div>
                 <!-- Arancel Option -->
                 <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
                     <div class="flex items-start space-x-3">
@@ -728,19 +747,7 @@
                     @endif
 
                 </div>
-                <!-- Transporte Terrestre -->
-                <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
-                    <div class="flex items-start space-x-3">
-                        <input type="checkbox" wire:model="transporteTerrestre" id="transporteTerrestre"
-                            class="mt-1 w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-0 focus:ring-offset-black cursor-pointer">
-                        <div class="flex-1">
-                            <label for="transporteTerrestre" class="flex items-center justify-between cursor-pointer">
-                                <h5 class="text-white font-semibold text-sm">Requiere transporte terrestre para el translado de su mercancía?</h5><span class="ml-2 bg-yellow-500 text-black text-[10px] px-2 py-0.5 rounded font-bold">PLAN PREMIUM</span>
-                            </label>
-                            <p class="text-gray-400 text-xs mt-0.5">Transporte terrestre para el traslado de su mercancía.</p>
-                        </div>
-                    </div>
-                </div>
+
                 <!-- Verificación Sustancias Peligrosas -->
                 <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
                     <div class="flex items-start space-x-3">
@@ -758,7 +765,7 @@
                 <div class="bg-black/20 border border-yellow-500/10 rounded-xl p-4 hover:border-yellow-500/30 transition-all">
                     <div class="flex items-center space-x-3 {{ $requierePagoInternacional ? 'mb-3' : '' }}">
                         <div class="flex items-start space-x-3">
-                            <input type="checkbox" wire:model="requierePagoInternacional"
+                            <input type="checkbox" wire:model.live="requierePagoInternacional"
                                 class="w-5 h-5 rounded border-yellow-500/50 bg-black/40 text-yellow-500 focus:ring-offset-0 focus:ring-yellow-500 transition-all">
                         </div>
                         <div class="flex-1">
