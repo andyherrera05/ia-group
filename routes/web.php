@@ -50,6 +50,7 @@ Route::get('/importaciones-exportaciones', function () {
 })->name('importaciones.exportaciones');
 
 Route::get('/cotizacion/pdf', [CotizacionPDFController::class, 'generarPDF'])->name('cotizacion.pdf');
+Route::get('/q/{id}', [CotizacionPDFController::class, 'verPorId'])->name('cotizacion.short');
 
 Route::get('/capacitaciones', function () {
     return view('capacitaciones');

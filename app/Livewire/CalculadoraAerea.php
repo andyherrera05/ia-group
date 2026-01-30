@@ -148,6 +148,11 @@ class CalculadoraAerea extends Component
 
     public function mount()
     {
+        // Capture 'q' from URL if not already set
+        if (empty($this->encodedItems)) {
+            $this->encodedItems = request()->query('q');
+        }
+
         // 1. Prioridad: Si hay items codificados en la URL
         if ($this->encodedItems) {
             try {
@@ -447,34 +452,34 @@ class CalculadoraAerea extends Component
      */
     public function calcular($forzarMostrar = true)
     {
-        // if ($forzarMostrar) {
-        //     $this->validate([
-        //         'clienteNombre' => 'required|string|min:3',
-        //         'clienteCiudad' => 'required|not_in:0',
-        //         'clienteDireccion' => 'required|string|min:5',
-        //         'clienteEmail' => 'required|email',
-        //         'clienteTelefono' => 'required|string|min:7',
-        //     ], [
-        //         'clienteNombre.required' => 'El nombre del cliente es obligatorio.',
-        //         'clienteNombre.min' => 'El nombre debe tener al menos 3 caracteres.',
-        //         'clienteCiudad.required' => 'Debe seleccionar una ciudad.',
-        //         'clienteCiudad.not_in' => 'Debe seleccionar una ciudad.',
-        //         'clienteDireccion.required' => 'La dirección es obligatoria.',
-        //         'clienteDireccion.min' => 'La dirección debe tener al menos 5 caracteres.',
-        //         'clienteEmail.required' => 'El email es obligatorio.',
-        //         'clienteEmail.email' => 'El formato del email no es válido.',
-        //         'clienteTelefono.required' => 'El teléfono es obligatorio.',
-        //         'clienteTelefono.min' => 'El teléfono debe tener al menos 7 caracteres.',
-        //     ]);
+        if ($forzarMostrar) {
+            $this->validate([
+                'clienteNombre' => 'required|string|min:3',
+                'clienteCiudad' => 'required|not_in:0',
+                'clienteDireccion' => 'required|string|min:5',
+                'clienteEmail' => 'required|email',
+                'clienteTelefono' => 'required|string|min:7',
+            ], [
+                'clienteNombre.required' => 'El nombre del cliente es obligatorio.',
+                'clienteNombre.min' => 'El nombre debe tener al menos 3 caracteres.',
+                'clienteCiudad.required' => 'Debe seleccionar una ciudad.',
+                'clienteCiudad.not_in' => 'Debe seleccionar una ciudad.',
+                'clienteDireccion.required' => 'La dirección es obligatoria.',
+                'clienteDireccion.min' => 'La dirección debe tener al menos 5 caracteres.',
+                'clienteEmail.required' => 'El email es obligatorio.',
+                'clienteEmail.email' => 'El formato del email no es válido.',
+                'clienteTelefono.required' => 'El teléfono es obligatorio.',
+                'clienteTelefono.min' => 'El teléfono debe tener al menos 7 caracteres.',
+            ]);
 
-        //     $nuevoCliente = Cliente::create([
-        //         'clienteNombre'    => $this->clienteNombre,
-        //         'clienteEmail'     => $this->clienteEmail,
-        //         'clienteTelefono'  => $this->clienteTelefono,
-        //         'clienteDireccion' => $this->clienteDireccion,
-        //         'clienteCiudad'    => $this->clienteCiudad,
-        //     ]);
-        // }
+            Cliente::create([
+                'clienteNombre'    => $this->clienteNombre,
+                'clienteEmail'     => $this->clienteEmail,
+                'clienteTelefono'  => $this->clienteTelefono,
+                'clienteDireccion' => $this->clienteDireccion,
+                'clienteCiudad'    => $this->clienteCiudad,
+            ]);
+        }
         if (empty($this->items)) {
             $this->resultado = null;
             $this->desglose = [];
@@ -548,6 +553,7 @@ class CalculadoraAerea extends Component
             $this->resultado = null;
             $this->resultadoRebajado = null;
         }
+        $this->dispatch('scroll-to-result');
     }
 
 
@@ -669,7 +675,7 @@ class CalculadoraAerea extends Component
         $totalArancel = 0;
         $iva = 0;
         foreach ($this->items as $prod) {
-            $arancelPct = isset($prod['arancel']) ? floatval($prod['arancel']) : 0;
+            $arancelPct = $this->temp_arancel;
             // Base imponible (CIF estimado): Valor + 5% flete + 2% seguro
             $valorItem = $prod['total_valor'];
             $fleteEstimado = $valorItem * 0.30;
@@ -695,7 +701,7 @@ class CalculadoraAerea extends Component
         $impuestoTotal = $valorMercancia == 0 ? 0 : $impuestoTotal;
 
         $totalLogisticaChina = ($valorMercancia + $costoFinal + $costo_envio_interno) * $comision;
-        $totalLogisticaBolivia = ($valorMercancia + $costoFinal + $costo_envio_interno) * $comisionBolivia;
+        $totalLogisticaBolivia = ($valorMercancia) * $comisionBolivia;
 
         $precio_rebajado = $costoSeguro + $impuestoTotal + ($valorMercancia * $comision) + $costoPagoInternacional + $almacen + $factura;
 
@@ -717,8 +723,10 @@ class CalculadoraAerea extends Component
                 'Costo de Envío Internacional' => number_format($costoFinal, 2, '.', ''),
                 'Gestión Logística' => number_format($totalLogisticaBolivia, 2, '.', ''),
                 'Brokers en China' => number_format($totalLogisticaChina, 2, '.', ''),
-                'Pago Internacional' => number_format($costoPagoInternacional, 2, '.', ''),
             ];
+            if ($this->requierePagoInternacional) {
+                $this->desglose['Pago Internacional'] = number_format($costoPagoInternacional, 2, '.', '');
+            }
         }
 
         if ($this->seguroCarga && $valorMercancia > 0) {
@@ -815,30 +823,26 @@ class CalculadoraAerea extends Component
     function calculate_tiered_charge(float $evaluation_value): float
     {
         $rates = [
-            [1999.00, 93.39, 1],
-            [3999.00, 150.86, 1],
-            [5000.00, 193.97, 1],
-            [10000.00, 0.03, 2],
-            [20000.00, 0.025, 2],
-            [30000.00, 0.0225, 2],
-            [50000.00, 0.02, 2],
-            [100000.00, 0.0175, 2]
+            [999.00, 0.05],
+            [1999.00, 0.045],
+            [3999.00, 0.04],
+            [5000.00, 0.035],
+            [10000.00, 0.03],
+            [20000.00, 0.025],
+            [30000.00, 0.0225],
+            [50000.00, 0.02],
+            [100000.00, 0.0175]
         ];
+
 
         $charge = 0.0;
 
         foreach ($rates as $tier) {
             $maximum = $tier[0];
             $rate = $tier[1];
-            $type = $tier[2];
 
             if ($evaluation_value <= $maximum) {
-
-                if ($type === 1) {
-                    $charge = $rate;
-                } else {
-                    $charge = $evaluation_value * $rate;
-                }
+                $charge = $evaluation_value * $rate;
                 return $charge;
             }
         }
@@ -916,6 +920,28 @@ class CalculadoraAerea extends Component
             session()->flash('error', 'No hay productos para cotizar.');
             return;
         }
+
+        $params = $this->prepararParametrosPDF();
+        return redirect()->route('cotizacion.pdf', $params);
+    }
+
+    public function obtenerUrlPDF()
+    {
+        if (empty($this->items)) {
+            return '';
+        }
+
+        $params = $this->prepararParametrosPDF();
+
+        // Save to Cache (7 days)
+        $id = \Illuminate\Support\Str::random(10);
+        \Illuminate\Support\Facades\Cache::put('quote_' . $id, $params, now()->addDays(7));
+
+        return route('cotizacion.short', ['id' => $id]);
+    }
+
+    private function prepararParametrosPDF()
+    {
         $agenteSeleccionado = collect($this->agentes)->firstWhere('id', $this->agenteId);
 
         $resumenPDF = [
@@ -925,7 +951,12 @@ class CalculadoraAerea extends Component
             'Brokers en China' => $this->desglose['Brokers en China'] ?? 0,
         ];
 
-        return redirect()->route('cotizacion.pdf', [
+        // Ensure desglose contains Pago Internacional if applicable
+        if ($this->requierePagoInternacional && isset($this->desglose['Pago Internacional'])) {
+            $resumenPDF['Pago Internacional'] = $this->desglose['Pago Internacional'];
+        }
+
+        return [
             'tipoCarga' => 'AEREO',
             'peso' => $this->pesoTotalCalculado,
             'volumen' => $this->pesoDimensionalTotalCalculado,
@@ -948,7 +979,7 @@ class CalculadoraAerea extends Component
             'clienteDireccion' => $this->clienteDireccion,
             'clienteCiudad' => $this->clienteCiudad,
             'p2pPrice' => $this->p2pPrice,
-        ]);
+        ];
     }
 
     /**

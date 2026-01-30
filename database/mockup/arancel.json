@@ -21785,7 +21785,7 @@
     },
     {
         "codigo": "2710.19.36.90",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 0,
         "ice_porcentaje": 0,
         "documentacion": {
@@ -40874,7 +40874,7 @@
     },
     {
         "codigo": "3808.91.14.90",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 0,
         "documentacion": {
@@ -40907,7 +40907,7 @@
     },
     {
         "codigo": "3808.91.15.90",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 0,
         "documentacion": {
@@ -40940,7 +40940,7 @@
     },
     {
         "codigo": "3808.91.19.90",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 0,
         "documentacion": {
@@ -41237,7 +41237,7 @@
     },
     {
         "codigo": "3808.94.19.90",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 0,
         "documentacion": {
@@ -41281,7 +41281,7 @@
     },
     {
         "codigo": "3808.94.99.90",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 0,
         "documentacion": {
@@ -41358,7 +41358,7 @@
     },
     {
         "codigo": "3808.99.99.90",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 0,
         "documentacion": {
@@ -42659,7 +42659,7 @@
     },
     {
         "codigo": "3824.99.99.90",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 0,
         "documentacion": {
@@ -98517,7 +98517,6 @@
         "descripcion": "- - Únicamente con motor de émbolo (pistón), de encendido por compresión (diésel o semi-diésel)",
         "ga_porcentaje": 5,
         "ice_porcentaje": 15,
-
         "documentacion": {
             "tipo": "( * )",
             "entidad": null,
@@ -98529,7 +98528,6 @@
         "descripcion": "- - Equipados para la propulsión con motor de émbolo (pistón), de encendido por compresión (diésel o semi-diésel) y con motor eléctrico",
         "ga_porcentaje": 0,
         "ice_porcentaje": 15,
-
         "documentacion": {
             "tipo": "( * )",
             "entidad": null,
@@ -98837,7 +98835,7 @@
         "codigo": "8702.10.10.90",
         "descripcion": "- - - Los demás",
         "ga_porcentaje": 10,
-        "ice_porcentaje": 0,
+        "ice_porcentaje": 20,
         "documentacion": {
             "tipo": "( * )",
             "entidad": null,
@@ -98870,7 +98868,7 @@
         "codigo": "8702.10.90.20",
         "descripcion": "- - - Para el transporte de más de 16 y hasta 18 personas, incluido el conductor",
         "ga_porcentaje": 10,
-        "ice_porcentaje": 0,
+        "ice_porcentaje": 20,
         "documentacion": {
             "tipo": "( * )",
             "entidad": null,
@@ -98881,7 +98879,7 @@
         "codigo": "8702.10.90.90",
         "descripcion": "- - - Los demás",
         "ga_porcentaje": 10,
-        "ice_porcentaje": 0,
+        "ice_porcentaje": 15,
         "documentacion": {
             "tipo": "( * )",
             "entidad": null,
@@ -99394,7 +99392,7 @@
     },
     {
         "codigo": "8703.22.10.99",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 5,
 
@@ -99472,7 +99470,7 @@
     },
     {
         "codigo": "8703.22.90.99",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 5,
 
@@ -99561,7 +99559,7 @@
     },
     {
         "codigo": "8703.23.10.49",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 5,
 
@@ -99596,7 +99594,7 @@
     },
     {
         "codigo": "8703.23.10.99",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 10,
 
@@ -99674,7 +99672,7 @@
     },
     {
         "codigo": "8703.23.90.49",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 5,
 
@@ -99709,7 +99707,7 @@
     },
     {
         "codigo": "8703.23.90.99",
-        "descripcion": "-         Los demás",
+        "descripcion": "-Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 10,
 
@@ -99798,7 +99796,7 @@
     },
     {
         "codigo": "8703.24.10.99",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 15,
 
@@ -99876,7 +99874,7 @@
     },
     {
         "codigo": "8703.24.90.99",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 10,
         "ice_porcentaje": 15,
 
@@ -100071,7 +100069,7 @@
         "codigo": "8703.40.10.10",
         "descripcion": "- - - Microhibrido (MHEV)",
         "ga_porcentaje": 10,
-        "ice_porcentaje": 0,
+        "ice_porcentaje": 5,
         "documentacion": {
             "tipo": "( * )",
             "entidad": null,
@@ -100082,7 +100080,7 @@
         "codigo": "8703.40.10.90",
         "descripcion": "- - - Los demás",
         "ga_porcentaje": 5,
-        "ice_porcentaje": 0,
+        "ice_porcentaje": 3,
         "documentacion": {
             "tipo": "( * )",
             "entidad": null,
@@ -100104,7 +100102,7 @@
         "codigo": "8703.40.90.10",
         "descripcion": "'- - - Microhibrido (MHEV)",
         "ga_porcentaje": 10,
-        "ice_porcentaje": 0,
+        "ice_porcentaje": 5,
         "documentacion": {
             "tipo": "( * )",
             "entidad": null,
@@ -100115,7 +100113,7 @@
         "codigo": "8703.40.90.90",
         "descripcion": "- - - Los demás",
         "ga_porcentaje": 5,
-        "ice_porcentaje": 0,
+        "ice_porcentaje": 3,
         "documentacion": {
             "tipo": "( * )",
             "entidad": null,
@@ -101586,7 +101584,7 @@
     },
     {
         "codigo": "8705.90.11.19",
-        "descripcion": "-         Los demás",
+        "descripcion": "- Los demás",
         "ga_porcentaje": 0,
         "ice_porcentaje": 15,
 

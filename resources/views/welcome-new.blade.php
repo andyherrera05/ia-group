@@ -567,7 +567,7 @@
                                     </a>
 
                                     <!-- Cotización Terrestre -->
-                                    <a href="/terrestre"
+                                    <!-- <a href="/terrestre"
                                         class="block bg-gradient-to-br from-green-900/30 to-emerald-800/20 border-2 border-green-500/40 hover:border-green-500 rounded-xl p-5 transition-all group hover:shadow-lg hover:shadow-green-500/20">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center space-x-4">
@@ -595,7 +595,7 @@
                                                     d="M9 5l7 7-7 7" />
                                             </svg>
                                         </div>
-                                    </a>
+                                    </a> -->
                                 </div>
 
                                 <!-- Info Note -->
@@ -938,7 +938,7 @@
                             Marítimo</h3>
                         <p
                             class="text-base sm:text-lg text-gray-300 mb-6 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-                            LCL, FCL y ULD. Conectamos puertos globales con tarifas competitivas.
+                            LCL, FCL y Roll on Roll off. Conectamos puertos globales con tarifas competitivas.
                         </p>
 
                         <div class="flex items-center text-yellow-500 font-bold text-lg sm:text-xl">
@@ -1744,7 +1744,7 @@
                     imagen: imageProduct
                 };
                 const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-                // console.log("Air Payload:", payload); // Debug
+                console.log("Air Payload:", payload); // Debug
                 airBtn.href = `/aereo?q=${encodeURIComponent(encoded)}`;
             }
         }

@@ -808,7 +808,7 @@
                     <!-- Updated logic: Check for mostrarPregunta -->
 
                     @if ($mostrarPregunta && $resultado !== null)
-                    <div
+                    <div id="resultado-final"
                         class="bg-gradient-to-br from-yellow-500/10 to-amber-500/10 border-2 border-yellow-500 rounded-xl p-6 mb-6 text-center transition-all hover:shadow-yellow-500/20 hover:shadow-xl">
                         <p class="text-sm font-bold text-yellow-400 mb-2 uppercase tracking-widest">Total Estimado
                         </p>
@@ -988,6 +988,17 @@
                                 experto para aplicar esta rebaja:</p>
                             @endif
 
+                            <!-- Inputs para datos del cliente -->
+                            <div class="mt-6 mb-4 space-y-3 bg-white/5 p-4 rounded-xl border border-white/10">
+                                <h4 class="text-yellow-500 font-bold text-xs uppercase tracking-widest mb-3">Tus Datos (Opcional)</h4>
+                                <div class="grid grid-cols-1 gap-3">
+                                    <input type="text" wire:model.live.debounce.500ms="clienteNombre" placeholder="Tu Nombre" class="w-full bg-black/40 border border-yellow-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-500 placeholder-gray-500">
+                                    <input type="tel" wire:model.live.debounce.500ms="clienteTelefono" placeholder="Tu Celular" class="w-full bg-black/40 border border-yellow-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-500 placeholder-gray-500">
+                                    <input type="email" wire:model.live.debounce.500ms="clienteEmail" placeholder="Tu Correo" class="w-full bg-black/40 border border-yellow-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-500 placeholder-gray-500">
+                                </div>
+                                <p class="text-[10px] text-gray-500">Completa estos datos para que nuestros asesores te contacten más rápido.</p>
+                            </div>
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-left">
                                 @php
                                 $contactos = [
@@ -1013,6 +1024,14 @@
                                 @php
                                 $montoRef =
                                 $respuestaUsuario === 'no' ? $resultadoRebajado : $resultado;
+
+                                $extraInfo = "";
+                                if($clienteNombre) $extraInfo .= " Soy " . $clienteNombre . ".";
+                                if($clienteTelefono) $extraInfo .= " Mi celular es " . $clienteTelefono . ".";
+                                if($clienteEmail) $extraInfo .= " Mi correo es " . $clienteEmail . ".";
+
+                                $pdfLink = $this->obtenerUrlPDF();
+
                                 $mensajeTexto =
                                 'Hola ' .
                                 $c['area'] .
@@ -1021,7 +1040,8 @@
                                 ' USD' .
                                 ($respuestaUsuario === 'no'
                                 ? '. ¡Deseo aplicar al precio especial rebajado!'
-                                : '');
+                                : '') . $extraInfo .
+                                ($pdfLink ? " Cotización PDF: " . $pdfLink : "");
                                 $urlWebWa =
                                 'https://web.whatsapp.com/send?phone=' .
                                 $c['num'] .
@@ -1124,3 +1144,26 @@
             </div> -->
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const registerScrollListener = () => {
+            Livewire.on('scroll-to-result', () => {
+                setTimeout(() => {
+                    const element = document.getElementById('resultado-final');
+                    if (element) {
+                        element.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
+                }, 100); // Reduced timeout slightly, should be enough
+            });
+        };
+
+        if (typeof Livewire !== 'undefined') {
+            registerScrollListener();
+        } else {
+            document.addEventListener('livewire:initialized', registerScrollListener);
+        }
+    });
+</script>

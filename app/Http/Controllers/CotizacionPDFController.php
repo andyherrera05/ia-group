@@ -5,8 +5,25 @@ namespace App\Http\Controllers;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Cache;
+
 class CotizacionPDFController extends Controller
 {
+    public function verPorId($id)
+    {
+        $params = Cache::get('quote_' . $id);
+
+        if (!$params) {
+            abort(404, 'Cotización no encontrada o expirada.');
+        }
+
+        // Create a new request with the cached parameters
+        $request = new Request();
+        $request->merge($params);
+
+        return $this->generarPDF($request);
+    }
+
     public function generarPDF(Request $request)
     {
         $desglose_reporte = json_decode($request->desglose_reporte, true) ?? [];

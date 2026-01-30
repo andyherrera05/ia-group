@@ -810,6 +810,7 @@ class CalculadoraMaritima extends Component
     {
         $this->calcularRoRo();
         $this->mostrarDesglose = true;
+        $this->dispatch('scroll-to-result');
     }
 
 
@@ -1940,8 +1941,23 @@ class CalculadoraMaritima extends Component
     }
     public function descargarPDF($tipoPrecio = 'normal')
     {
-        Log::info('Entering descargarPDF with tipoPrecio: ' . $tipoPrecio);
+        $params = $this->prepararParametrosPDF($tipoPrecio);
+        return redirect()->route('cotizacion.pdf', $params);
+    }
 
+    public function obtenerUrlPDF($tipoPrecio = 'normal')
+    {
+        $params = $this->prepararParametrosPDF($tipoPrecio);
+
+        // Save to Cache (7 days)
+        $id = \Illuminate\Support\Str::random(10);
+        \Illuminate\Support\Facades\Cache::put('quote_' . $id, $params, now()->addDays(7));
+
+        return route('cotizacion.short', ['id' => $id]);
+    }
+
+    private function prepararParametrosPDF($tipoPrecio)
+    {
         $origenFinal = $this->tipoCarga === 'fcl' ? $this->searchPOL : $this->origen;
         $destinoFinal = $this->tipoCarga === 'fcl' ? $this->searchPOD : $this->destino;
 
@@ -1982,9 +1998,6 @@ class CalculadoraMaritima extends Component
             ]);
         } else {
             // LCL/FCL Data
-            Log::info('tipoPrecio: ' . $tipoPrecio);
-            Log::info('valorFacturadoActual: ' . $this->valorFacturadoActual);
-            Log::info('valorFacturadoRebajaActual: ' . $this->valorFacturadoRebajaActual);
             $params = array_merge($params, [
                 'largo' => $this->largo,
                 'ancho' => $this->ancho,
@@ -2016,10 +2029,8 @@ class CalculadoraMaritima extends Component
             ]);
         }
 
-        return redirect()->route('cotizacion.pdf', $params);
+        return $params;
     }
-    
-    
     
     // =======================================================
     //              MÉTODOS FCL - BÚSQUEDA DE PUERTOS
@@ -3165,6 +3176,7 @@ class CalculadoraMaritima extends Component
             $this->cargarTarifasDesdeBaseDeDatos();
         }
         $this->loadingRates = false;
+        $this->dispatch('fcl-rates-loaded');
     }
 
     private function guardarTarifasEnBaseDeDatos($url, $rates)

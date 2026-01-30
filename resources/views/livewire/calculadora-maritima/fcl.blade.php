@@ -450,20 +450,48 @@
                 @endif
             </div>
         </div>
+        <style>
+            .boat-container {
+                width: 100%;
+                height: 80px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .boat-svg {
+                position: absolute;
+                width: 110px;
+                height: 110px;
+                bottom: 20px;
+                animation: navigate 8s infinite ease-in-out;
+            }
+
+            @keyframes navigate {
+                0% {
+                    left: -60px;
+                }
+
+                50% {
+                    left: calc(100% - 60px);
+                }
+
+                100% {
+                    left: -60px;
+                }
+            }
+        </style>
+
         <div class="mt-6 flex justify-center">
-            <button wire:click="buscarTarifasFCL"
+            <button wire:click="buscarTarifasFCL" @click="mostrarLoadingFCL"
                 class="relative px-8 py-5 rounded-2xl font-bold text-xl transition-all transform shadow-2xl bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-black hover:scale-105 cursor-pointer disabled:opacity-80 disabled:cursor-not-allowed"
                 wire:loading.attr="disabled" :class="{ 'cursor-not-allowed': $wire.loadingRates }">
 
+                <!-- Loading State (Button Text) -->
                 <div wire:loading wire:target="buscarTarifasFCL" class="flex items-center justify-center space-x-3">
-                    <span class="font-medium">
-                        @if ($statusMessage && str_starts_with($statusMessage, 'Buscando'))
-                        {{ $statusMessage }}...
-                        @else
-                        Buscando tarifas...
-                        @endif
-                    </span>
+                    <span class="font-medium">Buscando tarifas...</span>
                 </div>
+
+                <!-- Normal State -->
                 <span wire:loading.remove wire:target="buscarTarifasFCL" class="flex items-center justify-center">
                     <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
@@ -474,6 +502,33 @@
                 </span>
             </button>
         </div>
+
+        <script>
+            window.mostrarLoadingFCL = function() {
+                const imageUrl = "{{ asset('images/ship.svg') }}";
+                Swal.fire({
+                    title: 'Buscando mejores tarifas...',
+                    html: `
+                        <div class="boat-container">
+                            <img src="${imageUrl}" class="boat-svg" alt="Barco navegando">
+                        </div>
+                        <p style="margin-top: 10px; color: #fbbf24; font-weight: bold;">Conectando con navieras...</p>
+                        <p style="margin-top: 5px; font-size: 12px; color: white;">Esto puede tomar unos segundos</p>
+                    `,
+                    background: '#1B1B1A', // dark bg matching theme
+                    color: '#fff',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {}
+                });
+            }
+
+            document.addEventListener('livewire:initialized', () => {
+                Livewire.on('fcl-rates-loaded', () => {
+                    Swal.close();
+                });
+            });
+        </script>
     </div>
 
     <!-- Resultados de Tarifas -->

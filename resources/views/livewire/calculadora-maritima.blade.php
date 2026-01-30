@@ -275,14 +275,15 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
-                                    <span>Descargar Cotización (Precio Normal)</span>
+                                    <span>Descargar Cotización</span>
                                 </button>
                             </div>
                             <p class="text-lg font-bold text-gray-200">Nuestros especialistas están listos para ayudarte:</p>
                             @else
                             <div class="animate-pulse"><span class="text-yellow-400 text-5xl font-black italic">TRANQUILO</span></div>
-                            <p class="text-lg font-bold text-gray-200">¡Podemos ajustarlo! Habla con un experto:</p>
+                            <p class="text-lg font-bold text-gray-200">¡Podemos ajustarlo! Recibe el 10% de descuento en tu cotización y comunicate con nuestros asesores:</p>
                             <!-- Botón PDF con precio rebajado -->
+                            @if($tipoCarga === 'lcl')
                             <div class="mt-6">
                                 <button wire:click="descargarPDF('rebaja')" wire:loading.attr="disabled"
                                     class="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-xl shadow-yellow-600/40 flex items-center justify-center space-x-3"
@@ -292,15 +293,27 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>Descargar Cotización (Oferta)</span>
+                                    <span>Descargar Cotización</span>
                                 </button>
                             </div>
                             @endif
+                            @endif
+                            <!-- Inputs para datos del cliente -->
+                            <div class="mt-6 mb-4 space-y-3 bg-white/5 p-4 rounded-xl border border-white/10">
+                                <h4 class="text-yellow-500 font-bold text-xs uppercase tracking-widest mb-3">Tus Datos (Opcional)</h4>
+                                <div class="grid grid-cols-1 gap-3">
+                                    <input type="text" wire:model.live.debounce.500ms="clienteNombre" placeholder="Tu Nombre" class="w-full bg-black/40 border border-yellow-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-500 placeholder-gray-500">
+                                    <input type="tel" wire:model.live.debounce.500ms="clienteTelefono" placeholder="Tu Celular" class="w-full bg-black/40 border border-yellow-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-500 placeholder-gray-500">
+                                    <input type="email" wire:model.live.debounce.500ms="clienteEmail" placeholder="Tu Correo" class="w-full bg-black/40 border border-yellow-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-500 placeholder-gray-500">
+                                </div>
+                                <p class="text-[10px] text-gray-500">Completa estos datos para que nuestros asesores te contacten más rápido.</p>
+                            </div>
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-left">
                                 @php
                                 $contactos = [
                                 ['area' => 'Auction', 'num' => '59164580634', 'color' => 'yellow'],
-                                ['area' => 'Academy', 'num' => '59164700293', 'color' => 'yellow'],
+                                ['area' => 'Academy', 'num' => '59172975154', 'color' => 'yellow'],
                                 ['area' => 'Imports & Exports', 'num' => '59172976032', 'color' => 'yellow'],
                                 ['area' => 'Agente de carga', 'num' => '5974518652', 'color' => 'yellow'],
                                 ['area' => 'Negocios', 'num' => '59164583783', 'color' => 'yellow'],
@@ -311,7 +324,16 @@
 
                                 @foreach($contactos as $c)
                                 @php
-                                $mensajeTexto = "Hola " . $c['area'] . "! Vengo de la cotización de $" . number_format($resultado, 2) . " USD";
+                                $extraInfo = "";
+                                if($clienteNombre) $extraInfo .= " Soy " . $clienteNombre . ".";
+                                if($clienteTelefono) $extraInfo .= " Mi celular es " . $clienteTelefono . ".";
+                                if($clienteEmail) $extraInfo .= " Mi correo es " . $clienteEmail . ".";
+
+                                $pdfLink = $this->obtenerUrlPDF();
+
+                                $mensajeTexto = "Hola " . $c['area'] . "! Vengo de la cotización de $" . number_format($resultado, 2) . " USD." . $extraInfo .
+                                ($pdfLink ? " Cotización PDF: " . $pdfLink : "");
+
                                 $urlWebWa = "https://web.whatsapp.com/send?phone=" . $c['num'] . "&text=" . urlencode($mensajeTexto);
                                 @endphp
                                 <a href="{{ $urlWebWa }}"
