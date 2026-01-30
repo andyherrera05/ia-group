@@ -695,7 +695,7 @@
                     </div>
                     @if($temp_con_arancelFCL)
                     <div class="mt-2 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg space-y-3">
-                        <div class="grid grid-cols-2 gap-2 bg-black/20 rounded-lg p-2 border border-white/5">
+                        <div class="grid grid-cols-3 gap-2 bg-black/20 rounded-lg p-2 border border-white/5">
                             <!-- HS Code Search -->
                             <div class="relative z-[40]">
                                 <label class="block text-sm font-medium text-gray-300 mb-2">
@@ -711,21 +711,14 @@
                                     style="font-size: 9px;">Colocar una palabra genérica que identifique al
                                     producto</span>
 
-                                @if (!empty($arancelSuggestions))
-                                <div class="absolute z-50 left-0 w-[150%] mt-1 bg-gray-900 border border-yellow-500/30 rounded-lg shadow-2xl max-h-48 overflow-y-auto custom-scrollbar"
-                                    style="background-color: rgba(0, 0, 0, 0.9); z-index: 1000;">
-                                    @foreach ($arancelSuggestions as $sug)
-                                    <div wire:click="selectArancel('{{ $sug['codigo_hs'] }}', {{ $sug['arancel'] }})"
-                                        class="p-2 hover:bg-yellow-500/10 cursor-pointer border-b border-white/5 last:border-0 transition-colors" style="font-size: 12px">
-                                        <div class="flex justify-between items-start">
-                                            <span
-                                                class="text-yellow-500 text-[9px] font-bold">{{ $sug['codigo_hs'] }}</span>
-                                            <span
-                                                class="bg-yellow-500/20 text-yellow-500 text-[7px] px-1 rounded">{{ $sug['arancel'] }}%</span>
-                                        </div>
-                                        <p class="text-[8px] text-gray-400 truncate">
-                                            {{ $sug['descripcion'] }}
-                                        </p>
+                                @if(!empty($arancelSuggestions))
+                                <div class="absolute top-full left-0 z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto mt-1" style="background-color: rgba(0, 0, 0, 0.9); width: max-content;">
+                                    @foreach($arancelSuggestions as $suggestion)
+                                    <div wire:click="selectArancel('{{ $suggestion['codigo_hs'] }}', {{ $suggestion['arancel'] }}, {{ $suggestion['ice'] }})"
+                                        class="p-2 hover:bg-gray-800 cursor-pointer text-xs border-b border-gray-800 last:border-0">
+                                        <div class="font-bold text-yellow-500">{{ $suggestion['codigo_hs'] }}</div>
+                                        <div class="text-gray-300">{{ $suggestion['descripcion'] }}</div>
+                                        <div class="text-gray-500 text-[10px]">Arancel: {{ $suggestion['arancel'] }}% | ICE: {{ $suggestion['ice'] }}%</div>
                                     </div>
                                     @endforeach
                                 </div>
@@ -740,6 +733,16 @@
                                     Arancel %
                                 </label>
                                 <input type="number" wire:model="temp_arancel" placeholder="GA %"
+                                    class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
+                            </div>
+                            <div class="relative z-[40]">
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                    ICE %
+                                </label>
+                                <input type="number" wire:model="temp_ice" placeholder="ICE %"
                                     class="w-full px-4 py-1 bg-black/40 border border-yellow-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all">
                             </div>
                         </div>

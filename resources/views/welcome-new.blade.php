@@ -1494,10 +1494,12 @@
                 data.moq || 1;
             const moq = data.moq || 1;
 
-            const packageSizeTexto = data.dimensions_cm || "0x0x0";
+            const packageSizeTexto = data.packageSize || "0x0x0";
+            console.log("packageSizeTexto", packageSizeTexto);
             const packageWeightTexto = data.peso_kg_usar || 0;
             const dimensionsMatch = packageSizeTexto.match(/[\d.]+/g);
             let [L, A, H] = dimensionsMatch ? dimensionsMatch.map(Number) : [0, 0, 0];
+            console.log(L, A, H);
 
             let packageSize = ((L * A * H) / 1000000).toFixed(3);
             let weightCBM = (((L * A * H) / 5000).toFixed(3));
@@ -1742,7 +1744,7 @@
                     imagen: imageProduct
                 };
                 const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-                console.log("Air Payload:", payload); // Debug
+                // console.log("Air Payload:", payload); // Debug
                 airBtn.href = `/aereo?q=${encodeURIComponent(encoded)}`;
             }
         }

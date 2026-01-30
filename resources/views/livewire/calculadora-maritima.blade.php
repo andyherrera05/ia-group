@@ -265,9 +265,9 @@
                         <div class="text-center space-y-6">
                             @if ($respuestaUsuario === 'si')
                             <div class="animate-bounce"><span class="text-green-400 text-5xl font-black italic">¡PERFECTO!</span></div>
-                            <!-- Botón PDF -->
+                            <!-- Botón PDF con precio normal -->
                             <div class="mt-6">
-                                <button wire:click="descargarPDF" wire:loading.attr="disabled"
+                                <button wire:click="descargarPDF('normal')" wire:loading.attr="disabled"
                                     class="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-xl shadow-red-600/40 flex items-center justify-center space-x-3"
                                     style="background: linear-gradient(to right, #dc2626, #b91c1c); color: white;">
 
@@ -275,14 +275,26 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
-                                    <span>Descargar Cotización en PDF</span>
+                                    <span>Descargar Cotización (Precio Normal)</span>
                                 </button>
                             </div>
                             <p class="text-lg font-bold text-gray-200">Nuestros especialistas están listos para ayudarte:</p>
-
                             @else
                             <div class="animate-pulse"><span class="text-yellow-400 text-5xl font-black italic">TRANQUILO</span></div>
                             <p class="text-lg font-bold text-gray-200">¡Podemos ajustarlo! Habla con un experto:</p>
+                            <!-- Botón PDF con precio rebajado -->
+                            <div class="mt-6">
+                                <button wire:click="descargarPDF('rebaja')" wire:loading.attr="disabled"
+                                    class="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-xl shadow-yellow-600/40 flex items-center justify-center space-x-3"
+                                    style="background: linear-gradient(to right, #d97706, #b45309); color: white;">
+
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Descargar Cotización (Oferta)</span>
+                                </button>
+                            </div>
                             @endif
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-left">
                                 @php

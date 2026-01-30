@@ -237,7 +237,7 @@
                                 <!-- GRID 1 -->
                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                                     <div>
-                                        <label class="text-[9px] text-gray-400 uppercase pl-1">
+                                        <label class="text-[9px] text-gray-400 uppercase pl-1" style="font-size: 10px">
                                             Piezas por caja
                                         </label>
                                         <input type="number" wire:model="temp_piezas_por_carton"
@@ -245,7 +245,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="text-[9px] text-gray-400 uppercase pl-1">
+                                        <label class="text-[9px] text-gray-400 uppercase pl-1" style="font-size: 10px">
                                             Cantidad de cajas
                                         </label>
                                         <input type="number" wire:model="temp_cantidad"
@@ -253,7 +253,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="text-[9px] text-gray-400 uppercase pl-1">
+                                        <label class="text-[9px] text-gray-400 uppercase pl-1" style="font-size: 10px">
                                             Valor unitario ($)
                                         </label>
                                         <input type="number" wire:model="temp_valor_unitario"
@@ -363,7 +363,7 @@
                                     <input type="number" wire:model="temp_alto" placeholder="0" class="w-full bg-transparent border-b border-gray-700 text-center text-xs text-white focus:border-yellow-500 outline-none pb-1" title="Alto (cm)">
                                 </div>
                                 <div class="flex-1">
-                                    <label class="block text-[4px] text-blue-300/70 text-center mb-1 uppercase">Total CBM</label>
+                                    <label class="block text-[4px] text-blue-300/70 text-center mb-1 uppercase">CBM</label>
                                     <input type="number" step="0.01" wire:model="temp_cbm" placeholder="0.00" class="w-full bg-transparent border-b border-blue-500/50 text-center text-xs text-blue-300 focus:border-blue-500 outline-none pb-1" title="CBM Directo">
                                 </div>
                             </div>
@@ -477,7 +477,7 @@
             @endif
 
             <!-- Consolidated Totals Display (Read Only) -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <!-- <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div class="bg-black/40 p-3 rounded-xl border border-white/5">
                     <div class="text-[10px] text-gray-500 uppercase">Valor Total</div>
                     <div class="text-lg font-bold text-green-400">${{ number_format($valorMercancia, 2) }}</div>
@@ -494,7 +494,7 @@
                     <div class="text-[10px] text-gray-500 uppercase">Items</div>
                     <div class="text-lg font-bold text-yellow-500">{{ $cantidad }} <span class="text-xs text-gray-600">uds</span></div>
                 </div>
-            </div>
+            </div> -->
         </div>
 
         <div class="p-6 shadow-xl">
@@ -522,20 +522,20 @@
 
                     @if($temp_con_arancel)
                     <div class="mt-2 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg space-y-3">
-                        <div class="grid grid-cols-2 gap-2 bg-black/20 rounded-lg p-2 border border-white/5">
+                        <div class="grid grid-cols-3 gap-2 bg-black/20 rounded-lg p-2 border border-white/5">
                             <div class="relative">
                                 <label for="temp_hs_code" class="block text-[4px] text-gray-500 text-center mb-1 uppercase">HS Code</label>
                                 <input type="text" wire:model.live="temp_hs_code" placeholder="HS Code"
                                     class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
 
                                 @if(!empty($arancelSuggestions))
-                                <div class="absolute top-full left-0 w-full z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto mt-1" @click.away="$wire.limpiarArancelSearch()" style="background-color: rgba(0, 0, 0, 0.9);">
+                                <div class="absolute top-full left-0 w-full z-50 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto mt-1" @click.away="$wire.limpiarArancelSearch()" style="background-color: rgba(0, 0, 0, 0.9); width: max-content;">
                                     @foreach($arancelSuggestions as $suggestion)
-                                    <div wire:click="selectArancel('{{ $suggestion['codigo_hs'] }}', {{ $suggestion['arancel'] }})"
+                                    <div wire:click="selectArancel('{{ $suggestion['codigo_hs'] }}', {{ $suggestion['arancel'] }}, {{ $suggestion['ice'] }})"
                                         class="p-2 hover:bg-gray-800 cursor-pointer text-xs border-b border-gray-800 last:border-0">
                                         <div class="font-bold text-yellow-500">{{ $suggestion['codigo_hs'] }}</div>
                                         <div class="text-gray-300">{{ $suggestion['descripcion'] }}</div>
-                                        <div class="text-gray-500 text-[10px]">Arancel: {{ $suggestion['arancel'] }}%</div>
+                                        <div class="text-gray-500 text-[10px]">Arancel: {{ $suggestion['arancel'] }}% | ICE: {{ $suggestion['ice'] }}%</div>
                                     </div>
                                     @endforeach
                                 </div>
@@ -544,6 +544,12 @@
                             <div class="relative">
                                 <label for="temp_arancel" class="block text-[4px] text-gray-500 text-center mb-1 uppercase">Arancel</label>
                                 <input type="number" wire:model="temp_arancel" placeholder="Arancel %"
+                                    class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">%</span>
+                            </div>
+                            <div class="relative">
+                                <label for="temp_ice" class="block text-[4px] text-gray-500 text-center mb-1 uppercase">ICE</label>
+                                <input type="number" wire:model="temp_ice" placeholder="ICE %"
                                     class="w-full h-[105px] p-2 bg-black/40 border border-yellow-500/10 rounded-lg text-white text-xs placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
                                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">%</span>
                             </div>

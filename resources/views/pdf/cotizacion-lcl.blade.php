@@ -208,7 +208,7 @@
         </table>
         @php
         $subtotalGastos = 0;
-        $fleteInternacional = (float)($desglose['Costo de Envío Internacional'] ?? 0);
+        $fleteInternacional = isset($valorFacturado) ? (float)$valorFacturado : (float)($desglose['Costo de Envío Internacional'] ?? 0);
         $valorMercancia = (float)($desglose['Valor de Mercancía'] ?? 0);
         $gestionLogisticaBolivia = (float)($desglose['Gestión Logística'] ?? 0);
         $brokersChina = (float)($desglose['Brokers en China'] ?? 0);

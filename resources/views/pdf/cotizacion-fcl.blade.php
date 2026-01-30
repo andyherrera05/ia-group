@@ -314,7 +314,7 @@
                     @php
                     $item = $desglose_reporte;
                     $valorCarga = $item['valorMercancia'] ?? 0;
-                    $fleteMaritimo = $item['precio'] ?? 0;
+                    $fleteMaritimo = isset($valorFacturado) ? $valorFacturado : ($item['precio'] ?? 0);
                     $transporte_terrestre = $item['transporte_terrestre'] ?? 0;
                     $despachante = $item['despachante'] ?? 0;
                     $gravamenArancelario = $item['gravamen'] ?? 0;
